@@ -38,6 +38,7 @@ from emu68hatcher.config.partition_models import (
 )
 
 __all__ = [
+    "AGSImportConfig",
     "AmigaPartition",
     "AntennaMode",
     "BuildConfig",
@@ -182,6 +183,19 @@ class PackageConfig(_ConfigModel):
     enabled: bool = True
 
 
+class AGSImportConfig(_ConfigModel):
+    source_image: Path
+    content_device: str = Field(pattern=r"^[A-Z]{2,3}\d+$")
+    scope: Literal["whdload"] = "whdload"
+
+    @field_validator("source_image", mode="before")
+    @classmethod
+    def _local_image(cls, value):
+        if not str(value).strip() or str(value).startswith(("\\\\", "//")):
+            raise ValueError("AGS requires a local image file; UNC sources are not supported")
+        return value
+
+
 class OutputConfig(_ConfigModel):
     """output config for the built image"""
 
@@ -254,6 +268,7 @@ class BuildConfig(_ConfigModel):
     # package selection
     packages: list[PackageConfig] = Field(default_factory=list)
     icon_set: str = "Default"
+    ags_import: AGSImportConfig | None = None
 
     # partition layout
     partitions: PartitionConfig | None = None

@@ -55,7 +55,9 @@
 
     [![Partitions tab with four Amiga partitions](assets/screenshots/partitions.png)](assets/screenshots/partitions.png){ target="_blank" }
 
-10. **Click "Build Image".** The first build downloads packages; later builds use the cache. The dialog and **buildlog.txt** contain the build log.
+10. **AGS tab (optional).** To add the AGS v3.0 launcher and WHDLoad content, select a local source image, click **Inspect Source**, then choose a content partition with enough space. The first release supports only the v3.0 WHDLoad partition. See [AGS import](ags.md) for the contents and limits.
+
+11. **Click "Build Image".** The first build downloads packages; later builds use the cache. The dialog and **buildlog.txt** contain the build log.
 
 Flashing asks for admin access. On macOS, hst-imager also needs Full Disk Access; see [Installation](installation.md#macos).
 

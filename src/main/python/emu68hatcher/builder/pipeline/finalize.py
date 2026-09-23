@@ -21,6 +21,10 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
 
     workflow._update_state(BuildStage.FINALIZE, 0.0)
     workflow._milestone("Finalizing")
+    if workflow.config.ags_import is not None:
+        from emu68hatcher.builder.pipeline.import_ags import verify_ags_staging
+
+        verify_ags_staging(workflow, image)
 
     output = workflow.config.output
     assert output is not None

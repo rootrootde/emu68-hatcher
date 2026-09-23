@@ -38,6 +38,7 @@ from emu68hatcher.gui.tabs import (
     PartitionsTab,
     StartTab,
 )
+from emu68hatcher.gui.tabs.ags_tab import AGSTab
 
 
 class MainWindow(QMainWindow):
@@ -112,6 +113,23 @@ class MainWindow(QMainWindow):
 
         self.partitions_tab = PartitionsTab()
         self.tabs.addTab(self.partitions_tab, "Partitions")
+
+        self.ags_tab = AGSTab()
+        self.tabs.addTab(self.ags_tab, "AGS")
+        self.ags_tab.set_partitions(self.partitions_tab.get_config())
+        for signal in (
+            self.partitions_tab.part_table.device_edited,
+            self.partitions_tab.part_table.volume_edited,
+            self.partitions_tab.part_table.size_edited,
+            self.partitions_tab.part_table.filesystem_edited,
+            self.partitions_tab.part_table.bootable_edited,
+            self.partitions_tab.size_combo.currentIndexChanged,
+            self.partitions_tab.boot_spin.valueChanged,
+            self.partitions_tab.add_btn.clicked,
+            self.partitions_tab.remove_btn.clicked,
+            self.partitions_tab.reset_btn.clicked,
+        ):
+            signal.connect(self._queue_ags_partitions)
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
         # output mode + selected disk drives partition sizing in DEVICE/flash modes
@@ -150,6 +168,7 @@ class MainWindow(QMainWindow):
             ("asset scans", self.kickstart_tab),
             ("disk scan", self.output_tab),
             ("extra content scan", self.partitions_tab),
+            ("AGS source check", self.ags_tab),
             ("downloads", self.start_tab),
         ):
             if not tab.shutdown_workers():
@@ -193,6 +212,8 @@ class MainWindow(QMainWindow):
                 self.kickstart_tab.set_locale(self.config.packages)
                 self.output_tab.set_config(self.config.output)
                 self.partitions_tab.set_config(self.config.partitions)
+                self.ags_tab.set_partitions(self.partitions_tab.get_config())
+                self.ags_tab.set_config(self.config.ags_import)
                 self.statusBar().showMessage(f"Loaded: {path}")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to load config: {e}")
@@ -272,6 +293,11 @@ class MainWindow(QMainWindow):
     def _on_tab_changed(self, index: int):
         if self.tabs.widget(index) is self.emu68_tab:
             self._refresh_boot_files_preview()
+        elif self.tabs.widget(index) is self.ags_tab:
+            self._queue_ags_partitions()
+
+    def _queue_ags_partitions(self, *_args):
+        self.ags_tab.queue_partition_refresh(self.partitions_tab.get_config)
 
     def collect_config(self):
         """Validate a fresh config assembled from all tabs."""
@@ -318,6 +344,7 @@ class MainWindow(QMainWindow):
         wifi = self.network_tab.get_wifi_config()
         network = self.network_tab.get_network_settings()
         partitions = self.partitions_tab.get_config()
+        self.ags_tab.set_partitions(partitions)
         data = {
             "version": CURRENT_CONFIG_VERSION,
             "kickstart": {"version": ks["version"], "rom_directory": None},
@@ -333,6 +360,7 @@ class MainWindow(QMainWindow):
             "packages": pkgs,
             "icon_set": self.kickstart_tab.get_icon_set(),
             "partitions": partitions.model_dump(mode="python"),
+            "ags_import": self.ags_tab.get_config(),
             "output": output,
             "network_stack": self.network_tab.get_network_stack(),
             "roadshow_archive": self.network_tab.get_roadshow_archive(),
@@ -371,10 +399,17 @@ class MainWindow(QMainWindow):
         self.packages_tab.select_none()
         self._refresh_package_context()
         self.statusBar().showMessage(
-            "Minimal selected. Partition extra content and install media are unchanged."
+            "Minimal selected. AGS, partition extra content and install media are unchanged."
         )
 
     def build_image(self):
+        if self.ags_tab.inspection_pending() and (
+            self.ags_tab.enabled_check.isChecked() or not self.ags_tab.shutdown_workers()
+        ):
+            QMessageBox.warning(
+                self, "AGS Source Check", "Wait for the AGS source check to finish before building."
+            )
+            return
         if self.output_tab.needs_disk_target():
             QMessageBox.warning(
                 self,

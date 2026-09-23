@@ -8,6 +8,14 @@ import subprocess
 from emu68hatcher.builder.host.disk_info import DiskInfo, DiskOperationResult
 
 
+def _mountpoints(device: dict):
+    for mount in device.get("mountpoints") or [device.get("mountpoint")]:
+        if mount:
+            yield mount
+    for child in device.get("children", []) or []:
+        yield from _mountpoints(child)
+
+
 def list_disks() -> list[DiskInfo]:
     result = subprocess.run(
         ["lsblk", "-J", "-b", "-o", "NAME,SIZE,TYPE,MOUNTPOINT,MOUNTPOINTS,RM,RO,MODEL,VENDOR"],
@@ -24,12 +32,7 @@ def list_disks() -> list[DiskInfo]:
         size = int(device.get("size") or 0)
         if not size:
             continue
-        mounted = [
-            mount
-            for child in device.get("children", []) or []
-            for mount in child.get("mountpoints") or [child.get("mountpoint")]
-            if mount
-        ]
+        mounted = list(dict.fromkeys(_mountpoints(device)))
         name = (
             " ".join(
                 filter(None, [device.get("vendor", "").strip(), device.get("model", "").strip()])

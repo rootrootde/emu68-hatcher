@@ -26,6 +26,7 @@ class HSTCommand(str, Enum):
     RDB_FS_ADD = "rdb fs add"
 
     # filesystem operations
+    FS_DIR = "fs dir"
     FS_COPY = "fs copy"
 
 

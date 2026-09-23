@@ -45,6 +45,11 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
         if keys:
             workflow.logger.info("MiamiDX registration keys accepted")
 
+    ags_inventory = None
+    if workflow.config.ags_import is not None:
+        from emu68hatcher.builder.ags_validation import validate_ags_import
+
+        ags_inventory = validate_ags_import(workflow)
     validate_output_target(workflow)
     roadshow_archive = (
         workflow.config.roadshow_archive
@@ -67,6 +72,7 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
         roadshow_archive_path=roadshow_path,
         roadshow_archive_kind=roadshow_kind,
         picasso96_archive_path=picasso96_path,
+        ags_inventory=ags_inventory,
     )
 
 

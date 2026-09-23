@@ -4,9 +4,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.host.elevation import ElevationToken
 from emu68hatcher.data.install_media import IdentifiedInstallMedia
+
+if TYPE_CHECKING:
+    from emu68hatcher.builder.ags_source import AGSInventory
 
 
 class BuildStage(str, Enum):
@@ -19,6 +23,7 @@ class BuildStage(str, Enum):
     INSTALL_WORKBENCH = "install_workbench"
     INSTALL_PACKAGES = "install_packages"
     CONFIGURE = "configure"
+    IMPORT_AGS = "import_ags"
     INSTALL_EXTRAS = "install_extras"
     FINALIZE = "finalize"
     FLASH = "flash"
@@ -43,6 +48,7 @@ class ValidatedInputs:
     roadshow_archive_path: Path | None = None
     roadshow_archive_kind: str | None = None
     picasso96_archive_path: Path | None = None
+    ags_inventory: "AGSInventory | None" = None
 
 
 @dataclass(frozen=True)

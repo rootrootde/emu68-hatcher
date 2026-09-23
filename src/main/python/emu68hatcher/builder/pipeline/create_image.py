@@ -29,6 +29,12 @@ def stage_create_image(
     partitions = workflow.config.partitions
     assert output is not None and partitions is not None
     workspace = extracted.downloaded.workspace
+    if workspace.validated.ags_inventory is not None:
+        from emu68hatcher.builder.ags_source import validate_source_identity
+        from emu68hatcher.builder.ags_validation import check_source_destination
+
+        validate_source_identity(workspace.validated.ags_inventory)
+        check_source_destination(workflow)
     output_type = output.type
     raw_target = output.path
     # device targets are strings on purpose (see OutputConfig.path); re-wrapping in Path
