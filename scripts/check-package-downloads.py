@@ -46,17 +46,7 @@ class CheckResult:
         return self.status == "current"
 
 
-def _load_manifest_overrides(path: Path) -> dict[str, dict]:
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    payload = raw.get("payload", raw)
-    packages = payload.get("packages", {})
-    if not isinstance(packages, dict):
-        raise ValueError("manifest packages must be an object")
-    return packages
-
-
-def _load_specs(packages_dir: Path, manifest_source: Path) -> list[PackageSpec]:
-    overrides = _load_manifest_overrides(manifest_source)
+def _load_specs(packages_dir: Path) -> list[PackageSpec]:
     specs = []
     known_names = set()
     for path in sorted(packages_dir.glob("*.yaml")):
@@ -66,15 +56,9 @@ def _load_specs(packages_dir: Path, manifest_source: Path) -> list[PackageSpec]:
         known_names.add(package.name)
         if package.download is None:
             continue
-        download_data = package.download.model_dump(mode="json")
-        if package.name in overrides:
-            download_data.update(overrides[package.name])
-        download = DownloadInfo.model_validate(download_data)
+        download = package.download
         if download.source != SourceType.LOCAL:
             specs.append(PackageSpec(package.name, download))
-    unknown = overrides.keys() - known_names
-    if unknown:
-        raise ValueError(f"manifest references unknown packages: {', '.join(sorted(unknown))}")
     return specs
 
 
@@ -236,11 +220,6 @@ def main() -> int:
         type=Path,
         default=ROOT / "src" / "main" / "python" / "emu68hatcher" / "data" / "packages",
     )
-    parser.add_argument(
-        "--manifest-source",
-        type=Path,
-        default=ROOT / "updates" / "manifest-source.json",
-    )
     parser.add_argument("--report", type=Path)
     parser.add_argument("--package", action="append", default=[])
     parser.add_argument("--workers", type=int, default=8)
@@ -248,7 +227,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        specs = _load_specs(args.packages_dir, args.manifest_source)
+        specs = _load_specs(args.packages_dir)
         if args.package:
             selected = set(args.package)
             unknown = selected - {spec.name for spec in specs}
