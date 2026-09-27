@@ -43,7 +43,7 @@ class PartitionTable(QTableWidget):
         self._rendering = False
         self.setColumnCount(7)
         self.setHorizontalHeaderLabels(
-            ["Device", "Volume", "Size (MB)", "Filesystem", "Boot", "Extra / usable", "AGS"]
+            ["Device", "Volume", "Size (MB)", "Filesystem", "Boot", "Extra / usable", "Source"]
         )
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.horizontalHeader().setSectionResizeMode(
@@ -80,15 +80,13 @@ class PartitionTable(QTableWidget):
                 self.setCellWidget(row, COL_BOOTABLE, self._bootable_widget(row, partition))
                 text, state = extra_statuses[row] if extra_statuses else ("", None)
                 self.set_extra_status(row, text, state)
-                label = (
-                    f"{reserved.role} (fixed {reserved.minimum_size / 1024**3:.2f} GiB)"
-                    if reserved
-                    else ""
-                )
+                label = "AGS image · fixed size" if reserved else ""
                 role_item = QTableWidgetItem(label)
                 role_item.setFlags(role_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 role_item.setToolTip(
-                    "AGS reserves this partition; use AGS to remove it" if reserved else ""
+                    "Select Change AGS content to include or remove this partition."
+                    if reserved
+                    else ""
                 )
                 self.setItem(row, COL_AGS, role_item)
         finally:

@@ -120,6 +120,11 @@ class MainWindow(QMainWindow):
         self.ags_tab.set_partitions(self.partitions_tab.get_config())
         self.partitions_tab.layout_changed.connect(self._queue_ags_partitions)
         self.ags_tab.layout_applied.connect(self.partitions_tab.set_config)
+        self.ags_tab.partitions_requested.connect(
+            lambda: self.tabs.setCurrentWidget(self.partitions_tab)
+        )
+        self.ags_tab.target_requested.connect(self._show_target_size)
+        self.partitions_tab.ags_requested.connect(lambda: self.tabs.setCurrentWidget(self.ags_tab))
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
         # output mode + selected disk drives partition sizing in DEVICE/flash modes
@@ -203,7 +208,7 @@ class MainWindow(QMainWindow):
                 self.kickstart_tab.set_locale(self.config.packages)
                 self.output_tab.set_config(self.config.output)
                 self.partitions_tab.set_config(self.config.partitions)
-                self.ags_tab.set_partitions(self.partitions_tab.get_config())
+                self.ags_tab.set_partitions(self.partitions_tab.get_config(), update=False)
                 self.ags_tab.set_config(self.config.ags_import)
                 self.statusBar().showMessage(f"Loaded: {path}")
             except Exception as e:
@@ -292,10 +297,14 @@ class MainWindow(QMainWindow):
     def _queue_ags_partitions(self, *_args):
         if self._loading_config:
             return
-        try:
-            self.ags_tab.set_partitions(self.partitions_tab.get_config())
-        except ValueError as error:
-            self.ags_tab.set_layout_error(str(error))
+        self.ags_tab.set_partitions(self.partitions_tab.get_layout_draft())
+
+    def _show_target_size(self):
+        if self.partitions_tab.size_combo.isEnabled():
+            self.tabs.setCurrentWidget(self.partitions_tab)
+            self.partitions_tab.focus_disk_size()
+        else:
+            self.tabs.setCurrentWidget(self.output_tab)
 
     def collect_config(self):
         """Validate a fresh config assembled from all tabs."""
@@ -341,8 +350,8 @@ class MainWindow(QMainWindow):
 
         wifi = self.network_tab.get_wifi_config()
         network = self.network_tab.get_network_settings()
+        self._queue_ags_partitions()
         partitions = self.partitions_tab.get_config()
-        self.ags_tab.set_partitions(partitions)
         data = {
             "version": CURRENT_CONFIG_VERSION,
             "kickstart": {"version": ks["version"], "rom_directory": None},

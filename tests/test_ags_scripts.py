@@ -1,14 +1,16 @@
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 from emu68hatcher.builder.ags_profiles import get_profile
+from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.pipeline.import_ags import stage_import_ags, verify_ags_staging
 from emu68hatcher.builder.state import CreatedImage
 
 
 @pytest.mark.parametrize("profile", ["v30", "v31-beta-160726"])
-def test_portable_import_leaves_ags_scripts_and_preferences_unchanged(
+def test_portable_import_repairs_directory_checks_and_preserves_other_scripts(
     tmp_path: Path, monkeypatch, profile
 ):
     from emu68hatcher.builder import ags_source
@@ -34,7 +36,12 @@ def test_portable_import_leaves_ags_scripts_and_preferences_unchanged(
         "AGS2/Start_AGS": b"Ex Scripts:Start_AGS",
         "AGS2/Scripts/Start_AGS": b"If NOT EXISTS s:AGS-Stuff\n SetEnv Portable 1\nEndIf\n",
         "AGS2/Scripts/Speed_Reset": b"Copy >NIL: Scripts:WHDLoad-Startup S:\n",
-        "AGS2/Scripts/Check_Drives": b"InfoNew >ENV:GamesDrive Games:\n",
+        "AGS2/Scripts/Check_Drives": (
+            b"InfoNew >ENV:GamesDrive Games:\n"
+            b"InfoNew >ENV:EmulatorsDrive Emulators:\n"
+            b'Search >NIL: ENV:EmulatorsDrive "Emulators [Mounted]" QUIET\n'
+            b"If NOT WARN\n SetEnv Emulators 1\nEndif\n"
+        ),
         "AGS2/Scripts/Expert_Boot_Game": b'Echo >ENV:BOOTGAME "$XPath.run"\n',
         "AGS2/+  Extra Games.ags/A.ags/Alley Cat.run": b"Assign SYS: DH0:\n",
     }
@@ -51,7 +58,7 @@ def test_portable_import_leaves_ags_scripts_and_preferences_unchanged(
             warnings=(),
             source_path=tmp_path / "source.img",
             whdload=SimpleNamespace(index=3),
-            source_scripts={"AGS2/Scripts/Start_AGS.info": b"original icon"},
+            source_scripts=originals,
         ),
         script_plan=SimpleNamespace(selected_roles=roles),
         targets=tuple(targets.values()),
@@ -90,9 +97,15 @@ def test_portable_import_leaves_ags_scripts_and_preferences_unchanged(
     assert (boot / "S/WHDLoad.prefs").read_bytes() == prefs
     assert (boot / "S/WHDLoad-Startup").read_bytes() == startup
     assert not (boot / "S/AGS-Stuff").exists()
+    expected = dict(originals)
+    expected["AGS2/Scripts/Check_Drives"] = (
+        b"InfoNew >ENV:GamesDrive Games:\n"
+        b"Assign >NIL: EXISTS Emulators:\n"
+        b"If NOT WARN\n SetEnv Emulators 1\nEndif\n"
+    )
     assert {
         p.relative_to(whd).as_posix(): p.read_bytes() for p in whd.rglob("*") if p.is_file()
-    } == originals
+    } == expected
     assert {p.name for p in staging.iterdir()} == {"BOOT", "CUSTOM"}
     assert not (boot / "Emu68-Hatcher").exists()
     assert not (boot / "Emu68-Hatcher.info").exists()
@@ -115,8 +128,15 @@ def test_portable_import_leaves_ags_scripts_and_preferences_unchanged(
     result = stage_import_ags(workflow, image)
     verify_ags_staging(workflow, result)
     assert (boot / "S/User-Startup").read_bytes() == setup
+    hashes = dict(get_profile(profile).marker_hashes)
+    hashes["AGS2/Scripts/Check_Drives"] = hashlib.sha256(
+        expected["AGS2/Scripts/Check_Drives"]
+    ).hexdigest()
     assert {
         (relative, digest)
         for device, relative, digest in result.ags_launcher.verified_files
         if device == "CUSTOM"
-    } == set(get_profile(profile).marker_hashes.items())
+    } == set(hashes.items())
+    (whd / "AGS2/Scripts/Check_Drives").write_bytes(originals["AGS2/Scripts/Check_Drives"])
+    with pytest.raises(BuildError, match="AGS staged portable file differs"):
+        verify_ags_staging(workflow, result)

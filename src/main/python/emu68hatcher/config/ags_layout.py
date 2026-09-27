@@ -146,7 +146,8 @@ def plan_ags_layout(
     volume_names = {part.volume.casefold() for part in parts if not part.ags_reservation}
     for part in parts:
         if (
-            not part.ags_reservation
+            selected
+            and not part.ags_reservation
             and {part.device.casefold(), part.volume.casefold()} & AGS_ASSIGN_NAMES
         ):
             errors.append(f"AGS assign conflicts with partition {part.device}: {part.volume}")
@@ -186,7 +187,8 @@ def plan_ags_layout(
     free = calculate_free_space(capacity, parts)
     if free < 0:
         errors.append(
-            f"AGS layout exceeds RDB capacity by {-free} bytes; choose an existing partition to shrink"
+            f"AGS layout exceeds RDB capacity by {-free} bytes; deselect content, "
+            "choose a larger target, or adjust your partitions"
         )
     if len(parts) > MAX_AMIGA_PARTITIONS:
         errors.append(f"AGS layout exceeds the {MAX_AMIGA_PARTITIONS}-partition limit")
@@ -269,7 +271,9 @@ def validate_ags_layout(
         return ("Inactive AGS import has reserved partitions",) if reserved else ()
     errors = []
     if selection.allocation_state != "ready":
-        errors.append("AGS partition allocation is pending; apply a layout proposal")
+        errors.append(
+            "AGS layout is not ready; check the source and available space in the AGS tab"
+        )
     if config.partitions is None:
         errors.append("AGS import requires a partition layout")
         return tuple(errors)

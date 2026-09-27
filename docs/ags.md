@@ -8,24 +8,26 @@ The AGS tab copies complete filesystem partitions from a local AGS image. Start 
 
 | Selection | Source volume | Default |
 | --- | --- | --- |
-| WHDLoad + AGS | WHDLoad, including AGS2, games, demos and magazines | Required |
-| Games and Premium | Games | On |
-| Work, including emulators and applications | Work | On |
+| WHDLoad games, demos and AGS | WHDLoad, including AGS2, games, demos and magazines | Required |
+| Extra games and Premium | Games | On |
+| Emulators and applications | Work | On |
 | Media | Media | Off |
 
-Choose a local **.img** or **.hdf**, inspect it, then apply **Preview AGS partitions...**. Supported profiles are v30 and v31 beta 160726. The source must contain a direct RDB with 16 heads, 63 sectors and 512-byte blocks. Other geometries and network-share sources are rejected before target initialization.
+Choose a local **.img** or **.hdf**. Hatcher checks the source automatically and shows the size of each content group. Selecting or deselecting content updates the planned partitions immediately. **Refresh** repeats the source check. Supported profiles are v30 and v31 beta 160726. The source must contain a direct RDB with 16 heads, 63 sectors and 512-byte blocks. Other geometries and network-share sources are rejected before target initialization.
 
 Each imported volume keeps its original name and directory structure. Device names are allocated from the target layout and can be changed. Imported sizes are the exact source partition lengths, including unused filesystem blocks. Size, volume, filesystem and boot status are locked. Copies use the Hatcher PFS3 handler, are automatically mounted and are not bootable. Changing PDS3 to PFS3 affects the RDB entry; the copied filesystem is not formatted or converted.
 
-The default layout contains **EMU68BOOT** and **Workbench**, with the remaining RDB space unallocated. Add other partitions manually or through the AGS preview. Existing layouts are preserved when loaded. A manual Work volume conflicts with an imported Work volume and must be renamed or removed explicitly. Existing partitions are never shrunk automatically to fit AGS. Reserved partitions cannot receive extra-content folders.
+The default layout contains **EMU68BOOT** and **Workbench**, with the remaining RDB space unallocated. Add other partitions manually or select content in the AGS tab. Loading a configuration restores the layout and checks its AGS source again. A manual Work volume conflicts with an imported Work volume and must be renamed or removed explicitly. Existing partitions are never shrunk automatically to fit AGS. Imported partitions cannot receive extra-content folders. The partition editor marks them **AGS image · fixed size**; **Change AGS content…** returns to the content selection.
 
-Configuration version 1.3.0 distinguishes partition copies from the former file import. Loading an older AGS configuration sets its allocation to pending. The former Emulators selection proposes the whole Work partition, including applications. Former reservations become ordinary partitions and remain in the layout. Inspect the source and apply a new preview before building.
+Configuration version 1.3.0 distinguishes partition copies from the former file import. Loading an older AGS configuration sets its allocation to pending. The former Emulators selection proposes the whole Work partition, including applications. Former reservations become ordinary partitions and remain in the layout. The source is checked automatically. Resolve any conflicts shown in the AGS tab before building.
+
+The layout bar shows the same planned partitions as the Partitions tab. If the selection exceeds available space, the AGS tab shows the shortfall. Deselect content, use **Change target size…**, or open **Adjust partitions…**. Building remains blocked until the layout is valid. Disabling AGS removes its imported partitions from the configuration. These edits do not write to an image or card; the physical-disk confirmation still appears when starting a build.
 
 ## Portable launcher
 
 Original game starters and menus remain on the copied partition. The AGS block in **S:User-Startup** supplies **AGS:**, **Scripts:**, **AGSOS:**, **WHD_Games:** and **WHD_Demos:**. Work supplies **Emulators:** and Games supplies **Premium:**. Media supplies **ST-00:**. No new script assumes fixed SDH device numbers.
 
-AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. Hatcher does not patch AGS scripts, disable menu entries or set hardware, content and preference variables. Hardware selection, save-directory setup and content detection use the original AGS behavior.
+AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. Hardware selection and save-directory setup use the original AGS behavior. In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
 
 Missing Ex, kgiconload, WBLoad and WBRun helpers are supplied from AGS. Existing Workbench versions are retained. Additional AGS commands, libraries and fonts are available through the portable search paths. The import leaves **S:WHDLoad.prefs** and **S:WHDLoad-Startup** unchanged. AGS can subsequently write these files through its original Speed_Reset and Quit-Key functions.
 
@@ -39,7 +41,7 @@ Napalm temporarily changes **ENV:RtgMaster**. onEscapee invokes SetPatch and add
 
 Hatcher checks source identity before target initialization and around partition copies. Source and output must be different files, and the source cannot be stored on the selected output or flash disk. Capacity checks include the output image's full configured size, temporary staging and any cross-volume move.
 
-Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It stages no replacements for files on imported partitions. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
+Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It also stages the corrected Check_Drives script on the imported WHDLoad partition and verifies its hash after copying. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
 
 Production checks compare HST's reported copy byte count with the planned length, then inspect target geometry, partition order, volume names and filesystem flags. Original AGS profile markers and generated startup setup are read back and hashed before cleanup. A successful HST exit code alone is insufficient: the tested version can report success after copying zero bytes. Production checks do not compare every copied block or enumerate every game file.
 

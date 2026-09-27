@@ -32,8 +32,8 @@ FREE_HATCH = QColor("#616161")  # diagonal hatch marks absence, solid fills mean
 
 def _format_size(size_bytes: int) -> str:
     if size_bytes >= 1024**3:
-        return f"{size_bytes / (1024**3):.1f} GB"
-    return f"{size_bytes // (1024**2)} MB"
+        return f"{size_bytes / (1024**3):.1f} GiB"
+    return f"{size_bytes // (1024**2)} MiB"
 
 
 def _tooltip(label: str, size: int, sublabel: str) -> str:
@@ -48,8 +48,9 @@ class PartitionBar(QWidget):
     BAND_H = 24  # container caption band inside the frame
     partition_clicked = Signal(int)  # amiga partition index
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, interactive=True):
         super().__init__(parent)
+        self._interactive = interactive
         self.setMinimumHeight(128)
         self.setMaximumHeight(144)
         self.setMouseTracking(True)
@@ -64,6 +65,7 @@ class PartitionBar(QWidget):
         self._bytes_per_pixel = 1.0
         self._amiga_partitions = []
         self._free_space = 0
+        self._shortfall = 0
         self._children_rect: QRect | None = None
         self._name_font = QFont()
         self._name_font.setPointSize(11)
@@ -73,7 +75,8 @@ class PartitionBar(QWidget):
 
     def set_data(self, boot_size: int, amiga_partitions, free_space: int, selected: int = -1):
         self._amiga_partitions = list(amiga_partitions)
-        self._free_space = free_space
+        self._free_space = max(0, free_space)
+        self._shortfall = max(0, -free_space)
         self._segments = []
         self._segments.append(("EMU68BOOT", boot_size, "FAT32", BOOT_COLOR, False))
         for i, p in enumerate(amiga_partitions):
@@ -81,10 +84,7 @@ class PartitionBar(QWidget):
             star = " *" if p.bootable else ""
             sublabel = f"{p.filesystem.value}{star}"
             if p.ags_reservation:
-                sublabel += (
-                    f"; AGS {p.ags_reservation.role}; "
-                    f"fixed {_format_size(p.ags_reservation.minimum_size)}"
-                )
+                sublabel += "; from AGS image · fixed size"
             self._segments.append((p.volume, p.size, sublabel, color, i == selected))
         if free_space > 0:
             self._segments.append(("free", free_space, "", FREE_COLOR, False))
@@ -153,9 +153,7 @@ class PartitionBar(QWidget):
         )
         self._draw_rdb_children(painter, children, container_bytes)
         self._rects.append((badge, "RDB header\n~1 MB\nnot to scale"))
-        self._rects.append(
-            (band, _tooltip("0x76 container", container_bytes, "Amiga RDB partition table"))
-        )
+        self._rects.append((band, self._capacity_caption(container_bytes)))
         self._draw_handles(painter, children)
         painter.end()
 
@@ -210,7 +208,7 @@ class PartitionBar(QWidget):
         painter.setFont(self._sub_font)
         painter.setPen(QColor("#ECEFF1"))
         caption = painter.fontMetrics().elidedText(
-            f"0x76 · Amiga RDB · {_format_size(container_bytes)}",
+            self._capacity_caption(container_bytes),
             Qt.TextElideMode.ElideRight,
             band.width() - 28,
         )
@@ -229,6 +227,14 @@ class PartitionBar(QWidget):
         self._children_rect = children
         self._bytes_per_pixel = container_bytes / children.width() if children.width() > 0 else 1.0
         return container_bytes, badge, band, children
+
+    def _capacity_caption(self, planned: int) -> str:
+        if self._shortfall:
+            return (
+                f"Amiga partitions · {_format_size(planned)} planned / "
+                f"{_format_size(max(0, planned - self._shortfall))} available"
+            )
+        return f"Amiga partitions · {_format_size(planned)}"
 
     def _draw_rdb_children(self, painter, children: QRect, container_bytes: int) -> None:
         x = children.left()
@@ -270,6 +276,8 @@ class PartitionBar(QWidget):
             )
 
     def _draw_handles(self, painter, children: QRect) -> None:
+        if not self._interactive:
+            return
         arrow = 6
         gap = 3
         mid_y = children.center().y()
@@ -302,6 +310,8 @@ class PartitionBar(QWidget):
 
     def _border_hit(self, pos) -> int:
         """border index near pos, children row only - strip and band never grab"""
+        if not self._interactive:
+            return -1
         rc = self._children_rect
         if not rc or not (rc.top() <= pos.y() <= rc.bottom()):
             return -1

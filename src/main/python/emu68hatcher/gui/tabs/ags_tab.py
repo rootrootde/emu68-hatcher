@@ -1,29 +1,27 @@
-"""AGS source selection and partition proposals."""
+"""AGS content selection and live partition layout."""
 
 from pathlib import Path
 from time import monotonic
 
-from PySide6.QtCore import QThread, Signal, Slot
+from PySide6.QtCore import Qt, QThread, QTimer, Signal, Slot
 from PySide6.QtWidgets import (
     QCheckBox,
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
     QFileDialog,
-    QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
-    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
-from emu68hatcher.config.ags_layout import apply_ags_layout, plan_ags_layout
+from emu68hatcher.config.ags_layout import AGS_VOLUMES, apply_ags_layout, plan_ags_layout
 from emu68hatcher.config.ags_models import AGS_ROLES, AGSComponents, AGSRole
+from emu68hatcher.config.partition_helpers import calculate_free_space
 from emu68hatcher.config.partition_models import PartitionConfig
 from emu68hatcher.config.schema import AGSImportConfig
+from emu68hatcher.gui.widgets.partition_bar import PartitionBar
 
 
 class AGSInspectWorker(QThread):
@@ -60,98 +58,10 @@ class AGSInspectWorker(QThread):
         self.inspected.emit(self.generation, inventory, "")
 
 
-class AGSProposalDialog(QDialog):
-    def __init__(self, layout, requirements, roles, source_identity, revision, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Review AGS partitions")
-        self.layout_config = layout
-        self.requirements = requirements
-        self.roles = roles
-        self.source_identity = source_identity
-        self.revision = revision
-        self.requested_edits: dict[str, int] = {}
-        self.proposal = None
-        outer = QVBoxLayout(self)
-        self.summary = QLabel()
-        self.summary.setWordWrap(True)
-        outer.addWidget(self.summary)
-        form = QFormLayout()
-        self.shrink_combo = QComboBox()
-        for part in layout.iter_amiga_partitions():
-            if not part.ags_reservation:
-                self.shrink_combo.addItem(f"{part.device}: {part.volume}", part.device)
-        form.addRow("Release space from:", self.shrink_combo)
-        self.size_spin = QSpinBox()
-        self.size_spin.setRange(1, 1048576)
-        self.size_spin.setSuffix(" MiB")
-        form.addRow("New size:", self.size_spin)
-        self.shrink_btn = QPushButton("Use this size")
-        self.shrink_btn.clicked.connect(self._set_manual_size)
-        form.addRow("", self.shrink_btn)
-        outer.addLayout(form)
-        self.shrink_combo.currentIndexChanged.connect(self._sync_size)
-        self._sync_size()
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Apply partition changes")
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        outer.addWidget(buttons)
-        self.apply_button = buttons.button(QDialogButtonBox.StandardButton.Ok)
-        self._recalculate()
-
-    def _sync_size(self):
-        device = self.shrink_combo.currentData()
-        part = next(
-            (part for part in self.layout_config.iter_amiga_partitions() if part.device == device),
-            None,
-        )
-        enabled = part is not None
-        self.size_spin.setEnabled(enabled)
-        self.shrink_btn.setEnabled(enabled)
-        if part:
-            self.size_spin.setValue(self.requested_edits.get(device, part.size) // 1024**2)
-
-    def _set_manual_size(self):
-        device = self.shrink_combo.currentData()
-        if device:
-            from emu68hatcher.config.constants import CYLINDER_SIZE
-
-            requested = self.size_spin.value() * 1024**2
-            self.requested_edits[device] = (requested // CYLINDER_SIZE) * CYLINDER_SIZE
-            self._recalculate()
-
-    def _recalculate(self):
-        self.proposal = plan_ags_layout(
-            self.layout_config,
-            self.requirements,
-            self.roles,
-            self.requested_edits,
-            source_identity=self.source_identity,
-            selection_revision=self.revision,
-        )
-        proposal = self.proposal
-        lines = [f"Total disk: {self.layout_config.disk_size / 1024**3:.2f} GiB"]
-        previous = {part.device: part for part in self.layout_config.iter_amiga_partitions()}
-        for part in proposal.partitions:
-            old = previous.get(part.device)
-            before = f"{old.size / 1024**3:.2f} -> " if old and old.size != part.size else ""
-            detail = f"{part.device}: {part.volume} {before}{part.size / 1024**3:.2f} GiB"
-            if part.ags_reservation:
-                reservation = part.ags_reservation
-                detail += f" (AGS partition copy: {part.volume}; fixed {reservation.minimum_size / 1024**3:.2f} GiB)"
-            lines.append(detail)
-        for role in proposal.released_roles:
-            lines.append(f"Release AGS {role} reservation")
-        lines.append(f"Unallocated: {proposal.free_bytes / 1024**3:.2f} GiB")
-        lines.extend(proposal.errors)
-        self.summary.setText("\n".join(lines))
-        self.apply_button.setEnabled(not proposal.errors)
-
-
 class AGSTab(QWidget):
     layout_applied = Signal(object)
+    partitions_requested = Signal()
+    target_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -163,9 +73,16 @@ class AGSTab(QWidget):
         self._allocation_state = "pending"
         self._legacy_content_device = None
         self._migration_notice = None
-        self._configured = False
         self._loading = False
-        self._committed_enabled = False
+        self._syncing = False
+        self._accepted_roles = AGSComponents().selected_roles()
+        self._inspection_requested = False
+        self._force_refresh = False
+        self._inspect_timer = QTimer(self)
+        self._inspect_timer.setSingleShot(True)
+        self._inspect_timer.setInterval(350)
+        self._inspect_timer.timeout.connect(self._start_inspection)
+
         layout = QVBoxLayout(self)
         self.enabled_check = QCheckBox("Import AGS")
         self.enabled_check.toggled.connect(self._enabled_changed)
@@ -173,40 +90,64 @@ class AGSTab(QWidget):
         source_row = QHBoxLayout()
         source_row.addWidget(QLabel("Source image:"))
         self.source_edit = QLineEdit()
-        self.source_edit.setPlaceholderText("AGS v30 or supported v31 image")
+        self.source_edit.setPlaceholderText("Choose an AGS .img or .hdf image")
         self.source_edit.textChanged.connect(self._source_changed)
-        source_row.addWidget(self.source_edit, 1)
-        browse = QPushButton("Browse...")
+        source_row.addWidget(self.source_edit)
+        browse = QPushButton("Browse…")
         browse.clicked.connect(self._browse)
         source_row.addWidget(browse)
-        self.inspect_btn = QPushButton("Inspect source")
+        self.inspect_btn = QPushButton("Refresh")
         self.inspect_btn.clicked.connect(self.inspect_source)
         source_row.addWidget(self.inspect_btn)
         layout.addLayout(source_row)
+        self.result_label = QLabel("Choose an image to see its content and partition sizes.")
+        self.result_label.setWordWrap(True)
+        self.result_label.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(self.result_label)
+
         self.component_checks = {}
+        self.component_sizes = {}
         for role, label, checked in (
-            ("whdload", "WHDLoad + AGS", True),
-            ("games", "Games and Premium", True),
-            ("work", "Work (emulators and applications)", True),
+            ("whdload", "WHDLoad games, demos and AGS (required)", True),
+            ("games", "Extra games and Premium", True),
+            ("work", "Emulators and applications", True),
             ("media", "Media", False),
         ):
+            row = QHBoxLayout()
             check = QCheckBox(label)
             check.setChecked(checked)
-            check.setEnabled(role != "whdload")
             check.toggled.connect(self._selection_changed)
             self.component_checks[role] = check
-            layout.addWidget(check)
-        self.result_label = QLabel("Inspect the source to calculate partition sizes.")
-        self.result_label.setWordWrap(True)
-        layout.addWidget(self.result_label)
-        self.layout_label = QLabel("AGS partition allocation is pending.")
+            row.addWidget(check)
+            row.addStretch()
+            size = QLabel("—")
+            self.component_sizes[role] = size
+            row.addWidget(size)
+            layout.addLayout(row)
+
+        self.layout_label = QLabel()
         self.layout_label.setWordWrap(True)
+        self.layout_label.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.layout_label)
-        self.preview_btn = QPushButton("Preview AGS partitions...")
-        self.preview_btn.clicked.connect(self.preview_partitions)
-        layout.addWidget(self.preview_btn)
+        self.partition_bar = PartitionBar(interactive=False)
+        layout.addWidget(self.partition_bar)
+        hint = QLabel(
+            "Content choices update the planned partitions automatically. "
+            "Nothing is written until you build."
+        )
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        actions = QHBoxLayout()
+        self.target_btn = QPushButton("Change target size…")
+        self.target_btn.clicked.connect(self.target_requested.emit)
+        actions.addWidget(self.target_btn)
+        self.partitions_btn = QPushButton("Adjust partitions…")
+        self.partitions_btn.clicked.connect(self.partitions_requested.emit)
+        actions.addWidget(self.partitions_btn)
+        actions.addStretch()
+        layout.addLayout(actions)
         layout.addStretch()
-        self._update_buttons()
+        self._refresh_layout()
 
     def _selected_roles(self) -> tuple[AGSRole, ...]:
         return tuple(role for role in AGS_ROLES if self.component_checks[role].isChecked())
@@ -217,125 +158,132 @@ class AGSTab(QWidget):
         )
         if path:
             self.source_edit.setText(path)
+            self.enabled_check.setChecked(True)
 
-    def _mark_pending(self):
-        self._revision += 1
-        self._allocation_state = "pending"
-        self._update_layout_label()
+    def _cancel_inspection(self):
+        self._generation += 1
+        self._inspect_timer.stop()
+        self._inspection_requested = False
+        for worker in self._workers:
+            worker.requestInterruption()
+
+    def _schedule_inspection(self):
+        if self.enabled_check.isChecked() and self.source_edit.text().strip():
+            self._inspection_requested = True
+            self._inspect_timer.start()
+            self.result_label.setText("Checking AGS source…")
         self._update_buttons()
 
     def _source_changed(self):
         if self._loading:
             return
-        self._generation += 1
+        self._cancel_inspection()
         self._inventory = None
-        for worker in self._workers:
-            worker.requestInterruption()
-        self._configured = bool(self.source_edit.text().strip()) or self._configured
-        self.result_label.setText("Inspect the source to calculate partition sizes.")
-        self._mark_pending()
+        self._force_refresh = False
+        self._allocation_state = "pending"
+        self.result_label.setText("Choose an image to see its content and partition sizes.")
+        self._schedule_inspection()
+        self._refresh_layout()
+
+    def _confirm_removal(self, roles):
+        if self._partitions is None:
+            return True
+        affected = [
+            part.volume
+            for part in self._partitions.iter_amiga_partitions()
+            if part.ags_reservation
+            and part.ags_reservation.role not in roles
+            and part.extra_content_directory is not None
+        ]
+        if not affected:
+            return True
+        return (
+            QMessageBox.question(
+                self,
+                "Remove AGS content",
+                "Removing " + ", ".join(affected) + " also removes their extra-content folder "
+                "settings from this build configuration. Continue?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            == QMessageBox.StandardButton.Yes
+        )
 
     def _selection_changed(self):
         if self._loading:
             return
-        self._generation += 1
-        if self._inventory is not None:
-            available = {component.role for component in self._inventory.components}
-            if not set(self._selected_roles()).issubset(available):
-                self._inventory = None
-        for worker in self._workers:
-            worker.requestInterruption()
-        if self._inventory is None:
-            self.result_label.setText(
-                "Inspect the selected components to calculate partition sizes."
-            )
-        self._mark_pending()
+        roles = self._selected_roles()
+        if not self._confirm_removal(roles):
+            for role, check in self.component_checks.items():
+                check.blockSignals(True)
+                check.setChecked(role in self._accepted_roles)
+                check.blockSignals(False)
+            return
+        self._accepted_roles = roles
+        self._cancel_inspection()
+        available = {item.role for item in self._inventory.components} if self._inventory else set()
+        if not set(roles).issubset(available):
+            self._allocation_state = "pending"
+            self._schedule_inspection()
+        self._refresh_layout()
 
     def _enabled_changed(self, enabled: bool):
         if self._loading:
             return
-        if (
-            not enabled
-            and self._committed_enabled
-            and (self._partitions is None or self._has_reservations())
-        ):
-            if not self._show_proposal(()):
-                self.enabled_check.blockSignals(True)
-                self.enabled_check.setChecked(True)
-                self.enabled_check.blockSignals(False)
-                return
-        self._committed_enabled = enabled
-        if enabled:
-            self._configured = True
-            self._mark_pending()
-        else:
-            self._update_layout_label()
-        self._update_buttons()
+        if not enabled and not self._confirm_removal(()):
+            self.enabled_check.blockSignals(True)
+            self.enabled_check.setChecked(True)
+            self.enabled_check.blockSignals(False)
+            return
+        self._cancel_inspection()
+        available = {item.role for item in self._inventory.components} if self._inventory else set()
+        if enabled and not set(self._selected_roles()).issubset(available):
+            self._schedule_inspection()
+        self._refresh_layout()
 
     def _has_reservations(self) -> bool:
         return self._partitions is not None and any(
             part.ags_reservation for part in self._partitions.iter_amiga_partitions()
         )
 
-    def _update_layout_label(self):
-        reserved = (
-            []
-            if self._partitions is None
-            else [
-                f"{part.ags_reservation.role}: {part.device} ({part.volume})"
-                for part in self._partitions.iter_amiga_partitions()
-                if part.ags_reservation
-            ]
-        )
-        state = (
-            "ready"
-            if self._allocation_state == "ready"
-            else "pending; apply a partition proposal before building"
-        )
-        text = f"AGS allocation: {state}."
-        if reserved:
-            text += " Reserved: " + ", ".join(reserved) + "."
-        if self._legacy_content_device:
-            text += (
-                f" Old shared target {self._legacy_content_device} needs a new dedicated partition."
-            )
-        if self._migration_notice:
-            text += " " + self._migration_notice
-        self.layout_label.setText(text)
-
     def _update_buttons(self):
+        enabled = self.enabled_check.isChecked()
         self.inspect_btn.setEnabled(
-            self.enabled_check.isChecked()
-            and bool(self.source_edit.text().strip())
-            and not self._workers
+            enabled and bool(self.source_edit.text().strip()) and not self.inspection_pending()
         )
-        self.preview_btn.setEnabled(
-            self._partitions is not None
-            and self.enabled_check.isChecked()
-            and self._inventory is not None
-            and not self._workers
+        for role, check in self.component_checks.items():
+            check.setEnabled(enabled and role != "whdload")
+        sizes = (
+            {p.volume.casefold(): p.size for p in self._inventory.partitions}
+            if self._inventory
+            else {}
         )
+        for role, label in self.component_sizes.items():
+            size = sizes.get(AGS_VOLUMES[role].casefold())
+            label.setText(f"{size / 1024**3:.2f} GiB" if size is not None else "—")
 
     def inspect_source(self):
-        if (
-            self._workers
-            or not self.enabled_check.isChecked()
-            or not self.source_edit.text().strip()
-        ):
-            return
-        refresh = self._inventory is not None
-        self._generation += 1
-        generation = self._generation
+        self._cancel_inspection()
+        self._force_refresh = True
         self._inventory = None
-        self._mark_pending()
-        self.result_label.setText("Inspecting AGS source...")
+        self._allocation_state = "pending"
+        self._schedule_inspection()
+        self._refresh_layout()
+
+    def _start_inspection(self):
+        if not self._inspection_requested or self._workers:
+            return
+        self._inspection_requested = False
+        if not self.enabled_check.isChecked() or not self.source_edit.text().strip():
+            return
         worker = AGSInspectWorker(
             Path(self.source_edit.text().strip()),
             self._selected_roles(),
-            generation,
-            refresh=refresh,
+            self._generation,
+            refresh=self._force_refresh,
             parent=self,
         )
+        self._force_refresh = False
         self._workers.add(worker)
         worker.inspected.connect(self._accept_inspection)
         worker.finished.connect(self._worker_finished)
@@ -347,122 +295,133 @@ class AGSTab(QWidget):
         if generation != self._generation:
             return
         if error:
+            self._inventory = None
+            self._allocation_state = "pending"
             self.result_label.setText(f"Source check failed: {error}")
-            return
-        from emu68hatcher.builder.ags_requirements import calculate_ags_requirements
-
-        try:
-            requirements = calculate_ags_requirements(inventory.components)
-        except ValueError as error:
-            self.result_label.setText(f"Source check failed: {error}")
-            return
-        self._inventory = inventory
-        lines = [f"AGS {inventory.version} ({inventory.profile})"]
-        for requirement in requirements:
-            lines.append(
-                f"{requirement.role}: AGS partition copy, "
-                f"{requirement.minimum_partition_bytes / 1024**3:.2f} GiB reserved"
-            )
-        lines.extend(inventory.warnings)
-        self.result_label.setText("\n".join(lines))
-        self._update_buttons()
+        else:
+            self._inventory = inventory
+            self.result_label.setText("\n".join([f"AGS {inventory.version}", *inventory.warnings]))
+        self._refresh_layout()
 
     @Slot()
     def _worker_finished(self):
         worker = self.sender()
         self._workers.discard(worker)
         worker.deleteLater()
+        if self._inspection_requested:
+            self._inspect_timer.start()
         self._update_buttons()
 
     def inspection_pending(self) -> bool:
-        return bool(self._workers)
+        return bool(self._workers) or self._inspection_requested or self._inspect_timer.isActive()
 
-    def set_partitions(self, partitions: PartitionConfig):
-        self._partitions = partitions
+    def set_partitions(self, partitions: PartitionConfig, *, update=True):
+        self._partitions = partitions.model_copy(deep=True)
         self._revision += 1
-        self._update_layout_label()
+        if update and not self._syncing:
+            self._refresh_layout()
+
+    def _refresh_layout(self):
         self._update_buttons()
-
-    def set_layout_error(self, error: str):
-        self._partitions = None
-        self._revision += 1
-        self.layout_label.setText(f"Partition layout error: {error}")
-        self._update_buttons()
-
-    def preview_partitions(self):
-        self._show_proposal(self._selected_roles())
-
-    def _show_proposal(self, roles: tuple[AGSRole, ...]) -> bool:
         if self._partitions is None:
-            return False
-        if roles and self._inventory is None:
-            self.result_label.setText("Inspect the selected source before planning partitions.")
-            return False
-        if self._inventory is not None:
-            from emu68hatcher.builder.ags_requirements import calculate_ags_requirements
-
-            requirements = {
-                item.role: item for item in calculate_ags_requirements(self._inventory.components)
-            }
-            source_identity = self._inventory.identity
-        else:
-            requirements = {}
-            source_identity = None
-        dialog = AGSProposalDialog(
-            self._partitions, requirements, roles, source_identity, self._revision, self
+            self._allocation_state = "pending"
+            self.partition_bar.hide()
+            return
+        enabled = self.enabled_check.isChecked()
+        roles = self._selected_roles() if enabled else ()
+        requirements = (
+            {item.role: item.partition.size for item in self._inventory.components}
+            if self._inventory
+            else {}
         )
-        if dialog.exec() != QDialog.DialogCode.Accepted:
-            return False
-        if self._partitions is None:
-            return False
-        try:
-            if roles:
-                from emu68hatcher.builder.ags_source import source_identity as current_identity
-
-                source_identity = current_identity(Path(self.source_edit.text().strip()))
+        self.partition_bar.show()
+        self.partition_bar.set_data(
+            self._partitions.layout[0].size,
+            list(self._partitions.iter_amiga_partitions()),
+            calculate_free_space(
+                self._partitions.layout[1].size, list(self._partitions.iter_amiga_partitions())
+            ),
+        )
+        if enabled and (self._inventory is None or not set(roles).issubset(requirements)):
+            self._allocation_state = "pending"
+            self.layout_label.setText(
+                "Partition sizes will update when the source check finishes."
+                if self.inspection_pending()
+                else "Select a readable AGS image to continue."
+            )
+            return
+        identity = self._inventory.identity if enabled else None
+        proposal = plan_ags_layout(
+            self._partitions,
+            requirements,
+            roles,
+            source_identity=identity,
+            selection_revision=self._revision,
+        )
+        if proposal.errors:
+            # keep the current disk size and selected imports visible while the user fixes capacity
+            changed = self._partitions.model_copy(deep=True)
+            changed.layout[1].amiga_partitions = list(proposal.partitions)
+            self._allocation_state = "pending"
+        else:
             changed = apply_ags_layout(
                 self._partitions,
-                dialog.proposal,
-                source_identity=source_identity,
+                proposal,
+                source_identity=identity,
                 selection_revision=self._revision,
             )
-        except Exception as error:
-            self.layout_label.setText(str(error))
-            return False
+            self._allocation_state = "ready"
+            self._legacy_content_device = None
+            self._migration_notice = None
+        selected_bytes = sum(requirements[role] for role in roles)
+        lines = (
+            [f"Selected AGS content: {selected_bytes / 1024**3:.2f} GiB"]
+            if enabled
+            else ["AGS import is off."]
+        )
+        if proposal.free_bytes < 0:
+            lines.append(
+                f"Selected content exceeds available space by {-proposal.free_bytes / 1024**3:.2f} GiB. "
+                "Deselect content, choose a larger target, or adjust your partitions."
+            )
+        else:
+            lines.append(f"Space remaining: {proposal.free_bytes / 1024**3:.2f} GiB")
+        lines.extend(error for error in proposal.errors if "exceeds RDB capacity" not in error)
+        if self._migration_notice:
+            lines.append(self._migration_notice)
+        self.layout_label.setText("\n".join(lines))
+        self.partition_bar.set_data(
+            changed.layout[0].size, list(proposal.partitions), proposal.free_bytes
+        )
+        differs = changed.model_dump() != self._partitions.model_dump()
         self._partitions = changed
-        self._allocation_state = "ready"
-        self._legacy_content_device = None
-        self._migration_notice = None
-        self.layout_applied.emit(changed)
-        self._update_layout_label()
-        self._update_buttons()
-        return True
+        if differs:
+            self._syncing = True
+            try:
+                self.layout_applied.emit(changed)
+            finally:
+                self._syncing = False
 
     def set_config(self, config: AGSImportConfig | None):
+        self._cancel_inspection()
         self._loading = True
         try:
-            self._configured = config is not None
-            self._committed_enabled = bool(config and config.enabled)
-            self.enabled_check.setChecked(self._committed_enabled)
+            self.enabled_check.setChecked(bool(config and config.enabled))
             self.source_edit.setText(str(config.source_image) if config else "")
             components = config.components if config else AGSComponents()
             for role in AGS_ROLES:
                 self.component_checks[role].setChecked(getattr(components, role))
-            self._allocation_state = config.allocation_state if config else "pending"
+            self._accepted_roles = components.selected_roles()
+            self._allocation_state = "pending"
             self._legacy_content_device = config.legacy_content_device if config else None
             self._migration_notice = config.migration_notice if config else None
             self._inventory = None
-            self._generation += 1
-            for worker in self._workers:
-                worker.requestInterruption()
+            self._force_refresh = False
         finally:
             self._loading = False
-        self.result_label.setText(
-            (config.migration_notice + "\n" if config and config.migration_notice else "")
-            + "Inspect the source to calculate partition sizes."
-        )
-        self._update_layout_label()
-        self._update_buttons()
+        self.result_label.setText("Choose an image to see its content and partition sizes.")
+        self._schedule_inspection()
+        self._refresh_layout()
 
     def get_config(self) -> dict | None:
         source = self.source_edit.text().strip()
@@ -480,9 +439,8 @@ class AGSTab(QWidget):
         }
 
     def shutdown_workers(self, timeout_ms: int = 500) -> bool:
+        self._cancel_inspection()
         workers = tuple(worker for worker in self._workers if worker.isRunning())
-        for worker in workers:
-            worker.requestInterruption()
         deadline = monotonic() + timeout_ms / 1000
         for worker in workers:
             worker.wait(max(0, int((deadline - monotonic()) * 1000)))

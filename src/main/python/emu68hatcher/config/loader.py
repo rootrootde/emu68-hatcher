@@ -60,7 +60,7 @@ def _migrate_1_2(data: dict[str, Any]) -> dict[str, Any]:
         ags["allocation_state"] = "pending"
         ags["migration_notice"] = (
             "The former Emulators selection now proposes the entire Work partition, "
-            "including applications. Review and apply a new partition preview. "
+            "including applications. Check the AGS content and available space. "
             "Former AGS partitions remain ordinary partitions; remove or rename them explicitly."
         )
     for mbr in (migrated.get("partitions") or {}).get("layout", []):

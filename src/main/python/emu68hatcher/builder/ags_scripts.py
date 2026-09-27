@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,20 @@ class AGSScriptPlan:
 @dataclass(frozen=True, slots=True)
 class AGSLauncherSummary:
     verified_files: tuple[tuple[str, str, str], ...]
+    staged_files: tuple[tuple[str, str], ...] = ()
+
+
+def prepare_drive_checks(source: bytes, aliases: Mapping[str, str]) -> bytes:
+    """Use assign checks for directories exposed by the portable setup."""
+    text = source.decode("iso-8859-1")
+    for name in aliases:
+        pattern = (
+            rf"(?m)^(?P<indent>[ \t]*)InfoNew >(?P<scratch>ENV:\w+) {re.escape(name)}:\n"
+            rf'(?P=indent)Search >NIL: (?P=scratch) "{re.escape(name)} \[Mounted\]" QUIET\n'
+        )
+        # InfoNew only lists volumes, so it rejects directory assigns.
+        text = re.sub(pattern, rf"\g<indent>Assign >NIL: EXISTS {name}:\n", text)
+    return text.encode("iso-8859-1")
 
 
 def required_script_paths(profile: str | AGSProfile) -> tuple[str, ...]:
@@ -69,6 +84,21 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
         aliases["Emulators"] = f"{plan.target('work').device}:Emulators"
     if "media" in roles:
         aliases["ST-00"] = f"{plan.target('media').device}:ST-00"
+    _check_cancel(cancel_check)
+    relative = "AGS2/Scripts/Check_Drives"
+    source = plan.inventory.source_scripts[relative]
+    patched = prepare_drive_checks(source, aliases)
+    staged = [("__boot__", "S/User-Startup")]
+    if patched != source:
+        destination = resolve_staging_path(boot_root.parent, f"{whd.device}/{relative}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(patched)
+        digest = hashlib.sha256(patched).hexdigest()
+        verified = [
+            (device, path, digest if path == relative else original_digest)
+            for device, path, original_digest in verified
+        ]
+        staged.append((whd.device, relative))
     setup = [f'Assign {name}: "{target}"' for name, target in aliases.items()]
     setup += [
         "Path AGSOS:C ADD",
@@ -91,4 +121,4 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
     verified.append(
         ("__boot__", "S/User-Startup", hashlib.sha256(user_startup.read_bytes()).hexdigest())
     )
-    return AGSLauncherSummary(tuple(verified))
+    return AGSLauncherSummary(tuple(verified), tuple(staged))

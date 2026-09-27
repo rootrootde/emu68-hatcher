@@ -49,13 +49,13 @@
 
     [![Output tab set to build an image and flash it to SD](assets/screenshots/output.png)](assets/screenshots/output.png){ target="_blank" }
 
-9. **Partitions tab.** Add or resize partitions and optional extra-content folders. Default is a 64 GB image with 1 GB **EMU68BOOT**, about 1/15 for Workbench and the rest unallocated. Add further Amiga partitions manually or through the AGS preview. FAT32 and RDB use two MBR entries; the listed Amiga partitions are inside the RDB.
+9. **Partitions tab.** Add or resize partitions and optional extra-content folders. Default is a 64 GB image with 1 GB **EMU68BOOT**, about 1/15 for Workbench and the rest unallocated. Add further Amiga partitions manually or select content in the AGS tab. FAT32 and RDB use two MBR entries; the listed Amiga partitions are inside the RDB.
 
     Extra content is copied last and can overwrite generated files.
 
     [![Partitions tab with four Amiga partitions](assets/screenshots/partitions.png)](assets/screenshots/partitions.png){ target="_blank" }
 
-10. **AGS tab (optional).** Select **Import AGS**, choose a local source image and click **Inspect source**. WHDLoad, Games and Premium, and the complete Work partition (emulators and applications) are selected by default; Media is optional. Click **Preview AGS partitions...**, review the proposed PFS3 partition copies and their fixed source sizes, then click **Apply partition changes**. See [AGS import](ags.md) for supported source profiles, partition rules and runtime limits.
+10. **AGS tab (optional).** Select **Import AGS** and choose a local source image. Hatcher checks it automatically. WHDLoad games, demos and AGS, extra games and Premium, and emulators and applications are selected by default; Media is optional. Content choices update the planned partitions immediately. Sizes, remaining space and the layout appear in the AGS tab. If the content does not fit, deselect content, choose a larger target or use **Adjust partitions…**. Existing manual partitions keep their sizes. See [AGS import](ags.md) for supported source profiles, partition rules and runtime limits.
 
 11. **Click "Build Image".** The first build downloads packages; later builds use the cache. The dialog and **buildlog.txt** contain the build log.
 

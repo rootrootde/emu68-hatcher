@@ -21,7 +21,12 @@ from emu68hatcher.config.partition_helpers import (
     round_to_mbr_sector,
     validate_partition_layout,
 )
-from emu68hatcher.config.partition_models import AmigaPartition, Filesystem, PartitionConfig
+from emu68hatcher.config.partition_models import (
+    AmigaPartition,
+    Filesystem,
+    MBRPartition,
+    PartitionConfig,
+)
 
 
 class PartitionEditorModel:
@@ -224,3 +229,18 @@ class PartitionEditorModel:
 
     def to_config(self) -> PartitionConfig:
         return build_partition_config(self.disk_size, self.boot_size, self.partitions)
+
+    def to_layout_draft(self) -> PartitionConfig:
+        """Return current editor values for planning, including invalid layouts."""
+        return PartitionConfig.model_construct(
+            disk_size=self.disk_size,
+            layout=[
+                MBRPartition.model_construct(type="fat32", name="EMU68BOOT", size=self.boot_size),
+                MBRPartition.model_construct(
+                    type="id76",
+                    name="AMIGA",
+                    size=self.id76_size,
+                    amiga_partitions=[part.model_copy(deep=True) for part in self.partitions],
+                ),
+            ],
+        )

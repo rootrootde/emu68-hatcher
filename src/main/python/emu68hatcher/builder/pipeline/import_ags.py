@@ -60,9 +60,9 @@ def verify_ags_staging(workflow, image) -> None:
     if launcher is None:
         raise BuildError("AGS portable launcher preparation is missing")
     for device, relative, digest in launcher.verified_files:
-        if device != "__boot__":
+        if (device, relative) not in launcher.staged_files:
             continue
-        device = workflow.config.boot_device
+        device = workflow.config.boot_device if device == "__boot__" else device
         path = resolve_staging_path(image.workspace.staging_dir, f"{device}/{relative}")
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
             raise BuildError(f"AGS staged portable file differs: {device}:{relative}")

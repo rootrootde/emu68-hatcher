@@ -38,6 +38,7 @@ class PartitionsTab(QWidget):
     """partition layout editor"""
 
     layout_changed = Signal()
+    ags_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -125,6 +126,10 @@ class PartitionsTab(QWidget):
         self.reset_btn = QPushButton("Reset to Default")
         self.reset_btn.clicked.connect(self._reset_to_default)
         btn_layout.addWidget(self.reset_btn)
+
+        self.ags_btn = QPushButton("Change AGS content…")
+        self.ags_btn.clicked.connect(self.ags_requested.emit)
+        btn_layout.addWidget(self.ags_btn)
 
         btn_layout.addStretch()
         amiga_layout.addWidget(button_row)
@@ -338,6 +343,7 @@ class PartitionsTab(QWidget):
                 and self._model.partitions[selected].ags_reservation is None
             )
             self.add_btn.setEnabled(self._model.can_add)
+            self.ags_btn.setVisible(any(part.ags_reservation for part in self._model.partitions))
         finally:
             self._updating = False
 
@@ -359,7 +365,6 @@ class PartitionsTab(QWidget):
     def _update_bar(self):
         """refresh the partition bar viz"""
         _usable, _allocated, free = self._space()
-        free = max(0, free)
         selected = self.part_table.currentRow()
         self.partition_bar.set_data(
             self._model.boot_size,
@@ -438,6 +443,15 @@ class PartitionsTab(QWidget):
     def get_config(self) -> PartitionConfig:
         """PartitionConfig from current editor state"""
         return self._model.to_config()
+
+    def get_layout_draft(self) -> PartitionConfig:
+        """Return the current layout for AGS planning before build validation."""
+        return self._model.to_layout_draft()
+
+    def focus_disk_size(self):
+        self.size_combo.setFocus()
+        if self.size_combo.isEnabled():
+            self.size_combo.showPopup()
 
     def set_config(self, config: PartitionConfig | None):
         """populate tab from a PartitionConfig"""
