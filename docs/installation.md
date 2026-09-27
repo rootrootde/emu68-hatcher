@@ -27,7 +27,7 @@
 
     ### Native installer (recommended)
 
-    Download the latest **.dmg** for your Mac (arm64 for Apple Silicon, x64 for Intel) from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page, open it and drag **Emu68 Hatcher.app** into /Applications.
+    Download the latest **.dmg** for your Mac (arm64 for Apple Silicon, x64 for Intel) from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page, open it and drag **Emu68 Hatcher.app** into /Applications.
 
     !!! warning "First run: grant Full Disk Access to hst-imager"
         macOS protects raw disk access, even on removable media like SD cards, so an app needs explicit permission from you to write to one. Emu68 Hatcher uses **hst-imager** to write the card, so it's hst-imager that needs Full Disk Access - not the app itself.
@@ -36,14 +36,14 @@
 
     ### Install from source
 
-    Needs Python 3.10+. Get the source tarball from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page (or git clone the repository) then run **bootstrap.py**:
+    Needs Python 3.10+. Get the source tarball from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page (or git clone the repository) then run **bootstrap.py**:
 
     ```bash
     # from a release tarball
-    tar xf emu68hatcher-<version>.tar.gz && cd emu68hatcher-<version>
+    tar xf emu68hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
 
     # or from git
-    git clone https://github.com/rootrootde/emu68hatcher.git && cd emu68hatcher
+    git clone https://github.com/rootrootde/emu68-hatcher.git && cd emu68-hatcher
 
     python3 bootstrap.py
     emu68hatcher
@@ -53,7 +53,7 @@
 
     ### Native installer (Debian / Ubuntu)
 
-    Download the latest **.deb** for your machine (x64 or arm64) from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page and install:
+    Download the latest **.deb** for your machine (x64 or arm64) from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page and install:
 
     ```bash
     sudo apt install ./emu68hatcher-*-linux-*.deb
@@ -66,14 +66,14 @@
 
     ### Install from source
 
-    Needs Python 3.10+. Grab the source tarball from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page (or **git clone** the repo if you'd rather), then run **bootstrap.py**:
+    Needs Python 3.10+. Grab the source tarball from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page (or **git clone** the repo if you'd rather), then run **bootstrap.py**:
 
     ```bash
     # from a release tarball
-    tar xf emu68hatcher-<version>.tar.gz && cd emu68hatcher-<version>
+    tar xf emu68hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
 
     # or from git
-    git clone https://github.com/rootrootde/emu68hatcher.git && cd emu68hatcher
+    git clone https://github.com/rootrootde/emu68-hatcher.git && cd emu68-hatcher
 
     python3 bootstrap.py
     emu68hatcher
@@ -85,21 +85,21 @@
 
     ### Native installer (recommended)
 
-    Download the latest **.exe** for your machine (x64 or arm64) from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page and run it. The installer puts the app + bundled Python in **C:\Program Files\Emu68 Hatcher\\** and adds a Start menu entry.
+    Download the latest **.exe** for your machine (x64 or arm64) from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page and run it. The installer puts the app + bundled Python in **C:\Program Files\Emu68 Hatcher\\** and adds a Start menu entry.
 
     !!! note "SmartScreen"
         On first run Windows SmartScreen may show a "Windows protected your PC" dialog. Click **More info** → **Run anyway**.
 
     ### Install from source
 
-    Needs Python 3.10+ from [python.org](https://www.python.org/downloads/) (tick **Add Python to PATH** during install). Grab the source tarball from the [releases](https://github.com/rootrootde/emu68hatcher/releases) page (or **git clone** the repo if you'd rather), then run **bootstrap.py**:
+    Needs Python 3.10+ from [python.org](https://www.python.org/downloads/) (tick **Add Python to PATH** during install). Grab the source tarball from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page (or **git clone** the repo if you'd rather), then run **bootstrap.py**:
 
     ```powershell
     # from a release tarball (Windows 10+ has tar built in)
-    tar xf emu68hatcher-<version>.tar.gz; cd emu68hatcher-<version>
+    tar xf emu68hatcher-<version>.tar.gz; cd emu68-hatcher-<version>
 
     # or from git
-    git clone https://github.com/rootrootde/emu68hatcher.git; cd emu68hatcher
+    git clone https://github.com/rootrootde/emu68-hatcher.git; cd emu68-hatcher
 
     python bootstrap.py
     emu68hatcher

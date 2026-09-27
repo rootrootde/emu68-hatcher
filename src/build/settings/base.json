@@ -3,7 +3,7 @@
     "author": "rootrootde",
     "main_module": "src/main/python/main.py",
     "version": "1.0.3",
-    "url": "https://github.com/rootrootde/emu68hatcher",
+    "url": "https://github.com/rootrootde/emu68-hatcher",
     "hidden_imports": [
         "emu68hatcher",
         "emu68hatcher.builder.pipeline.validate",

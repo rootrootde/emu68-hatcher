@@ -7,7 +7,7 @@ Runs on macOS, Linux and Windows.
 <a href="docs/assets/screenshot_macos.png"><img src="docs/assets/screenshot_macos.png" alt="Emu68 Hatcher Start tab on macOS" width="900"></a>
 
 > [!NOTE]
-> **Still in an early stage** - see [known issues](https://rootrootde.github.io/emu68hatcher/#known-issues-limitations). Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68hatcher/issues) - even just "it worked" is useful.
+> **Still in an early stage** - see [known issues](https://rootrootde.github.io/emu68hatcher/#known-issues-limitations). Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68-hatcher/issues) - even just "it worked" is useful.
 
 **Features**
 
@@ -25,7 +25,7 @@ Runs on macOS, Linux and Windows.
 
 ### 1. Download
 
-From [releases](https://github.com/rootrootde/emu68hatcher/releases):
+From [releases](https://github.com/rootrootde/emu68-hatcher/releases):
 
 - **macOS:** emu68hatcher-VERSION-macos-arm64.dmg (or -macos-x64.dmg on Intel)
 - **Linux** (Debian / Ubuntu): emu68hatcher-VERSION-linux-x64.deb (or -arm64.deb)
@@ -46,8 +46,8 @@ From [releases](https://github.com/rootrootde/emu68hatcher/releases):
 ## From source (any OS, Python 3.10+)
 
 ```bash
-git clone https://github.com/rootrootde/emu68hatcher.git
-cd emu68hatcher
+git clone https://github.com/rootrootde/emu68-hatcher.git
+cd emu68-hatcher
 python3 bootstrap.py            # windows: python bootstrap.py
 emu68hatcher                    # windows: python -m emu68hatcher
 ```
@@ -74,3 +74,7 @@ Bundled / downloaded at build time:
 ## License
 
 [LICENSE](./LICENSE)
+
+Documentation is published by the **Deploy documentation** workflow in
+[rootrootde.github.io](https://github.com/rootrootde/rootrootde.github.io/actions/workflows/pages.yml).
+It builds this repository's main branch and keeps the existing **/emu68hatcher/** URLs.

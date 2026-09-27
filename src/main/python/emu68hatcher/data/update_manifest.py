@@ -26,7 +26,7 @@ from emu68hatcher.utils.paths import get_cache_dir
 from emu68hatcher.utils.platform import OperatingSystem, PlatformInfo, get_platform_info
 
 DEFAULT_MANIFEST_URL = (
-    "https://raw.githubusercontent.com/rootrootde/emu68hatcher/updates/manifest.json"
+    "https://raw.githubusercontent.com/rootrootde/emu68-hatcher/updates/manifest.json"
 )
 _REFERENCE_DIR = Path(__file__).parent / "reference"
 _BUNDLED_MANIFEST_PATH = _REFERENCE_DIR / "update_manifest.json"

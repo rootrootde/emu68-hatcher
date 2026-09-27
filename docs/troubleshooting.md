@@ -34,4 +34,4 @@ The Amiga-side tools run in CON windows: **SYS:Utilities/Network Config** keeps 
 Open **SYS:Utilities/Network Config** and check the interface, gateway and DNS servers. Save and
 reconnect. Static address, netmask and gateway have to match.
 
-Issue tracker: <https://github.com/rootrootde/emu68hatcher/issues>
+Issue tracker: <https://github.com/rootrootde/emu68-hatcher/issues>
