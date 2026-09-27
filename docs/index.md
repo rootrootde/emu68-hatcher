@@ -19,7 +19,7 @@ Runs on macOS, Linux and Windows.
 
 ## Known issues / limitations
 
-**Still in an early stage** - Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68hatcher/issues) - even just "it worked" is useful.
+**Still in an early stage** - Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68-hatcher/issues) - even just "it worked" is useful.
 
 - **mostly tested on 3.2(.3)** - expect more potential issues with 3.1
 - Automatic ROM selection prefers A1200 ROMs; this also works on A600. No manual selection yet.
@@ -33,7 +33,7 @@ For questions, feedback, bug reports, feature requests, and project updates:
 !!! warning "Please don't ask for support on other Amiga Discord servers"
     I won't be able to keep up with multiple channels, and the Emu68 Hatcher server is a better place for discussions plus I can post updates there more frequently.
 
-[Open a GitHub issue](https://github.com/rootrootde/emu68hatcher/issues){ .md-button }
+[Open a GitHub issue](https://github.com/rootrootde/emu68-hatcher/issues){ .md-button }
 
 !!! tip "Reporting an error"
     Attaching the right log file makes debugging way easier. See [Troubleshooting](troubleshooting.md) for which file to grab depending on whether the build itself failed or something went wrong on the AmigaOS side.
