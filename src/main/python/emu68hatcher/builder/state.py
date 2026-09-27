@@ -10,7 +10,8 @@ from emu68hatcher.builder.host.elevation import ElevationToken
 from emu68hatcher.data.install_media import IdentifiedInstallMedia
 
 if TYPE_CHECKING:
-    from emu68hatcher.builder.ags_source import AGSInventory
+    from emu68hatcher.builder.ags_scripts import AGSLauncherSummary
+    from emu68hatcher.builder.ags_validation import AGSImportPlan
 
 
 class BuildStage(str, Enum):
@@ -48,7 +49,7 @@ class ValidatedInputs:
     roadshow_archive_path: Path | None = None
     roadshow_archive_kind: str | None = None
     picasso96_archive_path: Path | None = None
-    ags_inventory: "AGSInventory | None" = None
+    ags_plan: "AGSImportPlan | None" = None
 
 
 @dataclass(frozen=True)
@@ -84,6 +85,7 @@ class CreatedImage:
     extracted: ExtractedArtifacts
     image_path: Path | str
     final_output_path: Path | None = None
+    ags_launcher: "AGSLauncherSummary | None" = None
 
     @property
     def workspace(self) -> Workspace:

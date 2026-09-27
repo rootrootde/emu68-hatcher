@@ -22,6 +22,8 @@ class HSTCommand(str, Enum):
     MBR_PART_FORMAT = "mbr part format"
     RDB_INIT = "rdb init"
     RDB_PART_ADD = "rdb part add"
+    RDB_PART_COPY = "rdb part copy"
+    RDB_INFO = "rdb info"
     RDB_PART_FORMAT = "rdb part format"
     RDB_FS_ADD = "rdb fs add"
 
@@ -210,6 +212,7 @@ def generate_rdb_partition_commands(
     image_path: Path,
     mbr_partition_number: int,
     amiga_partitions: list[AmigaPartition],
+    ags_plan=None,
 ) -> list[HSTCommandLine]:
     """create + format the amiga RDB partitions"""
     commands = []
@@ -217,6 +220,29 @@ def generate_rdb_partition_commands(
     rdb_path = hst_path(image_path, "mbr", mbr_partition_number)
 
     for i, part in enumerate(amiga_partitions):
+        if part.ags_reservation:
+            if ags_plan is None:
+                raise ValueError("AGS partition copy requires a validated build plan")
+            source = ags_plan.inventory.component(part.ags_reservation.role).partition
+            if source.size != part.size:
+                raise ValueError("AGS partition size differs from its source")
+            commands.append(
+                HSTCommandLine(
+                    HSTCommand.RDB_PART_COPY,
+                    [
+                        str(ags_plan.inventory.source_path),
+                        str(source.index),
+                        rdb_path,
+                        "--name",
+                        part.device,
+                        "--dos-type",
+                        "PFS3",
+                        "--verbose",
+                    ],
+                    f"Copy AGS {source.volume} to {part.device} ({source.size:,} bytes)",
+                )
+            )
+            continue
         fs_info = _fs_info(part.filesystem)
 
         # rdb part add "path/mbr/N" DEVICE DOSTYPE SIZE --buffers ... --bootable --boot-priority
@@ -268,6 +294,7 @@ def generate_disk_creation_script(
     output_path: Path,
     fs_handler_paths: dict[Filesystem, Path] | None = None,
     skip_blank: bool = False,
+    ags_plan=None,
 ) -> HSTScript:
     """full disk-creation script. skip_blank=True for DEVICE mode or pre-allocated sparse IMG."""
     if config.partitions is None:
@@ -315,6 +342,7 @@ def generate_disk_creation_script(
                     output_path,
                     mbr_num,
                     mbr_part.amiga_partitions,
+                    ags_plan=ags_plan,
                 )
             )
 

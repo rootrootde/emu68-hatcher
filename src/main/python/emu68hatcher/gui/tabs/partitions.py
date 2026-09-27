@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from time import monotonic
 
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -11,6 +12,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QSpinBox,
     QVBoxLayout,
@@ -35,9 +37,12 @@ from emu68hatcher.gui.workers import ExtraContentSizeWorker
 class PartitionsTab(QWidget):
     """partition layout editor"""
 
+    layout_changed = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._updating = False
+        self._loading = False
         self._extra_workers: set[ExtraContentSizeWorker] = set()
         self._extra_generation = 0
         self._extra_pending: set[str] = set()
@@ -192,10 +197,7 @@ class PartitionsTab(QWidget):
         self.boot_spin.blockSignals(False)
 
     def _apply_disk_size_bytes(self, disk_size_bytes: int) -> None:
-        self._model.reset(
-            disk_size_bytes=disk_size_bytes,
-            preserve_extra_directories=True,
-        )
+        self._model.change_disk_size(disk_size_bytes)
         self._sync_boot_spin()
         self._refresh_table()
 
@@ -210,6 +212,7 @@ class PartitionsTab(QWidget):
     def _on_boot_size_changed(self):
         self._model.set_boot_size_mb(self.boot_spin.value())
         self._update_status()
+        self._emit_layout_changed()
 
     def _on_add_partition(self):
         if self._model.add_partition():
@@ -224,12 +227,14 @@ class PartitionsTab(QWidget):
             return
         self._model.set_device(row, text)
         self._update_status()
+        self._emit_layout_changed()
 
     def _on_volume_changed(self, row: int, text: str) -> None:
         if self._updating or row < 0 or row >= len(self._model.partitions):
             return
         self._model.set_volume(row, text)
         self._update_status()
+        self._emit_layout_changed()
 
     def _on_size_changed(self, row: int, text: str) -> None:
         if self._updating or row < 0 or row >= len(self._model.partitions):
@@ -248,6 +253,7 @@ class PartitionsTab(QWidget):
         except ValueError:
             pass
         self._update_status()
+        self._emit_layout_changed()
 
     def _on_bar_resize(self, left_idx, left_size, right_idx, right_size):
         """resize from the bar widget drag"""
@@ -259,6 +265,12 @@ class PartitionsTab(QWidget):
             return
         self._update_bar()
         self._refresh_extras_panel()
+        row = self._selected_partition_row()
+        self.remove_btn.setEnabled(
+            len(self._model.partitions) > 1
+            and 0 <= row < len(self._model.partitions)
+            and self._model.partitions[row].ags_reservation is None
+        )
 
     def _selected_partition_row(self) -> int:
         return self.part_table.selected_row()
@@ -271,7 +283,7 @@ class PartitionsTab(QWidget):
             self._extras_label.setText("Extra content directory:")
             return
         part = self._model.partitions[row]
-        self._extras_box.setEnabled(True)
+        self._extras_box.setEnabled(part.ags_reservation is None)
         self._extras_label.setText(f"Extra content for {part.device} ({part.volume}):")
         self._extras_edit.setText(
             str(part.extra_content_directory) if part.extra_content_directory else ""
@@ -293,6 +305,7 @@ class PartitionsTab(QWidget):
         self._extras_edit.setText(path)
         self._scan_extra_directories()
         self._update_extra_status_cells()
+        self._emit_layout_changed()
 
     def _clear_extras_directory(self):
         row = self._selected_partition_row()
@@ -302,6 +315,7 @@ class PartitionsTab(QWidget):
         self._extras_edit.clear()
         self._scan_extra_directories()
         self._update_extra_status_cells()
+        self._emit_layout_changed()
 
     def _on_bootable_changed(self, row: int, checked: bool) -> None:
         if self._updating or row < 0 or row >= len(self._model.partitions):
@@ -317,13 +331,23 @@ class PartitionsTab(QWidget):
         try:
             statuses = [self._extra_status(part) for part in self._model.partitions]
             self.part_table.render(self._model.partitions, statuses)
-            self.remove_btn.setEnabled(len(self._model.partitions) > 1)
+            selected = self.part_table.selected_row()
+            self.remove_btn.setEnabled(
+                len(self._model.partitions) > 1
+                and 0 <= selected < len(self._model.partitions)
+                and self._model.partitions[selected].ags_reservation is None
+            )
             self.add_btn.setEnabled(self._model.can_add)
         finally:
             self._updating = False
 
         self._update_status()
         self._refresh_extras_panel()
+        self._emit_layout_changed()
+
+    def _emit_layout_changed(self):
+        if not self._loading:
+            self.layout_changed.emit()
 
     def _space(self) -> tuple[int, int, int]:
         return (
@@ -369,7 +393,42 @@ class PartitionsTab(QWidget):
         gb = self.size_combo.currentData()
         if gb is None:
             gb = 8
-        self._model.reset(disk_size_gb=gb)
+        if any(part.ags_reservation for part in self._model.partitions):
+            trial = PartitionEditorModel(gb)
+            trial.partitions = [part.model_copy(deep=True) for part in self._model.partitions]
+            trial.reset(disk_size_bytes=self._model.disk_size, preserve_extra_directories=True)
+            before = "\n".join(
+                f"{part.device}: {part.volume} {part.size / 1024**3:.2f} GiB"
+                for part in self._model.partitions
+            )
+            after = "\n".join(
+                f"{part.device}: {part.volume} {part.size / 1024**3:.2f} GiB"
+                for part in trial.partitions
+            )
+            errors = trial.errors
+            if errors:
+                QMessageBox.warning(
+                    self,
+                    "Reset partitions",
+                    f"Current layout:\n{before}\n\nProposed layout:\n{after}"
+                    + "\n\nCannot apply:\n"
+                    + "\n".join(errors),
+                )
+                return
+            if (
+                QMessageBox.question(
+                    self,
+                    "Reset partitions",
+                    f"Current layout:\n{before}\n\nProposed layout:\n{after}\n\nApply this reset?",
+                )
+                != QMessageBox.StandardButton.Yes
+            ):
+                return
+            self._model = trial
+        else:
+            self._model.reset(
+                disk_size_bytes=self._model.disk_size, preserve_extra_directories=True
+            )
         self._scan_extra_directories()
         self._sync_boot_spin()
         self._refresh_table()
@@ -385,19 +444,23 @@ class PartitionsTab(QWidget):
         if config is None:
             return
 
-        self._model.load(config)
-        self._scan_extra_directories()
+        self._loading = True
+        try:
+            self._model.load(config)
+            self._scan_extra_directories()
 
-        # snap to the closest disk-size preset
-        approx_gb = config.disk_size / (1_000_000_000 * 0.95)
-        closest_gb = min(COMMON_DISK_SIZES, key=lambda x: abs(x - approx_gb))
-        idx = COMMON_DISK_SIZES.index(closest_gb)
-        self.size_combo.blockSignals(True)
-        self.size_combo.setCurrentIndex(idx)
-        self.size_combo.blockSignals(False)
+            approx_gb = config.disk_size / (1_000_000_000 * 0.95)
+            closest_gb = min(COMMON_DISK_SIZES, key=lambda x: abs(x - approx_gb))
+            idx = COMMON_DISK_SIZES.index(closest_gb)
+            self.size_combo.blockSignals(True)
+            self.size_combo.setCurrentIndex(idx)
+            self.size_combo.blockSignals(False)
 
-        self._sync_boot_spin()
-        self._refresh_table()
+            self._sync_boot_spin()
+            self._refresh_table()
+        finally:
+            self._loading = False
+        self._emit_layout_changed()
 
     @staticmethod
     def _extra_key(path: Path) -> str:

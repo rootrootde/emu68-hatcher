@@ -21,6 +21,7 @@ COL_SIZE = 2
 COL_FS = 3
 COL_BOOTABLE = 4
 COL_EXTRA = 5
+COL_AGS = 6
 MIN_VISIBLE_ROWS = 2
 
 _EXTRA_COLORS = {
@@ -40,9 +41,9 @@ class PartitionTable(QTableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._rendering = False
-        self.setColumnCount(6)
+        self.setColumnCount(7)
         self.setHorizontalHeaderLabels(
-            ["Device", "Volume", "Size (MB)", "Filesystem", "Boot", "Extra / usable"]
+            ["Device", "Volume", "Size (MB)", "Filesystem", "Boot", "Extra / usable", "AGS"]
         )
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.horizontalHeader().setSectionResizeMode(
@@ -62,17 +63,34 @@ class PartitionTable(QTableWidget):
         try:
             self.setRowCount(len(partitions))
             for row, partition in enumerate(partitions):
+                reserved = partition.ags_reservation
                 self.setItem(row, COL_DEVICE, QTableWidgetItem(partition.device))
-                self.setItem(row, COL_VOLUME, QTableWidgetItem(partition.volume))
+                volume_item = QTableWidgetItem(partition.volume)
+                if reserved:
+                    volume_item.setFlags(volume_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.setItem(row, COL_VOLUME, volume_item)
                 size_item = QTableWidgetItem(str(round(partition.size / (1024 * 1024))))
                 size_item.setTextAlignment(
                     Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
                 )
+                if reserved:
+                    size_item.setFlags(size_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.setItem(row, COL_SIZE, size_item)
                 self.setCellWidget(row, COL_FS, self._filesystem_combo(row, partition))
                 self.setCellWidget(row, COL_BOOTABLE, self._bootable_widget(row, partition))
                 text, state = extra_statuses[row] if extra_statuses else ("", None)
                 self.set_extra_status(row, text, state)
+                label = (
+                    f"{reserved.role} (fixed {reserved.minimum_size / 1024**3:.2f} GiB)"
+                    if reserved
+                    else ""
+                )
+                role_item = QTableWidgetItem(label)
+                role_item.setFlags(role_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                role_item.setToolTip(
+                    "AGS reserves this partition; use AGS to remove it" if reserved else ""
+                )
+                self.setItem(row, COL_AGS, role_item)
         finally:
             self._rendering = False
         self._update_minimum_height()
@@ -104,6 +122,7 @@ class PartitionTable(QTableWidget):
         for filesystem in Filesystem:
             combo.addItem(filesystem.value)
         combo.setCurrentText(partition.filesystem.value)
+        combo.setEnabled(partition.ags_reservation is None)
         combo.currentTextChanged.connect(
             lambda text, current=row: self.filesystem_edited.emit(current, text)
         )
@@ -116,6 +135,7 @@ class PartitionTable(QTableWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         checkbox = QCheckBox()
         checkbox.setChecked(partition.bootable)
+        checkbox.setEnabled(partition.ags_reservation is None)
         checkbox.stateChanged.connect(
             lambda state, current=row: self.bootable_edited.emit(current, state == 2)
         )

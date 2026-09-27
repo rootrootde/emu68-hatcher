@@ -2,20 +2,28 @@
 set -eu
 
 usage() {
-    echo "usage: $0 [--reuse] /path/to/emu68hatcher.img"
+    echo "usage: $0 [--reuse] [--native] /path/to/emu68hatcher.img"
 }
 
 reuse=false
-case "${1:-}" in
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    --reuse)
-        reuse=true
-        shift
-        ;;
-esac
+rtg_size=128
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --reuse)
+            reuse=true
+            shift
+            ;;
+        --native)
+            rtg_size=0
+            shift
+            ;;
+        *) break ;;
+    esac
+done
 
 if [ "$#" -ne 1 ]; then
     usage
@@ -157,7 +165,8 @@ exec "$amiberry" \
     -s cpu_speed=max \
     -s cpu_compatible=false \
     -s cpu_24bit_addressing=false \
+    -s bsdsocket_emu=true \
     -s z3mem_size=256 \
     -s gfxcard_type=ZorroIII \
-    -s gfxcard_size=128 \
+    -s "gfxcard_size=$rtg_size" \
     -G

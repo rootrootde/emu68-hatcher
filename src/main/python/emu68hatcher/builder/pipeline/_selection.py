@@ -27,7 +27,7 @@ def resolve_selection(
     config: BuildConfig, kickstart_version: str, emu68_version: str | None
 ) -> Resolution:
     choices = {p.name.lower(): p.enabled for p in config.packages}
-    if config.ags_import is not None:
+    if config.ags_import is not None and config.ags_import.enabled:
         choices["whdload"] = True
     resolution = resolve_choices(
         choices,

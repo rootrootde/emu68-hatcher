@@ -6,6 +6,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from emu68hatcher.config.ags_models import (
+    AGSComponents,
+    AGSImportConfig,
+    AGSPartitionReservation,
+    AGSRole,
+)
 from emu68hatcher.config.boot_models import (
     AntennaMode,
     BusTestMode,
@@ -39,6 +45,9 @@ from emu68hatcher.config.partition_models import (
 
 __all__ = [
     "AGSImportConfig",
+    "AGSComponents",
+    "AGSPartitionReservation",
+    "AGSRole",
     "AmigaPartition",
     "AntennaMode",
     "BuildConfig",
@@ -71,7 +80,7 @@ __all__ = [
     "WorkbenchScreenMode",
 ]
 
-CURRENT_CONFIG_VERSION = "1.1.0"
+CURRENT_CONFIG_VERSION = "1.3.0"
 
 
 class _ConfigModel(BaseModel):
@@ -183,19 +192,6 @@ class PackageConfig(_ConfigModel):
     enabled: bool = True
 
 
-class AGSImportConfig(_ConfigModel):
-    source_image: Path
-    content_device: str = Field(pattern=r"^[A-Z]{2,3}\d+$")
-    scope: Literal["whdload"] = "whdload"
-
-    @field_validator("source_image", mode="before")
-    @classmethod
-    def _local_image(cls, value):
-        if not str(value).strip() or str(value).startswith(("\\\\", "//")):
-            raise ValueError("AGS requires a local image file; UNC sources are not supported")
-        return value
-
-
 class OutputConfig(_ConfigModel):
     """output config for the built image"""
 
@@ -250,7 +246,7 @@ class OutputConfig(_ConfigModel):
 class BuildConfig(_ConfigModel):
     """full build config - JSON-serializable; drives the pipeline"""
 
-    version: Literal["1.1.0"] = Field(
+    version: Literal["1.3.0"] = Field(
         default=CURRENT_CONFIG_VERSION,
         description="Config schema version",
     )
@@ -354,6 +350,20 @@ class BuildConfig(_ConfigModel):
             raise ValueError("Native-video capture requires a VideoCore Workbench screen mode")
         return self
 
+    @model_validator(mode="after")
+    def _check_ags_reservations(self):
+        from emu68hatcher.config.ags_layout import validate_ags_layout
+
+        if self.ags_import is None or not self.ags_import.enabled:
+            errors = validate_ags_layout(self)
+        elif self.ags_import.allocation_state == "ready":
+            errors = validate_ags_layout(self)
+        else:
+            errors = ()
+        if errors:
+            raise ValueError("; ".join(errors))
+        return self
+
     model_config = ConfigDict(
         extra="forbid",
         json_schema_extra={
@@ -391,13 +401,6 @@ class BuildConfig(_ConfigModel):
                                     "size": 506000000,
                                     "bootable": True,
                                     "priority": 0,
-                                },
-                                {
-                                    "device": "SDH1",
-                                    "volume": "Work",
-                                    "filesystem": "PFS3",
-                                    "size": 6586000000,
-                                    "bootable": False,
                                 },
                             ],
                         },

@@ -4,8 +4,13 @@ from PySide6.QtCore import QPoint, QRect, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen, QPolygon
 from PySide6.QtWidgets import QToolTip, QWidget
 
-from emu68hatcher.config.defaults import MIN_AMIGA_PARTITION_SIZE
+from emu68hatcher.config.constants import (
+    CYLINDER_SIZE,
+    MIN_AMIGA_PARTITION_SIZE,
+    PFS3_MAX_PARTITION_SIZE,
+)
 from emu68hatcher.config.partition_helpers import round_to_cylinder
+from emu68hatcher.config.partition_models import Filesystem
 
 BOOT_COLOR = QColor("#546E7A")  # blue-gray
 AMIGA_COLORS = [
@@ -75,6 +80,11 @@ class PartitionBar(QWidget):
             color = AMIGA_COLORS[i % len(AMIGA_COLORS)]
             star = " *" if p.bootable else ""
             sublabel = f"{p.filesystem.value}{star}"
+            if p.ags_reservation:
+                sublabel += (
+                    f"; AGS {p.ags_reservation.role}; "
+                    f"fixed {_format_size(p.ags_reservation.minimum_size)}"
+                )
             self._segments.append((p.volume, p.size, sublabel, color, i == selected))
         if free_space > 0:
             self._segments.append(("free", free_space, "", FREE_COLOR, False))
@@ -329,13 +339,36 @@ class PartitionBar(QWidget):
         )
         new_left = left_size + delta_bytes
         new_right = right_size - delta_bytes
-        minimum = round_to_cylinder(MIN_AMIGA_PARTITION_SIZE)
-        right_minimum = 0 if right_is_free else minimum
-        if new_left < minimum or new_right < right_minimum:
+        left_part = self._amiga_partitions[left_amiga]
+        if left_part.ags_reservation:
             return
-        self._amiga_partitions[left_amiga].size = new_left
+        left_minimum = (
+            left_part.ags_reservation.minimum_size
+            if left_part.ags_reservation
+            else MIN_AMIGA_PARTITION_SIZE
+        )
+        left_minimum = ((left_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
+        right_minimum = 0
         if right_is_amiga:
-            self._amiga_partitions[right_amiga].size = new_right
+            right_part = self._amiga_partitions[right_amiga]
+            if right_part.ags_reservation:
+                return
+            right_minimum = (
+                right_part.ags_reservation.minimum_size
+                if right_part.ags_reservation
+                else MIN_AMIGA_PARTITION_SIZE
+            )
+            right_minimum = ((right_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
+        if new_left < left_minimum or new_right < right_minimum:
+            return
+        if left_part.filesystem == Filesystem.PFS3 and new_left > PFS3_MAX_PARTITION_SIZE:
+            return
+        if (
+            right_is_amiga
+            and right_part.filesystem == Filesystem.PFS3
+            and new_right > PFS3_MAX_PARTITION_SIZE
+        ):
+            return
         self._drag_start_x = pos.x()
         if self._on_resize_callback:
             self._on_resize_callback(

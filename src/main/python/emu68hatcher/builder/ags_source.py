@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 import tempfile
 import time
-from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from collections.abc import Callable, Iterator, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
+from types import MappingProxyType
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
+from emu68hatcher.config.ags_models import AGSRole
 from emu68hatcher.utils.host_tools import find_hst_imager, get_hst_imager_env
 
 CancelCheck = Callable[[], bool] | None
@@ -36,18 +37,55 @@ class AGSEntry:
 
 
 @dataclass(frozen=True, slots=True)
-class AGSInventory:
-    source_path: Path
-    identity: tuple[int, int, int, int]
-    profile: str
-    version: str
-    partitions: tuple[AGSPartition, ...]
-    whdload: AGSPartition
+class AGSComponentInventory:
+    role: AGSRole
+    partition: AGSPartition
+    source_subpath: str
     entries: tuple[AGSEntry, ...]
     content_bytes: int
     file_count: int
-    required_bytes: int
+    directory_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class AGSInventory:
+    source_path: Path
+    identity: tuple[int, int, int, int, int]
+    profile: str
+    version: str
+    partitions: tuple[AGSPartition, ...]
+    components: tuple[AGSComponentInventory, ...]
+    marker_hashes: Mapping[str, str]
     warnings: tuple[str, ...]
+    source_scripts: Mapping[str, bytes] = field(default_factory=lambda: MappingProxyType({}))
+
+    def component(self, role: AGSRole) -> AGSComponentInventory:
+        for component in self.components:
+            if component.role == role:
+                return component
+        raise KeyError(role)
+
+    @property
+    def whdload(self) -> AGSPartition:
+        return self.component("whdload").partition
+
+    @property
+    def entries(self) -> tuple[AGSEntry, ...]:
+        return self.component("whdload").entries
+
+    @property
+    def content_bytes(self) -> int:
+        return sum(component.content_bytes for component in self.components)
+
+    @property
+    def file_count(self) -> int:
+        return sum(component.file_count for component in self.components)
+
+    @property
+    def required_bytes(self) -> int:
+        from emu68hatcher.builder.ags_requirements import calculate_ags_requirements
+
+        return sum(r.minimum_partition_bytes for r in calculate_ags_requirements(self.components))
 
 
 def _check_cancel(cancel_check: CancelCheck) -> None:
@@ -55,7 +93,7 @@ def _check_cancel(cancel_check: CancelCheck) -> None:
         raise BuildCancelledError("Build was cancelled by user")
 
 
-def source_identity(source_path: Path) -> tuple[int, int, int, int]:
+def source_identity(source_path: Path) -> tuple[int, int, int, int, int]:
     path_text = str(source_path)
     if path_text.startswith(("\\\\", "//")):
         raise BuildError("AGS source must be a local image file; UNC paths are unsupported")
@@ -65,7 +103,7 @@ def source_identity(source_path: Path) -> tuple[int, int, int, int]:
         raise BuildError(f"Cannot read AGS source image {source_path}: {exc}") from exc
     if not source_path.is_file():
         raise BuildError(f"AGS source is not a regular image file: {source_path}")
-    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
+    return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
 
 
 def validate_source_identity(inventory: AGSInventory) -> None:
@@ -104,7 +142,11 @@ def run_hst_to_file(args: list[str], output: Path, cancel_check: CancelCheck = N
     if process.returncode:
         detail = error_path.read_text(encoding="utf-8", errors="replace").strip()
         if not detail:
-            detail = output.read_text(encoding="utf-8", errors="replace")[-1000:].strip()
+            lines = output.read_text(encoding="utf-8", errors="replace").splitlines()
+            errors = [
+                line for line in lines if "[ERR]" in line or " ERR]" in line or "Exception:" in line
+            ]
+            detail = "\n".join(errors or lines[-12:])[:2000].strip()
         raise BuildError(f"Cannot read AGS image: {detail or f'HST exit {process.returncode}'}")
     _check_cancel(cancel_check)
 
@@ -196,8 +238,8 @@ def _partitions(path: Path) -> tuple[AGSPartition, ...]:
             result.append(
                 AGSPartition(
                     int(raw["name"]),
-                    str(properties["Device Name"]),
-                    str(properties["Volume Name"]),
+                    str(properties["Device Name"]).strip(),
+                    str(properties["Volume Name"]).strip(),
                     int(raw["size"]),
                 )
             )
@@ -208,109 +250,99 @@ def _partitions(path: Path) -> tuple[AGSPartition, ...]:
     return tuple(result)
 
 
-def _check_script_hashes(
-    source_path: Path, partition: AGSPartition, cancel_check: CancelCheck
-) -> None:
-    from emu68hatcher.builder.ags_scripts import V30_SCRIPT_HASHES
+def _volume(partitions: tuple[AGSPartition, ...], name: str) -> AGSPartition:
+    matches = [part for part in partitions if part.volume.casefold() == name.casefold()]
+    if len(matches) != 1:
+        raise BuildError(f"AGS image needs exactly one {name} RDB volume")
+    return matches[0]
 
+
+def inspect_ags_partitions(
+    source_path: Path, cancel_check: CancelCheck = None
+) -> tuple[AGSPartition, ...]:
+    with tempfile.TemporaryDirectory(prefix="ags-partitions-") as temp:
+        output = Path(temp) / "partitions.json"
+        run_hst_to_file(
+            ["fs", "dir", f"{source_path.as_posix()}/rdb", "--format", "Json"],
+            output,
+            cancel_check,
+        )
+        return _partitions(output)
+
+
+def read_ags_scripts(
+    source_path: Path,
+    partition: AGSPartition,
+    paths: tuple[str, ...],
+    cancel_check: CancelCheck = None,
+) -> Mapping[str, bytes]:
+    scripts: dict[str, bytes] = {}
     with tempfile.TemporaryDirectory(prefix="ags-scripts-") as temp:
         root = Path(temp)
-        for position, (relative, expected) in enumerate(V30_SCRIPT_HASHES.items()):
+        for position, relative in enumerate(paths):
             _check_cancel(cancel_check)
             target = root / str(position)
             target.mkdir()
-            output = root / f"copy-{position}.log"
             source = f"{source_path.as_posix()}/rdb/{partition.index}/{relative}"
             run_hst_to_file(
                 ["fs", "copy", source, str(target), "--uaemetadata", "None"],
-                output,
+                root / f"copy-{position}.log",
                 cancel_check,
             )
             extracted = target / Path(relative).name
-            if (
-                not extracted.is_file()
-                or hashlib.sha256(extracted.read_bytes()).hexdigest() != expected
-            ):
-                raise BuildError(f"AGS script profile is unsupported: {relative} differs from v30")
+            if not extracted.is_file():
+                raise BuildError(f"AGS source is missing script {relative}")
+            scripts[relative] = extracted.read_bytes()
+    return MappingProxyType(scripts)
 
 
-def inspect_ags_source(source_path: Path, cancel_check: CancelCheck = None) -> AGSInventory:
-    if str(source_path).startswith(("\\\\", "//")):
-        raise BuildError("AGS source must be a local image file; UNC paths are unsupported")
-    source_path = Path(source_path).expanduser().resolve()
-    identity = source_identity(source_path)
-    with tempfile.TemporaryDirectory(prefix="ags-inspect-") as temp:
-        root = Path(temp)
-        partition_json = root / "partitions.json"
-        run_hst_to_file(
-            ["fs", "dir", f"{source_path.as_posix()}/rdb", "--format", "Json"],
-            partition_json,
-            cancel_check,
-        )
-        partitions = _partitions(partition_json)
-        candidates = [part for part in partitions if part.volume.casefold() == "whdload"]
-        if len(candidates) != 1:
-            raise BuildError("AGS image needs one WHDLoad RDB volume")
-        whdload = candidates[0]
-        listing = root / "whdload.json"
-        run_hst_to_file(
-            [
-                "fs",
-                "dir",
-                f"{source_path.as_posix()}/rdb/{whdload.index}",
-                "--recursive",
-                "--format",
-                "Json",
-                "--uaemetadata",
-                "UaeFsDb",
-            ],
-            listing,
-            cancel_check,
-        )
-        entries = []
-        seen = set()
-        content_bytes = 0
-        file_count = 0
-        for raw in iter_hst_entries(listing):
-            if len(entries) % 4096 == 0:
-                _check_cancel(cancel_check)
-            entry = _entry(raw)
-            key = entry.path.lower()
-            if key in seen:
-                raise BuildError(f"AGS source has colliding names: {entry.path}")
-            seen.add(key)
-            entries.append(entry)
-            if not entry.is_dir:
-                file_count += 1
-                content_bytes += entry.size
-        markers = {
-            "ags2/ags2",
-            "ags2/ags2menu",
-            "ags2/scripts/start_ags",
-            "ags2/scripts/start_ags.info",
-            "ags2/scripts/ags-stuff",
-            "game",
-            "demo",
-            "beta",
-            "magazine",
-        }
-        if not markers <= seen:
-            missing = ", ".join(sorted(markers - seen))
-            raise BuildError(f"AGS WHDLoad volume is missing required content: {missing}")
-        _check_script_hashes(source_path, whdload, cancel_check)
-    if source_identity(source_path) != identity:
-        raise BuildError("AGS source image changed during inspection")
-    required = ((content_bytes + len(entries) * 8192) * 11 + 9) // 10 + 512 * _MIB
-    return AGSInventory(
-        source_path,
-        identity,
-        "v30",
-        "3.0",
-        partitions,
-        whdload,
-        tuple(entries),
-        content_bytes,
-        file_count,
-        required,
-        ("Only the v30 WHDLoad volume is supported; Games and emulators are excluded.",),
-    )
+def inspect_ags_component(
+    source_path: Path,
+    partitions: tuple[AGSPartition, ...],
+    role: AGSRole,
+    cancel_check: CancelCheck = None,
+) -> AGSComponentInventory:
+    from .ags_blocks import read_source_blocks
+
+    volume = {"whdload": "WHDLoad", "games": "Games", "work": "Work", "media": "Media"}[role]
+    partition = _volume(partitions, volume)
+    _check_cancel(cancel_check)
+    blocks = read_source_blocks(source_path)
+    block = blocks[partition.index - 1]
+    if block.size != partition.size or block.device != partition.device:
+        raise BuildError(f"AGS {volume} filesystem and RDB geometry disagree")
+    if block.dos_type not in (b"PDS\x03", b"PFS\x03") or block.flags != 0:
+        raise BuildError(f"AGS {volume} requires mounted, non-bootable PDS3/PFS3")
+    required = {
+        "whdload": {"ags2", "game", "demo", "magazine"},
+        "games": {"premium"},
+        "work": {"emulators"},
+        "media": {"st-00"},
+    }[role]
+    with tempfile.TemporaryDirectory(prefix="ags-markers-") as temporary:
+        listing = Path(temporary) / "markers.json"
+        source = f"{source_path.as_posix()}/rdb/{partition.index}"
+        run_hst_to_file(["fs", "dir", source, "--format", "Json"], listing, cancel_check)
+        names = {entry["name"].casefold() for entry in iter_hst_entries(listing)}
+        if required - names:
+            raise BuildError(f"AGS {volume} is missing: {', '.join(sorted(required - names))}")
+        if role == "whdload":
+            run_hst_to_file(
+                ["fs", "dir", source + "/AGS2", "--format", "Json"], listing, cancel_check
+            )
+            names = {entry["name"].casefold() for entry in iter_hst_entries(listing)}
+            required_menu = {"ags2", "ags2menu", "ags2.conf", "os", "scripts"}
+            if required_menu - names:
+                raise BuildError("AGS source is missing portable menu files")
+    return AGSComponentInventory(role, partition, "", (), partition.size, 0, 0)
+
+
+def inspect_ags_source(
+    source_path: Path,
+    roles: tuple[AGSRole, ...] | list[AGSRole] = ("whdload",),
+    cancel_check: CancelCheck = None,
+    refresh: bool = False,
+) -> AGSInventory:
+    from emu68hatcher.builder.ags_inspection import inspect_ags_source as inspect_cached
+
+    return inspect_cached(source_path, roles, cancel_check=cancel_check, refresh=refresh)

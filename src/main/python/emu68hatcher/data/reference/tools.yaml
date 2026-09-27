@@ -48,11 +48,11 @@ hst-imager:
   type: platform-url
   platforms:
     darwin-arm64:
-      url: "https://github.com/henrikstengaard/hst-imager/releases/download/1.6.616/hst-imager_v1.6.616-a91fa4c_console_macos_arm64.zip"
-      hash: "12405c5106df1f3cb58b357c0c0ef801"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.6.616-hatcher.1/hst-imager_v1.6.616-hatcher.1_console_macos_arm64.zip"
+      hash: "e26a6c837ac5644f8b39b6c71a853b59"
     darwin-x64:
-      url: "https://github.com/henrikstengaard/hst-imager/releases/download/1.6.616/hst-imager_v1.6.616-a91fa4c_console_macos_x64.zip"
-      hash: "07c401b8d331acfb017ba031524b9c99"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.6.616-hatcher.1/hst-imager_v1.6.616-hatcher.1_console_macos_x64.zip"
+      hash: "05f60816947f7910ad09fc13e4240cd9"
     linux-x64:
       url: "https://github.com/henrikstengaard/hst-imager/releases/download/1.6.616/hst-imager_v1.6.616-a91fa4c_console_linux_x64.zip"
       hash: "c56f32b665a88f5263d58c1bcfb06c08"

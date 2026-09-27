@@ -31,6 +31,41 @@ def _migrate_1_0(data: dict[str, Any]) -> dict[str, Any]:
             paths.append(install_media["directory"])
         migrated["asset_directories"] = list(dict.fromkeys(paths))
 
+    migrated["version"] = "1.1.0"
+    return migrated
+
+
+def _migrate_1_1(data: dict[str, Any]) -> dict[str, Any]:
+    migrated = deepcopy(data)
+    ags = migrated.get("ags_import")
+    if isinstance(ags, dict) and "content_device" in ags:
+        device = ags.pop("content_device")
+        ags.pop("scope", None)
+        ags.update(
+            enabled=True,
+            components={"whdload": True, "games": False, "emulators": False, "media": False},
+            allocation_state="pending",
+            legacy_content_device=device,
+        )
+    migrated["version"] = "1.2.0"
+    return migrated
+
+
+def _migrate_1_2(data: dict[str, Any]) -> dict[str, Any]:
+    migrated = deepcopy(data)
+    ags = migrated.get("ags_import")
+    if isinstance(ags, dict):
+        components = ags.setdefault("components", {})
+        components["work"] = components.pop("emulators", True)
+        ags["allocation_state"] = "pending"
+        ags["migration_notice"] = (
+            "The former Emulators selection now proposes the entire Work partition, "
+            "including applications. Review and apply a new partition preview. "
+            "Former AGS partitions remain ordinary partitions; remove or rename them explicitly."
+        )
+    for mbr in (migrated.get("partitions") or {}).get("layout", []):
+        for part in mbr.get("amiga_partitions") or []:
+            part.pop("ags_reservation", None)
     migrated["version"] = CURRENT_CONFIG_VERSION
     return migrated
 
@@ -45,7 +80,11 @@ def migrate_config_data(raw: Any) -> dict[str, Any]:
     if version == CURRENT_CONFIG_VERSION:
         return deepcopy(raw)
     if version == "1.0.0":
-        return _migrate_1_0(raw)
+        return _migrate_1_2(_migrate_1_1(_migrate_1_0(raw)))
+    if version == "1.1.0":
+        return _migrate_1_2(_migrate_1_1(raw))
+    if version == "1.2.0":
+        return _migrate_1_2(raw)
     raise ConfigurationError(
         f"Unsupported configuration version {version!r}; expected {CURRENT_CONFIG_VERSION}"
     )

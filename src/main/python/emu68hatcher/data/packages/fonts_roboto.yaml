@@ -14,5 +14,3 @@ download:
 install:
 - from: '*.ttf'
   to: Fonts/TrueType/
-- from: LICENSE
-  to: Emu68-Hatcher/Fonts/Roboto/

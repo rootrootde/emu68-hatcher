@@ -2,7 +2,12 @@
 
 from pathlib import Path
 
-from emu68hatcher.config.constants import MAX_AMIGA_PARTITIONS, MIN_AMIGA_PARTITION_SIZE
+from emu68hatcher.config.constants import (
+    CYLINDER_SIZE,
+    MAX_AMIGA_PARTITIONS,
+    MIN_AMIGA_PARTITION_SIZE,
+    PFS3_MAX_PARTITION_SIZE,
+)
 from emu68hatcher.config.partition_helpers import (
     build_partition_config,
     calculate_boot_default,
@@ -43,6 +48,17 @@ class PartitionEditorModel:
         disk_size_bytes: int | None = None,
         preserve_extra_directories: bool = False,
     ) -> None:
+        reservations = [
+            part.model_copy(deep=True) for part in self.partitions if part.ags_reservation
+        ]
+        retained_extras = [
+            part.model_copy(deep=True)
+            for part in self.partitions
+            if preserve_extra_directories
+            and part.extra_content_directory
+            and not part.bootable
+            and not part.ags_reservation
+        ]
         extras = (
             {part.device: part.extra_content_directory for part in self.partitions}
             if preserve_extra_directories
@@ -53,6 +69,19 @@ class PartitionEditorModel:
             disk_size_bytes=disk_size_bytes,
         )
         self.load(layout)
+        reservations.extend(retained_extras)
+        if reservations:
+            reserved_devices = {part.device.upper() for part in reservations}
+            used_devices = reserved_devices | {
+                part.device.upper()
+                for part in self.partitions
+                if part.device.upper() not in reserved_devices
+            }
+            for part in self.partitions:
+                if part.device.upper() in reserved_devices:
+                    part.device = next_device_name(list(used_devices))
+                    used_devices.add(part.device.upper())
+            self.partitions.extend(reservations)
         for part in self.partitions:
             if extras.get(part.device):
                 part.extra_content_directory = extras[part.device]
@@ -60,10 +89,7 @@ class PartitionEditorModel:
     def change_disk_size(self, disk_size: int) -> bool:
         self.disk_size = disk_size
         self.boot_size = calculate_boot_default(disk_size)
-        if self.free_space < 0:
-            self.reset(disk_size_bytes=disk_size)
-            return True
-        return False
+        return self.free_space < 0
 
     def set_boot_size_mb(self, size_mb: int) -> None:
         self.boot_size = round_to_mbr_sector(size_mb * 1024 * 1024)
@@ -110,17 +136,31 @@ class PartitionEditorModel:
     def remove_partition(self, row: int) -> bool:
         if not 0 <= row < len(self.partitions) or len(self.partitions) <= 1:
             return False
+        if self.partitions[row].ags_reservation:
+            return False
         self.partitions.pop(row)
         return True
 
     def set_partition_size_mb(self, row: int, size_mb: int) -> None:
         part = self.partitions[row]
+        if part.ags_reservation:
+            return
         new_size = max(
             round_to_cylinder(size_mb * 1024 * 1024),
-            round_to_cylinder(MIN_AMIGA_PARTITION_SIZE),
+            self.minimum_size(row),
         )
         maximum = round_to_cylinder(self.free_space + part.size)
-        part.size = min(new_size, maximum)
+        if part.filesystem == Filesystem.PFS3:
+            maximum = min(maximum, round_to_cylinder(PFS3_MAX_PARTITION_SIZE))
+        if maximum >= self.minimum_size(row):
+            part.size = min(new_size, maximum)
+
+    def minimum_size(self, row: int) -> int:
+        part = self.partitions[row]
+        minimum = (
+            part.ags_reservation.minimum_size if part.ags_reservation else MIN_AMIGA_PARTITION_SIZE
+        )
+        return ((minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
 
     def set_device(self, row: int, value: str) -> None:
         device = value.strip().upper()
@@ -128,20 +168,45 @@ class PartitionEditorModel:
             self.partitions[row].device = device
 
     def set_volume(self, row: int, value: str) -> None:
+        if self.partitions[row].ags_reservation:
+            return
         volume = value.strip()
         if volume:
             self.partitions[row].volume = volume
 
     def set_filesystem(self, row: int, value: str) -> None:
+        if self.partitions[row].ags_reservation:
+            return
         self.partitions[row].filesystem = Filesystem(value)
 
     def resize_pair(self, left: int, left_size: int, right: int, right_size: int) -> None:
-        if 0 <= left < len(self.partitions):
-            self.partitions[left].size = left_size
+        if not 0 <= left < len(self.partitions):
+            return
+        left_part = self.partitions[left]
+        if left_part.ags_reservation:
+            return
+        if left_size < self.minimum_size(left) or left_size % CYLINDER_SIZE:
+            return
+        if left_part.filesystem == Filesystem.PFS3 and left_size > PFS3_MAX_PARTITION_SIZE:
+            return
         if 0 <= right < len(self.partitions):
-            self.partitions[right].size = right_size
+            right_part = self.partitions[right]
+            if right_part.ags_reservation:
+                return
+            if right_size < self.minimum_size(right) or right_size % CYLINDER_SIZE:
+                return
+            if right_part.filesystem == Filesystem.PFS3 and right_size > PFS3_MAX_PARTITION_SIZE:
+                return
+            if left_size + right_size != left_part.size + right_part.size:
+                return
+            right_part.size = right_size
+        elif left_size > left_part.size + max(0, self.free_space):
+            return
+        left_part.size = left_size
 
     def set_bootable(self, row: int, bootable: bool) -> None:
+        if self.partitions[row].ags_reservation:
+            return
         if bootable:
             for index, part in enumerate(self.partitions):
                 part.bootable = index == row
@@ -149,6 +214,8 @@ class PartitionEditorModel:
             self.partitions[row].bootable = False
 
     def set_extra_directory(self, row: int, path: Path | None) -> None:
+        if self.partitions[row].ags_reservation:
+            return
         self.partitions[row].extra_content_directory = path
 
     @property

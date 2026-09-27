@@ -85,6 +85,12 @@ class PackageInstaller:
         source_dir = self._get_source_dir(pkg)
 
         for rule in pkg.install:
+            # Cached catalogs can still contain the former font documentation rules.
+            destination = rule.dest.strip("/").casefold()
+            if destination == "emu68-hatcher/fonts" or destination.startswith(
+                "emu68-hatcher/fonts/"
+            ):
+                continue
             count = self._apply_install_rule(rule, source_dir)
             files_installed += count
 

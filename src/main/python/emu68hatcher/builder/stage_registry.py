@@ -37,7 +37,7 @@ PIPELINE_STAGES = (
     StageDefinition(BuildStage.INSTALL_WORKBENCH, "Installing Workbench", stage_install_workbench),
     StageDefinition(BuildStage.INSTALL_PACKAGES, "Installing Packages", stage_install_packages),
     StageDefinition(BuildStage.CONFIGURE, "Configuring", stage_configure),
-    StageDefinition(BuildStage.IMPORT_AGS, "Importing AGS", stage_import_ags),
+    StageDefinition(BuildStage.IMPORT_AGS, "Preparing AGS launcher", stage_import_ags),
     StageDefinition(BuildStage.INSTALL_EXTRAS, "Mirroring Extras", stage_install_extras),
     StageDefinition(BuildStage.FINALIZE, "Finalizing", stage_finalize),
     StageDefinition(BuildStage.FLASH, "Flashing to SD card", stage_flash),

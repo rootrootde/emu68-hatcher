@@ -22,8 +22,10 @@ from emu68hatcher.utils.host_tools import find_hst_imager
 logger = logging.getLogger(__name__)
 
 
-# matches hst-imager 1.6.x lines like "[INF] Writing: 1234567 / 9876543 bytes (12.5 %)"
-# plus "Writing: 1234 of 9876" / "Verifying: ..." in case the format drifts
+_PERCENT_PROGRESS_RE = re.compile(
+    r"^\s*(?P<percent>\d{1,3}(?:[.,]\d+)?)%\s+"
+    r"(?P<details>\[[^\]\r\n]+\]\s+\[[^\]\r\n]+\]\s+\[[^\]\r\n]+\])\s*$"
+)
 _PROGRESS_RE = re.compile(
     r"(?P<phase>writing|verifying|reading)\s*[:\-]?\s*"
     r"(?P<done>\d[\d_,.]*)\s*(?:/|of)\s*(?P<total>\d[\d_,.]*)",
@@ -36,8 +38,23 @@ def _handle_progress_line(
     phase_seen: set[str],
     progress_callback: Callable[[float, str], None] | None,
     recent: deque[str],
+    *,
+    verify: bool = True,
 ) -> None:
     """emit progress on a hst-imager progress line, else buffer it and debug-log"""
+    percent_match = _PERCENT_PROGRESS_RE.fullmatch(line)
+    if percent_match:
+        pct = float(percent_match.group("percent").replace(",", "."))
+        if 0.0 <= pct <= 100.0:
+            phase = "Writing and verifying" if verify else "Writing"
+            message = f"{phase}: {pct:.1f}% {percent_match.group('details')}"
+            milestone = f"{phase}:{int(pct) // 10}"
+            if milestone not in phase_seen:
+                phase_seen.add(milestone)
+                logger.info(f"flash: {message}")
+            if progress_callback:
+                progress_callback(pct, message)
+            return
     m = _PROGRESS_RE.search(line)
     if not m:
         recent.append(line)
@@ -112,7 +129,7 @@ def flash_image_to_disk(
             ln = line.rstrip()
             if not ln:
                 return
-            _handle_progress_line(ln, phase_seen, progress_callback, recent)
+            _handle_progress_line(ln, phase_seen, progress_callback, recent, verify=verify)
 
         result = elevation.helper.run(
             args, timeout=timeout, cancel_check=cancel_predicate, on_line=on_line
@@ -142,7 +159,7 @@ def flash_image_to_disk(
     def on_local_line(line: str) -> None:
         line = line.rstrip()
         if line:
-            _handle_progress_line(line, phase_seen, progress_callback, recent)
+            _handle_progress_line(line, phase_seen, progress_callback, recent, verify=verify)
 
     try:
         result = run_local_flash(

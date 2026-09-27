@@ -11,7 +11,7 @@ versions:
 mandatory: false
 download:
   source: web
-  url: http://ftp3.grandis.nu/turran/FTP/Misc/WHDUpdate/datafile/Amiga/Prism2v2.lha
+  url: https://ftp2.grandis.nu/turran/FTP/Misc/WHDUpdate/datafile/Amiga/Prism2v2.lha
   hash: C2C6060C016DC4F22902C8809477985A
   filename: Prism2v2.lha
 install:

@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.config = create_default_config()
+        self._loading_config = False
         self.setup_ui()
         self.resize(1200, 800)
         QTimer.singleShot(0, self.start_tab.check_for_updates)
@@ -117,19 +118,8 @@ class MainWindow(QMainWindow):
         self.ags_tab = AGSTab()
         self.tabs.addTab(self.ags_tab, "AGS")
         self.ags_tab.set_partitions(self.partitions_tab.get_config())
-        for signal in (
-            self.partitions_tab.part_table.device_edited,
-            self.partitions_tab.part_table.volume_edited,
-            self.partitions_tab.part_table.size_edited,
-            self.partitions_tab.part_table.filesystem_edited,
-            self.partitions_tab.part_table.bootable_edited,
-            self.partitions_tab.size_combo.currentIndexChanged,
-            self.partitions_tab.boot_spin.valueChanged,
-            self.partitions_tab.add_btn.clicked,
-            self.partitions_tab.remove_btn.clicked,
-            self.partitions_tab.reset_btn.clicked,
-        ):
-            signal.connect(self._queue_ags_partitions)
+        self.partitions_tab.layout_changed.connect(self._queue_ags_partitions)
+        self.ags_tab.layout_applied.connect(self.partitions_tab.set_config)
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
         # output mode + selected disk drives partition sizing in DEVICE/flash modes
@@ -189,6 +179,7 @@ class MainWindow(QMainWindow):
         if path:
             try:
                 self.config = load_config(Path(path))
+                self._loading_config = True
                 # populate all tabs from loaded config
                 self.kickstart_tab.set_config(
                     self.config.kickstart,
@@ -217,6 +208,8 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(f"Loaded: {path}")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to load config: {e}")
+            finally:
+                self._loading_config = False
 
     def save_config_file(self):
         path, _ = QFileDialog.getSaveFileName(
@@ -297,7 +290,12 @@ class MainWindow(QMainWindow):
             self._queue_ags_partitions()
 
     def _queue_ags_partitions(self, *_args):
-        self.ags_tab.queue_partition_refresh(self.partitions_tab.get_config)
+        if self._loading_config:
+            return
+        try:
+            self.ags_tab.set_partitions(self.partitions_tab.get_config())
+        except ValueError as error:
+            self.ags_tab.set_layout_error(str(error))
 
     def collect_config(self):
         """Validate a fresh config assembled from all tabs."""
@@ -424,6 +422,14 @@ class MainWindow(QMainWindow):
             # config validation (e.g. a malformed static IP) raises here - surface it cleanly
             QMessageBox.warning(self, "Invalid Configuration", str(e))
             return
+
+        if self.config.ags_import and self.config.ags_import.enabled:
+            from emu68hatcher.config.ags_layout import validate_ags_layout
+
+            ags_errors = validate_ags_layout(self.config)
+            if ags_errors:
+                QMessageBox.warning(self, "AGS partitions", "\n".join(ags_errors))
+                return
 
         if self.partitions_tab.extra_content_scan_pending():
             QMessageBox.warning(

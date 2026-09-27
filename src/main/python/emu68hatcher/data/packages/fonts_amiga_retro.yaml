@@ -13,5 +13,3 @@ download:
 install:
 - from: amigafonts-d42987535d94ebbfb51e64fee76f9974c6ae145a/ttf/*.ttf
   to: Fonts/TrueType/
-- from: amigafonts-d42987535d94ebbfb51e64fee76f9974c6ae145a/README
-  to: Emu68-Hatcher/Fonts/AmigaRetro/

@@ -11,5 +11,3 @@ download:
 install:
 - from: MagicWB2.1p/Fonts/*
   to: Fonts/
-- from: MagicWB2.1p/Documents/MagicWB.guide
-  to: Emu68-Hatcher/Fonts/MagicWB/

@@ -11,5 +11,3 @@ download:
 install:
 - from: Proptopaz/fonts/*
   to: Fonts/
-- from: Proptopaz/ReadMe
-  to: Emu68-Hatcher/Fonts/proptopaz/
