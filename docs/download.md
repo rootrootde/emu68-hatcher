@@ -2,7 +2,7 @@
 
 Installers/Packages for macOS, Linux and Windows are available on the releases page:
 
-[Download from GitHub releases](https://github.com/rootrootde/emu68hatcher/releases){ .md-button .md-button--primary }
+[Download from GitHub releases](https://github.com/rootrootde/emu68-hatcher/releases){ .md-button .md-button--primary }
 
 Pick the right file for your platform:
 
