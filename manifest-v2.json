@@ -4749,12 +4749,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "cfd.v20260911.lha",
-              "hash": "5D0A4CC2C441AD4D88E54C648E92C4CD",
+              "filename": "cfd.v20260930.lha",
+              "hash": "8E9EF6CAB45D2FA193457FD5333747A8",
               "path": null,
               "repo": "pulchart/cfd",
               "source": "github",
-              "tag": "v20260911",
+              "tag": "v20260930",
               "url": null
             },
             "emu68_versions": null,
@@ -5911,12 +5911,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "fat95.v20260911.lha",
-              "hash": "D34B63260874797D23EE827682C8F29F",
+              "filename": "fat95.v20260930.lha",
+              "hash": "C4FBB56027EBF4888E316A776B6B3F5A",
               "path": null,
               "repo": "pulchart/fat95",
               "source": "github",
-              "tag": "v20260911",
+              "tag": "v20260930",
               "url": null
             },
             "emu68_versions": null,
@@ -12188,8 +12188,8 @@
             ]
           }
         },
-        "revision": 8,
-        "source_commit": "f88ad4cf33337863f83e16a0f5767c63abf1fbcf"
+        "revision": 9,
+        "source_commit": "c7fa72d27f628dc764074904e46461aff6977373"
       }
     ],
     "hatcher": {
@@ -12234,12 +12234,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.1.0",
       "version": "1.1.0"
     },
-    "revision": 1790553732,
+    "revision": 1790884636,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "/P+t7etZybmOFkttNJS8+184b2sOFwnCM8o4hRhQbLXuS+XEq7bZPWyz8LkShp8Yi14HV91LhLsJOq7XKTqxAg=="
+    "value": "InCF4dIz/6aZTrPjvqbTiCrClQjhYvbRi3GBz86XUpni47FvbWDt3C/GbPRdUd6KMpPoeyNFjQ4nNt0o9HddBg=="
   }
 }
