@@ -12,9 +12,9 @@ default: true
 download:
   source: github
   repo: pulchart/cfd
-  tag: v20260911
-  hash: 5D0A4CC2C441AD4D88E54C648E92C4CD
-  filename: cfd.v20260911.lha
+  tag: v20260930
+  hash: 8E9EF6CAB45D2FA193457FD5333747A8
+  filename: cfd.v20260930.lha
 install:
 # small (no debug) / 68020+ tier; the device now needs ptable.library beside it
 - from: cfd/small/68020/devs/compactflash.device
