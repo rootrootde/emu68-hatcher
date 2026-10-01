@@ -12,19 +12,3 @@ install:
   to: Libs/
 - from: ttflib68040_0.85.lha/ttflib68040/ttfinstall
   to: C/
-scripts:
-- name: TrueType fonts
-  content: |
-    IF NOT EXISTS S:Hatcher-Fonts.done
-      IF EXISTS FONTS:TrueType
-        FailAt 21
-        C:Echo "Registering TrueType fonts..."
-        C:ttfinstall "FONTS:TrueType/#?.ttf" FONTS:
-        IF WARN
-          C:Echo "Font registration failed. It will be retried on the next boot."
-        ELSE
-          C:Echo >S:Hatcher-Fonts.done "TRUE"
-        ENDIF
-        FailAt 10
-      ENDIF
-    ENDIF

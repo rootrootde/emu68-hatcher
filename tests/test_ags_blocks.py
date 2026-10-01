@@ -43,12 +43,57 @@ def test_partition_copy_reports_live_progress(monkeypatch, line, done):
             workflow._update_state.assert_not_called()
         else:
             workflow._update_state.assert_called_once_with(
-                progress=95 * done / 1000, message=f"Copy WHD; {done:,}/1,000 bytes"
+                progress=95 * done / 1000, message=f"Copy WHD: {done} / 1000 B"
             )
         return SimpleNamespace(
             success=True,
             stdout="Destination partition number '1':\n- Size '1 KB' (1000 bytes)\n"
             "Copied '1 KB' (1000 bytes) in 0h:00m:00s\n",
+        )
+
+    runner = SimpleNamespace(run_command=run_command)
+    ags_blocks.copy_creation_script(workflow, runner, HSTScript([command]), plan, "target")
+
+
+@pytest.mark.parametrize(
+    "size,initial,halfway",
+    [
+        (512, "0 / 512 B", "256 / 512 B"),
+        (4096, "0.00 / 4.00 KiB", "2.00 / 4.00 KiB"),
+        (4 * 1024**2, "0.00 / 4.00 MiB", "2.00 / 4.00 MiB"),
+        (10_737_893_376, "0.00 / 10.00 GiB", "5.00 / 10.00 GiB"),
+    ],
+)
+def test_partition_copy_status_uses_readable_units(monkeypatch, size, initial, halfway):
+    from emu68hatcher.builder import ags_blocks, ags_source
+    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine, HSTScript
+
+    monkeypatch.setattr(ags_source, "validate_source_identity", lambda inventory: None)
+    monkeypatch.setattr(ags_blocks, "verify_target_partitions", lambda *args: None)
+    partition = SimpleNamespace(index=1, size=size)
+    plan = SimpleNamespace(
+        inventory=SimpleNamespace(
+            partitions=[partition], components=[SimpleNamespace(partition=partition)]
+        )
+    )
+    command = HSTCommandLine(
+        HSTCommand.RDB_PART_COPY, ["source", "1", "target"], "Copy AGS Games to SDH2"
+    )
+    workflow = Mock()
+
+    def run_command(command, **kwargs):
+        workflow._update_state.assert_called_once_with(
+            progress=0, message=f"Copy AGS Games to SDH2: {initial}"
+        )
+        kwargs["on_line"]("stdout", f"Copying {size // 2} / {size}")
+        assert workflow._update_state.call_args.kwargs == {
+            "progress": 47.5,
+            "message": f"Copy AGS Games to SDH2: {halfway}",
+        }
+        return SimpleNamespace(
+            success=True,
+            stdout=f"Destination partition number '1':\n- Size 'size' ({size} bytes)\n"
+            f"Copied 'size' ({size} bytes) in 0h:00m:00s\n",
         )
 
     runner = SimpleNamespace(run_command=run_command)
@@ -122,4 +167,5 @@ def test_copy_commands_keep_windows_device_path_and_partition_order():
         HSTCommand.RDB_PART_FORMAT,
     ]
     assert commands[2].args[2] == raw + r"\mbr\2"
+    assert commands[2].description == "Copy AGS WHDLoad to SDH4"
     assert commands[-1].args[1] == "3"

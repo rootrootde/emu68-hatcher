@@ -239,7 +239,7 @@ def generate_rdb_partition_commands(
                         "PFS3",
                         "--verbose",
                     ],
-                    f"Copy AGS {source.volume} to {part.device} ({source.size:,} bytes)",
+                    f"Copy AGS {source.volume} to {part.device}",
                 )
             )
             continue

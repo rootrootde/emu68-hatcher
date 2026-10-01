@@ -173,6 +173,13 @@ def verify_target_partitions(workflow, runner, plan, image_path) -> None:
             raise BuildError("AGS target volumes differ from the applied layout")
 
 
+def _format_copy_progress(done: int, total: int) -> str:
+    for unit, divisor in (("TiB", 1024**4), ("GiB", 1024**3), ("MiB", 1024**2), ("KiB", 1024)):
+        if total >= divisor:
+            return f"{done / divisor:.2f} / {total / divisor:.2f} {unit}"
+    return f"{done} / {total} B"
+
+
 def copy_creation_script(workflow, runner, script, plan, image_path) -> None:
     import time
 
@@ -193,7 +200,8 @@ def copy_creation_script(workflow, runner, script, plan, image_path) -> None:
             workflow._milestone(command.description)
         workflow._update_state(
             progress=95 * completed / total,
-            message=f"{command.description}; {completed:,}/{total:,} bytes",
+            message=f"{command.description}: "
+            + _format_copy_progress(0 if is_copy else completed, expected if is_copy else total),
         )
         start = time.monotonic()
 
@@ -219,7 +227,7 @@ def copy_creation_script(workflow, runner, script, plan, image_path) -> None:
                 return
             workflow._update_state(
                 progress=95 * (completed + done) / total,
-                message=f"{command.description}; {done:,}/{expected:,} bytes",
+                message=f"{command.description}: {_format_copy_progress(done, expected)}",
             )
 
         result = runner.run_command(

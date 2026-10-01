@@ -365,6 +365,9 @@ def apply_package_scripts(
         if not pkg or not pkg.scripts:
             continue
         for mod in pkg.scripts:
+            # cached catalogs still register fonts here; first boot now does it
+            if pkg.name.casefold() == "ttflib" and mod.name == "TrueType fonts":
+                continue
             if mod.when_user_archive is not None and mod.when_user_archive != (
                 pkg_name in user_archives
             ):

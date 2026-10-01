@@ -95,6 +95,7 @@ class BuildProgressDialog(QDialog):
 
         # current action
         self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
 
         # collapsible log - hidden by default
@@ -155,9 +156,7 @@ class BuildProgressDialog(QDialog):
     def on_progress(self, stage: str, progress: float, message: str):
         """transient status update - per-step bar + overall bar + status label"""
         name = self._STAGE_NAMES.get(stage, stage.title())
-        # the flasher can't report byte progress (hst-imager write is silent when piped),
-        # so animate the step bar instead of a stuck 0% - it flips to a real % the moment
-        # any progress > 0 arrives, in case a future hst-imager starts reporting it
+        # animate until the first flash progress report arrives
         if stage == "flash" and progress <= 0.0:
             # native bar (no stylesheet) animates the marquee reliably; styled ones don't on macOS
             self.progress_bar.setStyleSheet("")
@@ -170,6 +169,12 @@ class BuildProgressDialog(QDialog):
             self.progress_bar.setValue(int(progress))
             self.stage_label.setText(f"{name}  {int(progress)}%")
         self.status_label.setText(message)
+        self.status_label.setToolTip(
+            "Speed measures image data processed over the last 20 seconds, including skipped "
+            "empty ranges. Remaining time is an estimate."
+            if stage == "flash"
+            else ""
+        )
         # overall = how far through the whole pipeline; clamp monotonic so it never dips
         if stage in self._STAGE_ORDER:
             idx = self._STAGE_ORDER.index(stage)

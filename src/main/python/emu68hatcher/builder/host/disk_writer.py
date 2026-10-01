@@ -12,6 +12,7 @@ from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
 from emu68hatcher.builder.host._flash_process import run_local_flash
+from emu68hatcher.builder.host._flash_progress import FlashProgress
 from emu68hatcher.builder.host.elevation import (
     ElevationToken,
     refresh_elevation,
@@ -39,6 +40,7 @@ def _handle_progress_line(
     progress_callback: Callable[[float, str], None] | None,
     recent: deque[str],
     *,
+    statistics: FlashProgress,
     verify: bool = True,
 ) -> None:
     """emit progress on a hst-imager progress line, else buffer it and debug-log"""
@@ -47,11 +49,11 @@ def _handle_progress_line(
         pct = float(percent_match.group("percent").replace(",", "."))
         if 0.0 <= pct <= 100.0:
             phase = "Writing and verifying" if verify else "Writing"
-            message = f"{phase}: {pct:.1f}% {percent_match.group('details')}"
+            message = statistics.format(phase, pct, percent_match.group("details"))
             milestone = f"{phase}:{int(pct) // 10}"
             if milestone not in phase_seen:
                 phase_seen.add(milestone)
-                logger.info(f"flash: {message}")
+                logger.info("flash: %.1f%%; %s", pct, message.replace("\n", "; "))
             if progress_callback:
                 progress_callback(pct, message)
             return
@@ -112,6 +114,8 @@ def flash_image_to_disk(
     if force:
         args.append("--force")
 
+    statistics = FlashProgress(image_path.stat().st_size)
+
     # helper IPC streams stdout/stderr via on_line so the GUI progress bar moves while writing
     if (
         elevation is not None
@@ -129,7 +133,9 @@ def flash_image_to_disk(
             ln = line.rstrip()
             if not ln:
                 return
-            _handle_progress_line(ln, phase_seen, progress_callback, recent, verify=verify)
+            _handle_progress_line(
+                ln, phase_seen, progress_callback, recent, statistics=statistics, verify=verify
+            )
 
         result = elevation.helper.run(
             args, timeout=timeout, cancel_check=cancel_predicate, on_line=on_line
@@ -159,7 +165,9 @@ def flash_image_to_disk(
     def on_local_line(line: str) -> None:
         line = line.rstrip()
         if line:
-            _handle_progress_line(line, phase_seen, progress_callback, recent, verify=verify)
+            _handle_progress_line(
+                line, phase_seen, progress_callback, recent, statistics=statistics, verify=verify
+            )
 
     try:
         result = run_local_flash(

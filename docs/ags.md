@@ -27,11 +27,15 @@ The layout bar shows the same planned partitions as the Partitions tab. If the s
 
 Original game starters and menus remain on the copied partition. The AGS block in **S:User-Startup** supplies **AGS:**, **Scripts:**, **AGSOS:**, **WHD_Games:** and **WHD_Demos:**. Work supplies **Emulators:** and Games supplies **Premium:**. Media supplies **ST-00:**. No new script assumes fixed SDH device numbers.
 
-AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. Hardware selection and save-directory setup use the original AGS behavior. In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
+AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. On a detected PiStorm, Hatcher defaults AGS to **Real Hardware** (`HW=Real`) and saves it in **ENVARC:HW** if no hardware choice exists. This avoids AGS's emulator commands on the Amiga. Existing choices are retained, and emulators still use AGS's hardware menu. The **Set HW** menu remains available to change the selection. Save-directory setup uses the original AGS behavior.
+
+In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
 
 Missing Ex, kgiconload, WBLoad and WBRun helpers are supplied from AGS. Existing Workbench versions are retained. Additional AGS commands, libraries and fonts are available through the portable search paths. The import leaves **S:WHDLoad.prefs** and **S:WHDLoad-Startup** unchanged. AGS can subsequently write these files through its original Speed_Reset and Quit-Key functions.
 
-AGS retains the source image's menu and theme screen modes. Both supported AGA profiles default to native PAL at 640x256 with 256 colours, independently of the Workbench display setting.
+When a VideoCore Workbench mode is selected, Hatcher sets **AGS2.conf** and every **Themes/*.conf** to VideoCore 640x256 with 256 colours. AGS keeps its own resolution regardless of the selected Workbench resolution. Backgrounds, screenshots and layout coordinates remain unchanged. Native Workbench builds retain the source image's menu and theme modes.
+
+The **Themes_AGAtoRTG** and **Themes_RTGtoAGA** scripts switch between these VideoCore and native PAL modes. They also work when the optional **- Use RTG Screen -.run** and **- Use AGA Screen -.run** menu entries are absent. To switch from an Amiga Shell, run **Execute AGS:Scripts/Themes_AGAtoRTG** or **Execute AGS:Scripts/Themes_RTGtoAGA**, then restart AGS. WHDLoad games still use their own screen modes and video output.
 
 Search, favourites, filters, random launch, documentation, themes and music remain available through their original scripts. Their presence does not establish runtime compatibility. Work applications are copied but not started automatically. **Emulators1:** and **Emulators2:** are not assigned without a verified source mapping; the v30 ScummVM readme still refers to Emulators2:. Missing emulator data, icons, slaves or commercial Premium data remain source issues.
 
@@ -41,7 +45,7 @@ Napalm temporarily changes **ENV:RtgMaster**. onEscapee invokes SetPatch and add
 
 Hatcher checks source identity before target initialization and around partition copies. Source and output must be different files, and the source cannot be stored on the selected output or flash disk. Capacity checks include the output image's full configured size, temporary staging and any cross-volume move.
 
-Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It also stages the corrected Check_Drives script on the imported WHDLoad partition and verifies its hash after copying. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
+Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It stages the corrected Check_Drives and theme-switch scripts on the imported WHDLoad partition, along with the theme configurations for RTG builds. Their hashes are verified after copying. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
 
 Production checks compare HST's reported copy byte count with the planned length, then inspect target geometry, partition order, volume names and filesystem flags. Original AGS profile markers and generated startup setup are read back and hashed before cleanup. A successful HST exit code alone is insufficient: the tested version can report success after copying zero bytes. Production checks do not compare every copied block or enumerate every game file.
 

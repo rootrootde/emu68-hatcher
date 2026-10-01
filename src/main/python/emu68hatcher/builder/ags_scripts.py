@@ -107,17 +107,29 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
     ]
     _check_cancel(cancel_check)
     user_startup = resolve_staging_path(boot_root, "S/User-Startup")
-    result = inject_script(
-        user_startup,
-        ScriptInjection(
-            target_script="S/User-Startup",
-            action=InjectionAction.ADD,
-            content="\n".join(setup),
-            name="AGS assigns",
+    for name, content in (
+        ("AGS assigns", "\n".join(setup)),
+        (
+            "AGS hardware default",
+            'If "$SYSTEM" EQ "PiStorm"\n'
+            " If NOT EXISTS ENV:HW\n"
+            '  SetEnv HW "Real"\n'
+            "  Copy >NIL: ENV:HW ENVARC:HW\n"
+            " EndIf\n"
+            "EndIf",
         ),
-    )
-    if result.error or not result.matched:
-        raise BuildError(f"Could not add AGS assigns to S:User-Startup: {result.error}")
+    ):
+        result = inject_script(
+            user_startup,
+            ScriptInjection(
+                target_script="S/User-Startup",
+                action=InjectionAction.ADD,
+                content=content,
+                name=name,
+            ),
+        )
+        if result.error or not result.matched:
+            raise BuildError(f"Could not add {name} to S:User-Startup: {result.error}")
     verified.append(
         ("__boot__", "S/User-Startup", hashlib.sha256(user_startup.read_bytes()).hexdigest())
     )

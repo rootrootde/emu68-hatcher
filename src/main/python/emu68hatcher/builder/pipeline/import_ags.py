@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import tempfile
 import time
+from collections import defaultdict
 from dataclasses import replace
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from emu68hatcher.builder.ags_source import validate_source_identity
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.state import BuildStage
+from emu68hatcher.config.display_models import WorkbenchScreenMode
 
 
 def stage_import_ags(workflow, image):
@@ -20,6 +22,7 @@ def stage_import_ags(workflow, image):
     if plan is None:
         workflow._update_state(progress=100.0)
         return image
+    from emu68hatcher.builder.ags_display import prepare_ags_display
     from emu68hatcher.builder.ags_scripts import prepare_ags_launcher
 
     started = time.monotonic()
@@ -46,6 +49,16 @@ def stage_import_ags(workflow, image):
             if not resolve_staging_path(boot, f"C/{name}").is_file():
                 raise BuildError(f"AGS source is missing helper {name}")
     launcher = prepare_ags_launcher(plan, boot, cancel_check=lambda: workflow._cancelled)
+    rtg = workflow.config.display.workbench_mode != WorkbenchScreenMode.NATIVE
+    workflow._milestone("Configuring AGS for VideoCore RTG" if rtg else "Keeping AGS native modes")
+    display_files = prepare_ags_display(
+        plan, staging, rtg=rtg, cancel_check=lambda: workflow._cancelled
+    )
+    launcher = replace(
+        launcher,
+        verified_files=launcher.verified_files + display_files,
+        staged_files=launcher.staged_files + tuple((d, p) for d, p, _ in display_files),
+    )
     validate_source_identity(plan.inventory)
     workflow._update_state(progress=100.0)
     workflow._milestone(f"AGS portable launcher prepared in {time.monotonic() - started:.2f}s")
@@ -59,8 +72,10 @@ def verify_ags_staging(workflow, image) -> None:
     launcher = image.ags_launcher
     if launcher is None:
         raise BuildError("AGS portable launcher preparation is missing")
+    staged_files = set(launcher.staged_files)
     for device, relative, digest in launcher.verified_files:
-        if (device, relative) not in launcher.staged_files:
+        workflow._check_cancelled()
+        if (device, relative) not in staged_files:
             continue
         device = workflow.config.boot_device if device == "__boot__" else device
         path = resolve_staging_path(image.workspace.staging_dir, f"{device}/{relative}")
@@ -84,14 +99,23 @@ def verify_ags_target(workflow, image) -> None:
     runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
     verify_target_partitions(workflow, runner, plan, image.image_path)
     mapping = _build_device_map(workflow)
+    batches = defaultdict(list)
+    for device, relative, digest in image.ags_launcher.verified_files:
+        # read the theme configs together instead of starting HST once per theme.
+        pattern = (
+            "AGS2/Themes/*.conf"
+            if Path(relative).parent.as_posix().casefold() == "ags2/themes"
+            else relative
+        )
+        batches[device, pattern].append((relative, digest))
     with tempfile.TemporaryDirectory(prefix="ags-verify-") as temporary:
-        for number, (device, relative, digest) in enumerate(image.ags_launcher.verified_files):
+        for number, ((device, pattern), files) in enumerate(batches.items()):
             workflow._check_cancelled()
             device = workflow.config.boot_device if device == "__boot__" else device
             destination = Path(temporary) / str(number)
             destination.mkdir()
             source = hst_path(
-                image.image_path, "mbr", mapping[device], "rdb", device, *relative.split("/")
+                image.image_path, "mbr", mapping[device], "rdb", device, *pattern.split("/")
             )
             result = runner.run_command(
                 HSTCommandLine(
@@ -99,10 +123,12 @@ def verify_ags_target(workflow, image) -> None:
                 ),
                 elevation=workflow.state.elevation,
             )
-            copied = destination / Path(relative).name
-            if (
-                not result.success
-                or not copied.is_file()
-                or hashlib.sha256(copied.read_bytes()).hexdigest() != digest
-            ):
-                raise BuildError(f"AGS target portable file differs: {device}:{relative}")
+            for relative, digest in files:
+                workflow._check_cancelled()
+                copied = resolve_staging_path(destination, Path(relative).name)
+                if (
+                    not result.success
+                    or not copied.is_file()
+                    or hashlib.sha256(copied.read_bytes()).hexdigest() != digest
+                ):
+                    raise BuildError(f"AGS target portable file differs: {device}:{relative}")

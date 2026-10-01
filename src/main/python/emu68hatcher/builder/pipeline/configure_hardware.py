@@ -33,7 +33,7 @@ VIDEOCORE_TOOLTYPES = [
     "(VC4_SWITCH_INVERT=YES)",
     "(VC4_SWITCH_METHOD=CSI)",
     "(VC4_SWITCH_METHOD=CTS)",
-    "VC4_LEGACY_ID",
+    "VC4_LEGACY_ID",  # matches BoardType 14 in the generated P96 settings
 ]
 UAEGFX_TOOLTYPES = [
     "BOARDTYPE=uaegfx",
