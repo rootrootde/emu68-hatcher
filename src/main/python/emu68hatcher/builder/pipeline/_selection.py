@@ -29,6 +29,8 @@ def resolve_selection(
     choices = {p.name.lower(): p.enabled for p in config.packages}
     if config.ags_import is not None and config.ags_import.enabled:
         choices["whdload"] = True
+    if config.rgb2rtg.enabled:
+        choices.update(toolsdaemon=True, picasso96=True)
     resolution = resolve_choices(
         choices,
         kickstart_version,

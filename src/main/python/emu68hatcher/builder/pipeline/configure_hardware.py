@@ -92,7 +92,9 @@ def _override_videocore_card(
     source = image.extracted.downloaded.downloaded_files.get("emu68_videocore")
     if not source or not source.exists():
         return
-    dest = boot_staging / "Libs" / "Picasso96" / "VideoCore.card"
+    from emu68hatcher.builder.staging.files import resolve_staging_path
+
+    dest = resolve_staging_path(boot_staging, "Libs/Picasso96/VideoCore.card")
     if not dest.parent.exists():
         workflow.logger.warning(f"VideoCore.card destination not found: {dest.parent}")
         return
@@ -101,21 +103,41 @@ def _override_videocore_card(
 
 
 def _configure_videocore_tooltypes(workflow: BuildWorkflow, boot_staging: Path) -> None:
-    from emu68hatcher.builder.staging.files import write_info_tooltypes
+    from emu68hatcher.builder.staging.files import (
+        read_info_tooltypes,
+        resolve_source_path,
+        write_info_tooltypes,
+    )
 
-    monitors = boot_staging / "Devs" / "Monitors"
-    storage = boot_staging / "Storage" / "Monitors"
+    monitors = resolve_source_path(boot_staging, "Devs/Monitors")
+    storage = resolve_source_path(boot_staging, "Storage/Monitors")
     for name, tooltypes, directories in (
         ("Videocore.info", VIDEOCORE_TOOLTYPES, (monitors, storage)),
         ("uaegfx.info", UAEGFX_TOOLTYPES, (storage, monitors)),
     ):
         info = next(
-            (directory / name for directory in directories if (directory / name).exists()), None
+            (
+                found
+                for directory in directories
+                if directory is not None and (found := resolve_source_path(directory, name))
+            ),
+            None,
         )
         if not info:
             workflow.logger.debug(f"{name} not found, skipping tooltype configuration")
             continue
         try:
+            if workflow.config.rgb2rtg.enabled and name == "Videocore.info":
+                required = {"boardtype", "settingsfile", "vc4_legacy_id"}
+                existing = [
+                    entry
+                    for entry in read_info_tooltypes(info)
+                    if entry.strip(" ()").split("=", 1)[0].lower() not in required
+                ]
+                keys = {entry.split("=", 1)[0].lower() for entry in existing}
+                tooltypes = existing + [
+                    entry for entry in tooltypes if entry.split("=", 1)[0].lower() not in keys
+                ]
             write_info_tooltypes(info, tooltypes)
             workflow.logger.info(f"Configured {name} tooltypes (BOARDTYPE set)")
         except (OSError, ValueError):

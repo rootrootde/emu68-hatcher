@@ -108,6 +108,8 @@ class MainWindow(QMainWindow):
         self.kickstart_tab.set_emu68_version(self.emu68_tab.get_emu68_version())
         self.emu68_tab.settings_changed.connect(self._refresh_boot_files_preview)
         self.display_tab.settings_changed.connect(self._refresh_boot_files_preview)
+        self.emu68_tab.rgb2rtg_check.toggled.connect(self._sync_rgb2rtg_display)
+        self.emu68_tab.rgb2rtg_video.currentIndexChanged.connect(self._sync_rgb2rtg_display)
 
         self.output_tab = OutputTab()
         self.tabs.addTab(self.output_tab, "Output")
@@ -195,6 +197,7 @@ class MainWindow(QMainWindow):
                 self.display_tab.set_picasso96_archive(self.config.display.picasso96_archive)
                 self.emu68_tab.set_emu68_version(self.config.emu68_version)
                 self.emu68_tab.set_settings(self.config.emu68_boot)
+                self.emu68_tab.set_rgb2rtg(self.config.rgb2rtg)
                 self.display_tab.set_emu68_boot_settings(self.config.emu68_boot)
                 self.packages_tab.set_kickstart_version(self.config.kickstart.version.value)
                 # set_config above already repopulated the icon list for the loaded version
@@ -215,6 +218,14 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", f"Failed to load config: {e}")
             finally:
                 self._loading_config = False
+                self._sync_rgb2rtg_display()
+
+    def _sync_rgb2rtg_display(self, _value=None):
+        if getattr(self, "_loading_config", False):
+            return
+        settings = self.emu68_tab.get_rgb2rtg()
+        self.display_tab.set_rgb2rtg_video(settings.video if settings.enabled else None)
+        self._refresh_boot_files_preview()
 
     def save_config_file(self):
         path, _ = QFileDialog.getSaveFileName(
@@ -266,7 +277,7 @@ class MainWindow(QMainWindow):
             package["name"] == "poseidon" and package["enabled"]
             for package in self.packages_tab.get_config()
         )
-        return render_boot_partition_files(
+        files = render_boot_partition_files(
             screen_mode=screen_mode,
             custom_cvt=custom_cvt,
             rom_filename=self._current_boot_rom_filename(),
@@ -274,6 +285,15 @@ class MainWindow(QMainWindow):
             usb_otg=usb_otg,
             boot_settings=boot_settings,
         )
+
+        rgb = self.emu68_tab.get_rgb2rtg()
+        if rgb.enabled:
+            from emu68hatcher.builder.rgb2rtg import rgb2rtg_config
+
+            for name in ("config.txt", "configBAK.txt"):
+                if name in files:
+                    files[name] = rgb2rtg_config(files[name], rgb.video)
+        return files
 
     def _collect_emu68_boot_settings(self) -> Emu68BootSettings:
         settings = self.emu68_tab.get_settings()
@@ -374,6 +394,7 @@ class MainWindow(QMainWindow):
             "miamidx_key_directory": self.network_tab.get_miamidx_key_directory(),
             "wifi": wifi.model_dump(mode="python") if wifi else None,
             "network": network.model_dump(mode="python"),
+            "rgb2rtg": self.emu68_tab.get_rgb2rtg().model_dump(mode="python"),
             "emu68_version": self.emu68_tab.get_emu68_version(),
             "emu68_boot": self._collect_emu68_boot_settings().model_dump(mode="python"),
         }

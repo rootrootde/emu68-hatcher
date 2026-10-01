@@ -94,6 +94,10 @@ def configure_preferences(
     workflow._update_state(progress=85.0)
     workflow._milestone("Configuring hardware")
     configure_hardware(workflow, image, boot_staging)
+    if workflow.config.rgb2rtg.enabled:
+        from emu68hatcher.builder.rgb2rtg import configure_rgb2rtg
+
+        configure_rgb2rtg(workflow, image, boot_staging)
 
     theme = workflow.config.display.workbench_theme
     theme_paths = install_workbench_theme(boot_staging, theme)

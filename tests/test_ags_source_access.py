@@ -49,6 +49,7 @@ def test_no_elevation_needs_no_second_source_probe(monkeypatch):
 def test_validation_checks_source_after_acquiring_elevation(monkeypatch):
     workflow = Mock()
     workflow.config.network_stack = NetworkStack.AMITCP_NG
+    workflow.config.rgb2rtg.enabled = False
     workflow.state.elevation = None
     token = object()
     plan = Mock()

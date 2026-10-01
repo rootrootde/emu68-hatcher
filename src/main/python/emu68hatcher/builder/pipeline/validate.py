@@ -30,9 +30,14 @@ if TYPE_CHECKING:
 
 def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
     workflow._update_state(BuildStage.VALIDATE, 0.0, "Validating configuration...")
+    from emu68hatcher.builder.rgb2rtg import validate_rgb2rtg
+
+    validate_rgb2rtg(workflow)
     existing_dirs = _existing_asset_directories(workflow)
     kickstart_version = workflow.config.kickstart.version.value
     rom_path, rom_info = _resolve_rom(workflow, existing_dirs, kickstart_version)
+    if workflow.config.rgb2rtg.enabled and rom_info.get("model") != "A1200":
+        raise BuildError("RGB2RTG requires an A1200 ROM and A1200/PiStorm32-lite hardware")
     found_media = _resolve_media(workflow, existing_dirs, kickstart_version)
     _check_icon_set_adf(workflow, found_media, kickstart_version)
     _check_optional_package_adfs(workflow, found_media, kickstart_version)

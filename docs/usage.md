@@ -64,3 +64,41 @@ Flashing asks for admin access. On macOS, hst-imager also needs Full Disk Access
 ## Save / load configuration
 
 Use **Save Config...** and **Load Config...** for JSON configs. wifi credentials are not saved.
+
+## RGB2RTG
+
+RGB2RTG v0.73 is an optional experimental installation for an A1200 with
+PiStorm32-lite and a Raspberry Pi 4 or CM4. Pi 3 is not tested. Select it in the
+Emu68 tab and browse to your local **RGB2RTG_A1200_v0.73.7z** release from
+[the author](https://astair86.itch.io/rgb2rtg-amiga1200). Hatcher checks the release
+files before building. The archive is not included or downloaded automatically.
+
+Choose PAL (1080p50) or NTSC (1080p60). This sets and locks the HDMI mode on the
+Display tab while RGB2RTG is enabled. Use a VideoCore Workbench screen mode,
+and disable Framethrower/C790 capture. Read/write eMMC unit 0 access is required
+for the command to save boot settings. Enabling RGB2RTG selects the matching
+Emu68 1.1.0-beta.1 baseline and installs ToolsDaemon and Picasso96 dependencies.
+The custom kernel and VideoCore 1.5 driver are installed together.
+
+The desktop menu is **System → RGB2RTG**, with **On/off...**, **RTG Image...**
+and **About...**. Saved preferences are applied during User-Startup. Power cycle
+the Amiga after installation and after changing its video standard or HDMI rate.
+
+To return to the baseline kernel and driver, run this from an Amiga Shell:
+
+```text
+Execute SYS:Emu68-Hatcher/RGB2RTG/Recover
+```
+
+Recovery removes Hatcher's RGB2RTG submenu and startup block while retaining
+other menu and startup edits. It restores both boot configurations, including
+the FirstBoot backup if still present, before restoring the matched baseline
+driver. If recovery reports a failure, complete the indicated restore before
+power cycling. Copies of the baseline configuration, driver, menu and startup
+files remain for manual recovery. Power cycle the Amiga to start the restored
+kernel and driver and reload the menus.
+
+Extra Files are copied after this installation. Replacing the kernel, driver,
+monitor icon, boot configuration or startup files there can break RGB2RTG and
+its recovery. Hardware acceptance still requires testing on the A1200; a host
+build or emulator cannot verify the capture path.

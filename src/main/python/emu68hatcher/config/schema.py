@@ -42,6 +42,7 @@ from emu68hatcher.config.partition_models import (
     MBRPartition,
     PartitionConfig,
 )
+from emu68hatcher.config.rgb2rtg_models import RGB2RTGConfig
 
 __all__ = [
     "AGSImportConfig",
@@ -265,6 +266,7 @@ class BuildConfig(_ConfigModel):
     packages: list[PackageConfig] = Field(default_factory=list)
     icon_set: str = "Default"
     ags_import: AGSImportConfig | None = None
+    rgb2rtg: RGB2RTGConfig = Field(default_factory=RGB2RTGConfig)
 
     # partition layout
     partitions: PartitionConfig | None = None

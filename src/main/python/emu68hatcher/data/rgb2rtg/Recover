@@ -1,0 +1,62 @@
+FailAt 21
+IF NOT EXISTS SYS:Emu68-Hatcher/RGB2RTG/VideoCore.card
+  Echo "RGB2RTG baseline driver missing. Nothing changed."
+  Quit 20
+ENDIF
+IF NOT EXISTS C:rgb2rtg
+  Echo "RGB2RTG command missing. Nothing changed."
+  Quit 20
+ENDIF
+C:rgb2rtg INSTALL CHECK >NIL:
+IF "$RGB2RTG_BOOT" EQ ""
+  Echo "Emu68 boot partition not found. Nothing changed."
+  Quit 20
+ENDIF
+IF "$RGB2RTG_WRITABLE" NOT EQ "1"
+  Echo "Emu68 boot partition is not writable. Nothing changed."
+  Quit 20
+ENDIF
+Copy "${RGB2RTG_BOOT}config.txt" "${RGB2RTG_BOOT}config.txt.rgb2rtg-recovery" QUIET
+IF WARN
+  Quit 20
+ENDIF
+IF EXISTS "${RGB2RTG_BOOT}configBAK.txt"
+  Copy "${RGB2RTG_BOOT}configBAK.txt" "${RGB2RTG_BOOT}configBAK.txt.rgb2rtg-recovery" QUIET
+  IF WARN
+    Quit 20
+  ENDIF
+  C:rgb2rtg UNINSTALL CONFIG FILE "${RGB2RTG_BOOT}configBAK.txt"
+  IF WARN
+    Echo "FirstBoot backup configuration could not be restored. Driver unchanged."
+    Quit 20
+  ENDIF
+ENDIF
+C:rgb2rtg UNINSTALL CONFIG
+IF WARN
+  IF EXISTS "${RGB2RTG_BOOT}configBAK.txt.rgb2rtg-recovery"
+    Copy "${RGB2RTG_BOOT}configBAK.txt.rgb2rtg-recovery" "${RGB2RTG_BOOT}configBAK.txt" QUIET
+  ENDIF
+  Echo "Boot configuration could not be restored. Driver unchanged."
+  Quit 20
+ENDIF
+Copy SYS:Emu68-Hatcher/RGB2RTG/VideoCore.card LIBS:Picasso96/VideoCore.card CLONE
+IF WARN
+  Copy "${RGB2RTG_BOOT}config.txt.rgb2rtg-recovery" "${RGB2RTG_BOOT}config.txt" QUIET
+  IF EXISTS "${RGB2RTG_BOOT}configBAK.txt.rgb2rtg-recovery"
+    Copy "${RGB2RTG_BOOT}configBAK.txt.rgb2rtg-recovery" "${RGB2RTG_BOOT}configBAK.txt" QUIET
+  ENDIF
+  Echo "Driver restore failed. RGB2RTG configuration restored; check both files before power cycling."
+  Quit 20
+ENDIF
+Copy SYS:Emu68-Hatcher/RGB2RTG/Videocore.info DEVS:Monitors/Videocore.info CLONE
+IF WARN
+  Echo "Baseline kernel/driver restored; monitor icon restore failed. Restore it manually."
+  Quit 20
+ENDIF
+SYS:Rexxc/rx SYS:Emu68-Hatcher/RGB2RTG/RemoveMenus.rexx
+IF WARN
+  Echo "Baseline kernel/driver restored. Remove the RGB2RTG submenu and startup block manually."
+  Quit 20
+ENDIF
+Delete ENVARC:RGB2RTG.prefs ENV:RGB2RTG.prefs C:rgb2rtg QUIET
+Echo "Baseline kernel and driver restored. Power cycle the Amiga."

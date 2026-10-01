@@ -33,6 +33,14 @@ def stage_extract(
     extracted_paths = dict(downloaded.extracted_paths)
     _extract_downloaded(workflow, downloaded, extracted_paths)
     _extract_local_archives(workflow, downloaded, extracted_paths)
+    if workflow.config.rgb2rtg.enabled:
+        from emu68hatcher.builder.rgb2rtg import extract_rgb2rtg
+
+        workflow._check_cancelled()
+        extracted_paths["rgb2rtg"] = extract_rgb2rtg(
+            workflow.config.rgb2rtg.archive, downloaded.workspace.extracted_dir / "rgb2rtg"
+        )
+        workflow._check_cancelled()
     return ExtractedArtifacts(downloaded=downloaded, extracted_paths=extracted_paths)
 
 

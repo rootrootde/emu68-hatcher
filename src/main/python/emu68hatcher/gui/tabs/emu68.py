@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
     QComboBox,
+    QFileDialog,
     QFormLayout,
     QFrame,
     QGridLayout,
@@ -26,6 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher.config.boot_models import Emu68BootSettings
+from emu68hatcher.config.rgb2rtg_models import RGB2RTGConfig
 from emu68hatcher.config.schema import Emu68Version
 from emu68hatcher.gui.widgets import select_combo_by_data
 
@@ -93,6 +95,7 @@ class Emu68Tab(QWidget):
 
         self.hardware_group = self._create_hardware_group()
         self.content_layout.addWidget(self.hardware_group)
+        self.content_layout.addWidget(self._create_rgb2rtg_group())
 
         self.boot_group = self._create_boot_group()
         self.storage_group = self._create_storage_group()
@@ -361,6 +364,56 @@ class Emu68Tab(QWidget):
         layout.addWidget(self.release_radio_beta)
         layout.addWidget(self.release_radio_alpha)
         return release_group
+
+    def _create_rgb2rtg_group(self) -> QGroupBox:
+        group = QGroupBox("RGB2RTG v0.73 (experimental)")
+        form = self._form_layout(group)
+        self.rgb2rtg_check = QCheckBox("A1200 / PiStorm32-lite with Pi 4 or CM4")
+        self.rgb2rtg_check.toggled.connect(self._rgb2rtg_toggled)
+        form.addRow(self.rgb2rtg_check)
+        self.rgb2rtg_archive = QLineEdit()
+        self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.73.7z")
+        self.rgb2rtg_archive.textChanged.connect(self._queue_settings_changed)
+        browse = QPushButton("Browse...")
+        browse.clicked.connect(self._browse_rgb2rtg)
+        form.addRow("Release archive:", self._paired_field(self.rgb2rtg_archive, browse))
+        self.rgb2rtg_video = QComboBox()
+        self.rgb2rtg_video.addItem("PAL: 1080p50 (recommended)", "pal")
+        self.rgb2rtg_video.addItem("NTSC: 1080p60 (recommended)", "ntsc")
+        form.addRow("Amiga / HDMI:", self.rgb2rtg_video)
+        note = QLabel(
+            "Installs a matched alternative kernel and VideoCore driver, requires VideoCore Workbench and ToolsDaemon. Pi 3 is not tested."
+        )
+        note.setWordWrap(True)
+        form.addRow(note)
+        return group
+
+    def _rgb2rtg_toggled(self, enabled):
+        self.release_radio_stable.setEnabled(not enabled)
+        self.release_radio_alpha.setEnabled(not enabled)
+        if enabled:
+            self.set_emu68_version(Emu68Version.V1_1_0_BETA_1)
+        self._queue_settings_changed()
+
+    def _browse_rgb2rtg(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "RGB2RTG release archive", self.rgb2rtg_archive.text(), "7-Zip archive (*.7z)"
+        )
+        if path:
+            self.rgb2rtg_archive.setText(path)
+
+    def get_rgb2rtg(self) -> RGB2RTGConfig:
+        return RGB2RTGConfig(
+            enabled=self.rgb2rtg_check.isChecked(),
+            archive=self.rgb2rtg_archive.text(),
+            video=self.rgb2rtg_video.currentData(),
+        )
+
+    def set_rgb2rtg(self, settings: RGB2RTGConfig):
+        self.rgb2rtg_check.setChecked(settings.enabled)
+        self.rgb2rtg_archive.setText(str(settings.archive) if settings.archive else "")
+        select_combo_by_data(self.rgb2rtg_video, settings.video)
+        self._rgb2rtg_toggled(settings.enabled)
 
     def _create_hardware_group(self) -> QGroupBox:
         hardware_group = QGroupBox("Hardware")

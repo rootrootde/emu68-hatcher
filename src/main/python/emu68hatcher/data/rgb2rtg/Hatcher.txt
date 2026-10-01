@@ -1,0 +1,14 @@
+RGB2RTG v0.73 installed by Emu68 Hatcher
+
+System -> RGB2RTG opens the on/off, image settings and about windows.
+Use these menus to change settings. C:rgb2rtg APPLY runs at startup.
+Do not run MENU, UNMENU or the upstream installer/uninstaller: they do not
+know Hatcher's System submenu or matched recovery files.
+
+To restore the baseline kernel and driver from an Amiga Shell:
+  Execute SYS:Emu68-Hatcher/RGB2RTG/Recover
+
+Recovery keeps unrelated menu/startup edits. If the RGB2RTG submenu itself
+has changed, recovery asks for manual cleanup rather than deleting it.
+Power cycle after recovery. ReadMe.txt and Commands.txt are upstream docs;
+the installation/recovery instructions in this file apply to this image.

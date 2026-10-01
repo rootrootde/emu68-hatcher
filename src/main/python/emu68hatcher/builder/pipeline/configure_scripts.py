@@ -255,6 +255,7 @@ def _build_toolsdaemon_menu(
     all_packages: list[str],
     p96_modern: bool = False,
     kickstart_version: str | None = None,
+    rgb2rtg: bool = False,
 ) -> list[str]:
     """Build the complete ToolsDaemon.menu file."""
     network_actions = _network_entries(network_stack)
@@ -287,6 +288,18 @@ def _build_toolsdaemon_menu(
     for entry in system_apps:
         _append_launcher(lines, entry)
     if system_apps:
+        lines.append(f"{_MENU_INDENT}ITEMBAR")
+
+    if rgb2rtg:
+        lines.append(f"{_MENU_INDENT}ITEM RGB2RTG")
+        for title, command in (
+            ("On/off...", "ASK"),
+            ("RTG Image...", "IMAGE"),
+            ("About...", "ABOUT"),
+        ):
+            _append_launcher(
+                lines, _MenuLauncher("System", title, f"C:rgb2rtg {command}"), keyword="SUB"
+            )
         lines.append(f"{_MENU_INDENT}ITEMBAR")
 
     lines.append(f"{_MENU_INDENT}ITEM Prefs")
@@ -399,7 +412,16 @@ def _configure_toolsdaemon(
         all_packages,
         p96_modern,
         workflow.config.kickstart.version.value,
+        workflow.config.rgb2rtg.enabled,
     )
+    if workflow.config.rgb2rtg.enabled:
+        recovery_lines = _build_toolsdaemon_menu(
+            workflow.config.network_stack,
+            all_packages,
+            p96_modern,
+            workflow.config.kickstart.version.value,
+        )
+        write_amiga_script(s_dir / "ToolsDaemon.menu.pre-rgb2rtg", recovery_lines)
     write_amiga_script(s_dir / "ToolsDaemon.menu", lines)
     native_tools = _configure_native_tools_menu(boot_staging, s_dir, all_packages)
 
