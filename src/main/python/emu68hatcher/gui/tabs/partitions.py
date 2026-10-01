@@ -239,6 +239,7 @@ class PartitionsTab(QWidget):
             return
         self._model.set_volume(row, text)
         self._update_status()
+        self._refresh_extras_panel()
         self._emit_layout_changed()
 
     def _on_size_changed(self, row: int, text: str) -> None:

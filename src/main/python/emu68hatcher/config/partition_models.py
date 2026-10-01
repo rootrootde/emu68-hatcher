@@ -113,7 +113,7 @@ class PartitionConfig(BaseModel):
             )
 
         devices: list[str] = []
-        volumes: list[str] = []
+        volumes: dict[str, list[AmigaPartition]] = {}
         ags_roles: list[str] = []
         bootable_count = 0
         for mbr in self.layout:
@@ -131,15 +131,23 @@ class PartitionConfig(BaseModel):
             for part in mbr.amiga_partitions:
                 _validate_amiga_partition(part)
                 devices.append(part.device.upper())
-                volumes.append(part.volume.lower())
+                volumes.setdefault(part.volume.lower(), []).append(part)
                 if part.ags_reservation:
                     ags_roles.append(part.ags_reservation.role)
                 bootable_count += int(part.bootable)
 
         if len(devices) != len(set(devices)):
             raise ValueError("Amiga device names must be unique (case-insensitive)")
-        if len(volumes) != len(set(volumes)):
-            raise ValueError("Amiga volume names must be unique (case-insensitive)")
+        duplicate_volumes = [parts for parts in volumes.values() if len(parts) > 1]
+        if duplicate_volumes:
+            conflicts = "; ".join(
+                f"{parts[0].volume!r} on {', '.join(part.device for part in parts)}"
+                for parts in duplicate_volumes
+            )
+            raise ValueError(
+                f"Duplicate Amiga volume names: {conflicts}. "
+                "Rename the conflicting volumes in the Partitions tab; names ignore case."
+            )
         if len(ags_roles) != len(set(ags_roles)):
             raise ValueError("AGS partition roles must be unique")
         if devices and bootable_count == 0:

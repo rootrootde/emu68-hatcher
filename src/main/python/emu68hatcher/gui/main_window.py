@@ -3,6 +3,7 @@
 import sys
 from pathlib import Path
 
+from pydantic import ValidationError
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
     QApplication,
@@ -241,6 +242,9 @@ class MainWindow(QMainWindow):
             self.collect_config()
             save_config(self.config, Path(path))
             self.statusBar().showMessage(f"Saved: {path}")
+        except ValidationError as e:
+            details = "\n".join(error["msg"].removeprefix("Value error, ") for error in e.errors())
+            QMessageBox.warning(self, "Cannot save configuration", details)
         except Exception as e:
             import traceback
 

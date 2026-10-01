@@ -7,6 +7,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from pydantic import ValidationError
+
 from emu68hatcher.config.ags_models import AGS_ROLES, AGSPartitionReservation, AGSRole
 from emu68hatcher.config.constants import (
     CYLINDER_SIZE,
@@ -201,6 +203,8 @@ def plan_ags_layout(
     if not errors:
         try:
             _layout_with_parts(layout, parts)
+        except ValidationError as exc:
+            errors.extend(error["msg"].removeprefix("Value error, ") for error in exc.errors())
         except ValueError as exc:
             errors.append(str(exc))
     return AGSLayoutProposal(
