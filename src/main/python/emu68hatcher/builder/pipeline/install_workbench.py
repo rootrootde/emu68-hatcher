@@ -10,7 +10,7 @@ from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.pipeline.adf_extract import extract_adfs_with_rules
 from emu68hatcher.builder.pipeline.adf_mapping import filter_needed_media
 from emu68hatcher.builder.staging.boingbag import apply_boingbags
-from emu68hatcher.builder.staging.files import FileMapping, stage_files
+from emu68hatcher.builder.staging.files import stage_workbench_files
 from emu68hatcher.builder.state import BuildStage, CreatedImage
 from emu68hatcher.data.install_media import scan_install_media_by_hash
 
@@ -47,14 +47,9 @@ def stage_install_workbench(
 
     workflow._update_state(progress=70.0)
     workflow._milestone("Copying Workbench files to staging")
-    mapping = FileMapping()
-    mapping.add_directory(
-        workspace.workbench_dir,
-        "",
-        device=workflow.config.boot_device,
-        recursive=True,
+    files_staged = stage_workbench_files(
+        workspace.workbench_dir, workspace.staging_dir / workflow.config.boot_device
     )
-    files_staged = stage_files(mapping, workspace.staging_dir)
     workflow.logger.info(f"Staged {files_staged} Workbench files to {workflow.config.boot_device}")
 
     # BoingBags include older libraries and tools than the add-on packages.

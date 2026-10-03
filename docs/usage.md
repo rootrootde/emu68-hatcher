@@ -81,8 +81,15 @@ Emu68 1.1.0-beta.1 baseline and installs ToolsDaemon and Picasso96 dependencies.
 The custom kernel and VideoCore 1.5 driver are installed together.
 
 The desktop menu is **System → RGB2RTG**, with **On/off...**, **RTG Image...**
-and **About...**. Saved preferences are applied during User-Startup. Power cycle
-the Amiga after installation and after changing its video standard or HDMI rate.
+and **About...**. Saved preferences are applied during User-Startup. New
+installations default to `picture=off`: the RTG desktop still shows, but native
+Amiga screens show black on HDMI after the preferences are applied. Turn the
+picture on through **On/off...** or run `C:rgb2rtg ON`; the choice is saved for
+later boots. Existing preferences are kept. This does not disable the RGB2RTG
+kernel or its boot-time capture setup.
+
+Power cycle the Amiga after installation and after changing its video standard
+or HDMI rate.
 
 To return to the baseline kernel and driver, run this from an Amiga Shell:
 

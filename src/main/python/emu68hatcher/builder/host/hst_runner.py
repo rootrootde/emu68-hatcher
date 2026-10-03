@@ -5,16 +5,13 @@ import shlex
 import subprocess
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError
 from emu68hatcher.builder.host.elevation import ElevationToken, run_elevated
-from emu68hatcher.builder.host.hst_commands import (
-    HSTCommandLine,
-    HSTScript,
-)
+from emu68hatcher.builder.host.hst_commands import HSTCommandLine
 from emu68hatcher.utils.host_tools import find_hst_imager
 
 _logger = logging.getLogger(__name__)
@@ -26,7 +23,6 @@ class CommandStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-    SKIPPED = "skipped"
     TIMEOUT = "timeout"
 
 
@@ -47,22 +43,6 @@ class CommandResult:
         return self.status == CommandStatus.COMPLETED and self.return_code == 0
 
 
-@dataclass
-class ScriptResult:
-    """one hst script's combined result"""
-
-    script: HSTScript
-    results: list[CommandResult] = field(default_factory=list)
-
-    @property
-    def success(self) -> bool:
-        return all(r.success for r in self.results)
-
-    @property
-    def failed_commands(self) -> list[CommandResult]:
-        return [r for r in self.results if not r.success]
-
-
 # progress callback type
 HstProgressCallback = Callable[[int, int, str, CommandStatus], None]
 
@@ -77,12 +57,10 @@ class HSTRunner:
         self,
         hst_imager_path: Path | None = None,
         timeout: float = 300.0,
-        dry_run: bool = False,
         cancel_check: Callable[[], bool] | None = None,
     ):
         self._hst_imager = hst_imager_path
         self.timeout = timeout
-        self.dry_run = dry_run
         self._cancel_check = cancel_check
 
     @property
@@ -111,13 +89,6 @@ class HSTRunner:
         on_line: Callable[[str, str], None] | None = None,
     ) -> CommandResult:
         """run one hst-imager command synchronously"""
-        if self.dry_run:
-            return CommandResult(
-                command=command,
-                status=CommandStatus.COMPLETED,
-                stdout=f"[DRY RUN] Would execute: {command.to_string()}",
-            )
-
         cmd_timeout = timeout or self.timeout
         start_time = time.time()
 
@@ -203,16 +174,14 @@ class HSTRunner:
 
     def run_script(
         self,
-        script: HSTScript,
+        commands: list[HSTCommandLine],
         progress_callback: HstProgressCallback | None = None,
-        stop_on_error: bool = True,
         elevation: ElevationToken | None = None,
-    ) -> ScriptResult:
-        """run a script synchronously"""
-        result = ScriptResult(script=script)
-        total = len(script.commands)
+    ) -> CommandResult | None:
+        """Run commands in order; return the first failure, or None on success."""
+        total = len(commands)
 
-        for i, command in enumerate(script.commands):
+        for i, command in enumerate(commands):
             if progress_callback:
                 progress_callback(
                     i + 1,
@@ -222,7 +191,6 @@ class HSTRunner:
                 )
 
             cmd_result = self.run_command(command, elevation=elevation)
-            result.results.append(cmd_result)
 
             if progress_callback:
                 progress_callback(
@@ -232,14 +200,7 @@ class HSTRunner:
                     cmd_result.status,
                 )
 
-            if not cmd_result.success and stop_on_error:
-                for remaining in script.commands[i + 1 :]:
-                    result.results.append(
-                        CommandResult(
-                            command=remaining,
-                            status=CommandStatus.SKIPPED,
-                        )
-                    )
-                break
+            if not cmd_result.success:
+                return cmd_result
 
-        return result
+        return None

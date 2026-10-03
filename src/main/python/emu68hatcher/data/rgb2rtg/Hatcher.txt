@@ -2,6 +2,10 @@ RGB2RTG v0.73 installed by Emu68 Hatcher
 
 System -> RGB2RTG opens the on/off, image settings and about windows.
 Use these menus to change settings. C:rgb2rtg APPLY runs at startup.
+New installations default to picture=off when these settings are applied:
+the RTG desktop still shows, but native Amiga screens show black on HDMI.
+Use On/off... or C:rgb2rtg ON to turn the picture on and save that choice.
+Existing preferences are kept. The RGB2RTG kernel remains active.
 Do not run MENU, UNMENU or the upstream installer/uninstaller: they do not
 know Hatcher's System submenu or matched recovery files.
 

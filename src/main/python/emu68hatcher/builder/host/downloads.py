@@ -215,10 +215,10 @@ class DownloadManager:
                 last_error = self._last_error
                 continue
             if expected_hash and not verify_hash(dest, expected_hash):
-                from emu68hatcher.utils.hashing import HashAlgorithm, calculate_hash
+                from emu68hatcher.utils.hashing import calculate_hash
 
                 try:
-                    got = calculate_hash(dest, HashAlgorithm.MD5)
+                    got = calculate_hash(dest)
                 except Exception:
                     got = "(unreadable)"
                 try:
@@ -305,10 +305,10 @@ class DownloadManager:
             if item.expected_hash and not verify_hash(cached, item.expected_hash):
                 # log got-hash + size so 'flaky mirror returned an html error page' is
                 # distinguishable from 'upstream actually changed'
-                from emu68hatcher.utils.hashing import HashAlgorithm, calculate_hash
+                from emu68hatcher.utils.hashing import calculate_hash
 
                 try:
-                    got = calculate_hash(cached, HashAlgorithm.MD5)
+                    got = calculate_hash(cached)
                 except Exception:
                     got = "(unreadable)"
                 try:

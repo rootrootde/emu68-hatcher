@@ -49,14 +49,6 @@ class HSTCommandLine:
         return f"hst-imager {self.command.value} {' '.join(self.args)}"
 
 
-@dataclass
-class HSTScript:
-    """ordered list of HSTCommandLines"""
-
-    commands: list[HSTCommandLine] = field(default_factory=list)
-    description: str = ""
-
-
 ##############################################
 # filesystem handler paths (PFS3, FFS, etc.) #
 ##############################################
@@ -295,28 +287,26 @@ def generate_disk_creation_script(
     fs_handler_paths: dict[Filesystem, Path] | None = None,
     skip_blank: bool = False,
     ags_plan=None,
-) -> HSTScript:
+) -> list[HSTCommandLine]:
     """full disk-creation script. skip_blank=True for DEVICE mode or pre-allocated sparse IMG."""
     if config.partitions is None:
         raise ValueError("Partition configuration is required")
 
     fs_handler_paths = fs_handler_paths or {}
-    script = HSTScript(description="Emu68 Hatcher - Disk Creation")
+    commands: list[HSTCommandLine] = []
 
     # blank image - skipped for DEVICE and sparse pre-alloc
     if not skip_blank:
-        script.commands.append(
-            generate_blank_image_command(output_path, config.partitions.disk_size)
-        )
+        commands.append(generate_blank_image_command(output_path, config.partitions.disk_size))
 
-    script.commands.append(generate_mbr_init_command(output_path))
-    script.commands.extend(generate_mbr_partition_commands(output_path, config.partitions.layout))
+    commands.append(generate_mbr_init_command(output_path))
+    commands.extend(generate_mbr_partition_commands(output_path, config.partitions.layout))
 
     for i, mbr_part in enumerate(config.partitions.layout):
         if mbr_part.type == "id76" and mbr_part.amiga_partitions:
             mbr_num = i + 1  # 1-based
 
-            script.commands.append(generate_rdb_init_command(output_path, mbr_num))
+            commands.append(generate_rdb_init_command(output_path, mbr_num))
 
             # one fs handler entry per distinct filesystem
             filesystems_added = set()
@@ -327,7 +317,7 @@ def generate_disk_creation_script(
                 fs_info = FILESYSTEM_HANDLERS.get(fs)
                 handler_path = fs_handler_paths.get(fs)
                 if fs_info and fs_info.get("handler_file") and handler_path:
-                    script.commands.append(
+                    commands.append(
                         generate_rdb_filesystem_command(
                             output_path,
                             mbr_num,
@@ -337,7 +327,7 @@ def generate_disk_creation_script(
                     )
                     filesystems_added.add(fs)
 
-            script.commands.extend(
+            commands.extend(
                 generate_rdb_partition_commands(
                     output_path,
                     mbr_num,
@@ -346,4 +336,4 @@ def generate_disk_creation_script(
                 )
             )
 
-    return script
+    return commands

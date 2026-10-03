@@ -115,7 +115,7 @@ class BuildWorkflow:
         # log the chosen path BEFORE attach so the GUI log records it even if open fails
         self.logger.info(f"buildlog target: {path}")
         handler = attach_file_handler(
-            self.logger.logger,
+            self.logger,
             path,
             mode="w",
             fmt="%(asctime)s %(levelname)-7s %(message)s",
@@ -228,7 +228,7 @@ class BuildWorkflow:
         # GUI handler first: the buildlog probe below touches the output location, and its
         # breadcrumbs must reach the dialog if that goes wrong (console is invisible when frozen)
         gui_log_handler = BuildLogHandler(self)
-        self.logger.logger.addHandler(gui_log_handler)
+        self.logger.addHandler(gui_log_handler)
         buildlog_handler = None
         buildlog_path = None
 
@@ -296,7 +296,7 @@ class BuildWorkflow:
             self._bring_target_disk_online()
             cleanup_elevation(self.state.elevation)
             self.state.elevation = None
-            self.logger.logger.removeHandler(gui_log_handler)
+            self.logger.removeHandler(gui_log_handler)
             if buildlog_handler is not None:
-                self.logger.logger.removeHandler(buildlog_handler)
+                self.logger.removeHandler(buildlog_handler)
                 buildlog_handler.close()

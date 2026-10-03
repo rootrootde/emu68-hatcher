@@ -189,7 +189,7 @@ def copy_creation_script(workflow, runner, script, plan, image_path) -> None:
 
     total = sum(component.partition.size for component in plan.inventory.components)
     completed = 0
-    for command in script.commands:
+    for command in script:
         workflow._check_cancelled()
         is_copy = command.command == HSTCommand.RDB_PART_COPY
         expected = 0

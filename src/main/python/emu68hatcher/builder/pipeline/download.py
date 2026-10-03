@@ -22,7 +22,6 @@ from emu68hatcher.builder.state import (
     Workspace,
 )
 from emu68hatcher.config.defaults import EMU68_BOOT_PARTITION_NAME
-from emu68hatcher.data.themes import get_workbench_theme
 from emu68hatcher.utils.paths import ensure_dir, make_temp_workdir
 
 if TYPE_CHECKING:
@@ -289,16 +288,14 @@ def _required_selection_packages(
     workflow: BuildWorkflow,
     resolution: Resolution,
 ) -> set[str]:
-    theme = get_workbench_theme(workflow.config.display.workbench_theme)
-    required = {name.lower() for name in theme.required_packages} if theme else set()
     from emu68hatcher.data.package_loader import get_mandatory_packages
 
-    required.update(
+    required = {
         p.name
         for p in get_mandatory_packages(
             workflow.config.kickstart.version.value, workflow.config.emu68_version.value
         )
-    )
+    }
     required.update(resolution.required_by)
     if workflow.config.network_stack is not None:
         required.add(workflow.config.network_stack.value.lower())

@@ -110,14 +110,11 @@ def stage_create_image(
         workflow._update_state(progress=progress, message=desc)
 
     if workspace.validated.ags_plan is None:
-        result = runner.run_script(
+        failure = runner.run_script(
             script, progress_callback=progress_cb, elevation=workflow.state.elevation
         )
-        if not result.success:
-            failed = result.failed_commands
-            raise BuildError(
-                f"Image creation failed: {failed[0].error if failed else 'unknown error'}"
-            )
+        if failure is not None:
+            raise BuildError(f"Image creation failed: {failure.error}")
     else:
         from emu68hatcher.builder.ags_blocks import copy_creation_script
 

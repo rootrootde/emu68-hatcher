@@ -23,7 +23,7 @@ from emu68hatcher.config.schema import BuildConfig
 )
 def test_partition_copy_reports_live_progress(monkeypatch, line, done):
     from emu68hatcher.builder import ags_blocks, ags_source
-    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine, HSTScript
+    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine
 
     monkeypatch.setattr(ags_source, "validate_source_identity", lambda inventory: None)
     monkeypatch.setattr(ags_blocks, "verify_target_partitions", lambda *args: None)
@@ -52,7 +52,7 @@ def test_partition_copy_reports_live_progress(monkeypatch, line, done):
         )
 
     runner = SimpleNamespace(run_command=run_command)
-    ags_blocks.copy_creation_script(workflow, runner, HSTScript([command]), plan, "target")
+    ags_blocks.copy_creation_script(workflow, runner, [command], plan, "target")
 
 
 @pytest.mark.parametrize(
@@ -66,7 +66,7 @@ def test_partition_copy_reports_live_progress(monkeypatch, line, done):
 )
 def test_partition_copy_status_uses_readable_units(monkeypatch, size, initial, halfway):
     from emu68hatcher.builder import ags_blocks, ags_source
-    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine, HSTScript
+    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine
 
     monkeypatch.setattr(ags_source, "validate_source_identity", lambda inventory: None)
     monkeypatch.setattr(ags_blocks, "verify_target_partitions", lambda *args: None)
@@ -97,7 +97,7 @@ def test_partition_copy_status_uses_readable_units(monkeypatch, size, initial, h
         )
 
     runner = SimpleNamespace(run_command=run_command)
-    ags_blocks.copy_creation_script(workflow, runner, HSTScript([command]), plan, "target")
+    ags_blocks.copy_creation_script(workflow, runner, [command], plan, "target")
 
 
 @pytest.mark.parametrize("copied,size", [(0, 2048), (1024, 2048), (2048, 1024)])
@@ -155,7 +155,7 @@ def test_copy_commands_keep_windows_device_path_and_partition_order():
     script = generate_disk_creation_script(config, raw, skip_blank=True, ags_plan=plan)
     commands = [
         c
-        for c in script.commands
+        for c in script
         if c.command
         in {HSTCommand.RDB_PART_ADD, HSTCommand.RDB_PART_COPY, HSTCommand.RDB_PART_FORMAT}
     ]

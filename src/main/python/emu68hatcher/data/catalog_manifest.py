@@ -80,14 +80,13 @@ def validate_ranges(catalogs: list[CatalogRelease]) -> None:
 @lru_cache(maxsize=8)
 def validate_client_catalog(snapshot: CatalogSnapshot) -> None:
     from emu68hatcher.data.package_resolver import resolve
-    from emu68hatcher.data.themes import load_workbench_themes
 
     data = snapshot.data()
     baseline = load_catalog_source()
     engine_ids = {p.name for p in baseline.packages.values() if p.mandatory}
     engine_ids.update({"roadshow", "amitcp_ng", "miamidx"})
-    for theme in load_workbench_themes().values():
-        engine_ids.update(theme.required_packages)
+    # Keep the font availability check required by existing catalog releases.
+    engine_ids.update({"fonts_apparent", "fonts_magicwb"})
     missing = engine_ids - data.packages.keys()
     if missing:
         raise ValueError(f"catalog omits engine packages: {sorted(missing)}")

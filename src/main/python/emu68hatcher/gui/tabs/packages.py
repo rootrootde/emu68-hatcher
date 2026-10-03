@@ -34,7 +34,6 @@ class PackagesTab(QWidget):
         self.kickstart_version = kickstart_version
         self.emu68_version = emu68_version
         self.network_stack = None
-        self.theme_name = "default"
         self._requests = software_defaults()
         self._updating = False
         self.checkboxes: dict[str, QTreeWidgetItem] = {}
@@ -96,7 +95,6 @@ class PackagesTab(QWidget):
             self.kickstart_version,
             self.emu68_version,
             self.network_stack,
-            self.theme_name,
         )
         selected = self.resolution.selected
         groups = {}
@@ -140,7 +138,7 @@ class PackagesTab(QWidget):
                     + ")"
                 )
             elif auto:
-                description += " (Selected by network, theme or recommendation)"
+                description += " (Selected by network or recommendation)"
             item = QTreeWidgetItem(group(category), [label, description])
             item.setToolTip(1, description)
             item.setData(0, Qt.ItemDataRole.UserRole, key)
@@ -185,7 +183,7 @@ class PackagesTab(QWidget):
             if pkg.mandatory:
                 description = "Required for the Hatcher base system"
             elif not reasons:
-                description = "Selected by network, theme or locale"
+                description = "Selected by network or locale"
             QTreeWidgetItem(group("Required packages"), [pkg.friendly_name, description])
         problems = [
             f"{token}: needed by {', '.join(names)}"
@@ -211,9 +209,8 @@ class PackagesTab(QWidget):
         self.refresh_packages()
         self.selection_changed.emit()
 
-    def set_context(self, network_stack, theme_name):
+    def set_context(self, network_stack):
         self.network_stack = network_stack
-        self.theme_name = theme_name
         self.refresh_packages()
 
     def set_kickstart_version(self, version):

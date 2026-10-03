@@ -1,24 +1,14 @@
-"""logging - Rich console + shared file handler helper"""
+"""Console logging and shared file handler helper."""
 
 import logging
-import threading
 from pathlib import Path
 
-from rich.console import Console
-from rich.logging import RichHandler
-from rich.theme import Theme
-
-EMU68_THEME = Theme(
-    {
-        "info": "cyan",
-        "warning": "yellow",
-        "error": "bold red",
-        "progress": "blue",
-        "dim": "dim",
-    }
-)
-
-console = Console(theme=EMU68_THEME)
+_logger = logging.getLogger("emu68hatcher")
+_logger.setLevel(logging.INFO)
+_console_handler = logging.StreamHandler()
+_console_handler.setLevel(logging.INFO)
+_console_handler.setFormatter(logging.Formatter("%(levelname)-7s %(message)s"))
+_logger.addHandler(_console_handler)
 
 
 def attach_file_handler(
@@ -46,58 +36,5 @@ def attach_file_handler(
     return handler
 
 
-class Emu68Logger:
-    """wraps logging for rich formatting"""
-
-    def __init__(
-        self,
-        name: str = "emu68hatcher",
-        level: int = logging.INFO,
-        log_file: Path | None = None,
-    ):
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(level)
-        self.logger.handlers.clear()
-
-        console_handler = RichHandler(
-            console=console,
-            show_time=False,
-            show_path=False,
-            markup=True,
-            rich_tracebacks=True,
-        )
-        console_handler.setLevel(level)
-        self.logger.addHandler(console_handler)
-
-        if log_file:
-            attach_file_handler(self.logger, log_file)
-
-    def debug(self, message: str, **kwargs) -> None:
-        self.logger.debug(message, **kwargs)
-
-    def info(self, message: str, **kwargs) -> None:
-        self.logger.info(message, **kwargs)
-
-    def warning(self, message: str, **kwargs) -> None:
-        self.logger.warning(message, **kwargs)
-
-    def error(self, message: str, **kwargs) -> None:
-        self.logger.error(message, **kwargs)
-
-    def exception(self, message: str, **kwargs) -> None:
-        """log at ERROR with the active traceback attached"""
-        self.logger.exception(message, **kwargs)
-
-
-_logger: Emu68Logger | None = None
-_logger_lock = threading.Lock()
-
-
-def get_logger() -> Emu68Logger:
-    """get or create the default logger (thread-safe)"""
-    global _logger
-    if _logger is None:
-        with _logger_lock:
-            if _logger is None:
-                _logger = Emu68Logger()
+def get_logger() -> logging.Logger:
     return _logger

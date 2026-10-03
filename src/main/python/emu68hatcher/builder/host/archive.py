@@ -283,16 +283,8 @@ def _extract_tar(
     progress_callback: ExtractProgressCallback | None = None,
     max_bytes: int = DEFAULT_MAX_EXTRACTED_BYTES,
 ) -> int:
-    """extract TAR archive (.tar.gz + .tar.bz2)"""
-    mode = "r"
-    name = archive_path.name.lower()
-
-    if name.endswith(".gz") or name.endswith(".tgz"):
-        mode = "r:gz"
-    elif name.endswith(".bz2") or name.endswith(".tbz2"):
-        mode = "r:bz2"
-
-    with tarfile.open(archive_path, mode) as tf:
+    """Extract a TAR archive with automatic compression detection."""
+    with tarfile.open(archive_path, "r:*") as tf:
         members = tf.getmembers()
         total = len(members)
 

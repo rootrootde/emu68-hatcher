@@ -15,7 +15,6 @@ from emu68hatcher.builder.pipeline.configure_network import (
     generate_wireless_prefs,
 )
 from emu68hatcher.builder.staging.files import resolve_source_path
-from emu68hatcher.builder.staging.themes import install_workbench_theme
 from emu68hatcher.builder.state import CreatedImage
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODE_BY_NAME,
@@ -98,13 +97,6 @@ def configure_preferences(
         from emu68hatcher.builder.rgb2rtg import configure_rgb2rtg
 
         configure_rgb2rtg(workflow, image, boot_staging)
-
-    theme = workflow.config.display.workbench_theme
-    theme_paths = install_workbench_theme(boot_staging, theme)
-    if theme_paths:
-        workflow.logger.info(
-            f"Installed Workbench theme '{theme.value}' ({len(theme_paths)} files)"
-        )
 
     workflow._update_state(progress=90.0)
     workflow._milestone("Generating drawer icons")

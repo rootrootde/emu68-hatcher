@@ -38,14 +38,8 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
     if workflow.config.network_stack == NetworkStack.MIAMIDX:
         _configure_miamidx(workflow, boot_staging)
         return
-    if workflow.config.network_stack == NetworkStack.AMITCP_NG:
-        _configure_amitcp_ng(workflow, boot_staging)
-        return
-    _configure_roadshow(workflow, boot_staging)
-
-
-def _configure_roadshow(workflow: BuildWorkflow, boot_staging: Path) -> None:
     network = workflow.config.network
+    amitcp = workflow.config.network_stack == NetworkStack.AMITCP_NG
     devs = boot_staging / "Devs"
     for name, settings in (("genet", network.ethernet), ("wifipi", network.wifi)):
         path = devs / "NetInterfaces" / name
@@ -57,33 +51,8 @@ def _configure_roadshow(workflow: BuildWorkflow, boot_staging: Path) -> None:
             settings.mode.value,
             settings.address,
             settings.netmask,
-        )
-    if network.gateway:
-        _write_default_route(devs / "Internet" / "routes", network.gateway)
-    if network.dns_servers:
-        _write_name_resolution(devs / "Internet" / "name_resolution", network.dns_servers)
-    workflow.logger.info(
-        f"Configured network: ethernet={network.ethernet.mode.value} "
-        f"wifi={network.wifi.mode.value} gateway={network.gateway or '-'} "
-        f"dns={network.dns_servers or '-'}"
-    )
-
-
-def _configure_amitcp_ng(workflow: BuildWorkflow, boot_staging: Path) -> None:
-    network = workflow.config.network
-    devs = boot_staging / "Devs"
-    for name, settings in (("genet", network.ethernet), ("wifipi", network.wifi)):
-        path = devs / "NetInterfaces" / name
-        if not path.exists():
-            workflow.logger.warning(f"NetInterfaces/{name} not staged; skipping its IP config")
-            continue
-        _write_netinterface(
-            path,
-            settings.mode.value,
-            settings.address,
-            settings.netmask,
-            gateway=network.gateway,
-            dns_servers=network.dns_servers,
+            gateway=network.gateway if amitcp else None,
+            dns_servers=network.dns_servers if amitcp else None,
         )
 
     if network.gateway:
@@ -91,13 +60,15 @@ def _configure_amitcp_ng(workflow: BuildWorkflow, boot_staging: Path) -> None:
     if network.dns_servers:
         _write_name_resolution(devs / "Internet" / "name_resolution", network.dns_servers)
 
-    package = get_package_by_name("amitcp_ng")
-    marker = "$VER: AmiTCP_NG"
-    if package and package.download and package.download.tag:
-        marker += f" {package.download.tag.removeprefix('v')}"
-    _write_lines(boot_staging / "Libs" / "AmiTCP_NG.version", [marker])
+    if amitcp:
+        package = get_package_by_name("amitcp_ng")
+        marker = "$VER: AmiTCP_NG"
+        if package and package.download and package.download.tag:
+            marker += f" {package.download.tag.removeprefix('v')}"
+        _write_lines(boot_staging / "Libs" / "AmiTCP_NG.version", [marker])
+    label = "AmiTCP_NG" if amitcp else "network"
     workflow.logger.info(
-        f"Configured AmiTCP_NG: ethernet={network.ethernet.mode.value} "
+        f"Configured {label}: ethernet={network.ethernet.mode.value} "
         f"wifi={network.wifi.mode.value} gateway={network.gateway or '-'} "
         f"dns={network.dns_servers or '-'}"
     )

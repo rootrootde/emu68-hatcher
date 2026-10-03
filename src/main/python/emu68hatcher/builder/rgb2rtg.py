@@ -207,7 +207,7 @@ def configure_rgb2rtg(workflow, image, boot: Path) -> None:
     prefs = resolve_staging_path(boot, "Prefs/Env-Archive/RGB2RTG.prefs")
     if not prefs.exists():
         prefs.write_text(
-            f"video={workflow.config.rgb2rtg.video} picture=on hdmisync=on hdmicolours=full\n",
+            f"video={workflow.config.rgb2rtg.video} picture=off hdmisync=on hdmicolours=full\n",
             encoding="iso-8859-1",
             newline="\n",
         )

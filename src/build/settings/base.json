@@ -17,14 +17,12 @@
         "pydantic.deprecated.decorator",
         "yaml",
         "jinja2",
-        "rich",
         "certifi"
     ],
     "extra_pyinstaller_args": [
         "--collect-data", "emu68hatcher",
         "--collect-data", "certifi",
         "--collect-submodules", "emu68hatcher",
-        "--collect-submodules", "rich",
         "--copy-metadata", "emu68hatcher"
     ]
 }

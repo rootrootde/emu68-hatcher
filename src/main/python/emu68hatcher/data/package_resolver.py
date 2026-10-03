@@ -115,84 +115,41 @@ class _ResolverContext:
                     work.append(provider)
         return selected, requirers, unsatisfiable
 
-    def conflict_components(self, selected: set[str]) -> list[set[str]]:
-        adjacency: dict[str, set[str]] = {name: set() for name in selected}
-        names = sorted(selected)
+    def conflict_losers(self, selected: set[str]) -> tuple[set[str], dict[str, str]]:
         provided = {name: _provides_of(self.by_name[name]) for name in selected}
         conflicts = {
             name: {token.lower() for token in self.by_name[name].conflicts} for name in selected
         }
-        for index, left in enumerate(names):
-            for right in names[index + 1 :]:
-                if conflicts[left] & provided[right] or conflicts[right] & provided[left]:
-                    adjacency[left].add(right)
-                    adjacency[right].add(left)
-        seen: set[str] = set()
-        components: list[set[str]] = []
-        for name in names:
-            if name in seen or not adjacency[name]:
-                continue
-            stack = [name]
-            component: set[str] = set()
-            while stack:
-                current = stack.pop()
-                if current in component:
-                    continue
-                component.add(current)
-                stack.extend(adjacency[current] - component)
-            seen |= component
-            components.append(component)
-        return components
-
-    def conflict_losers(self, selected: set[str]) -> tuple[set[str], dict[str, str]]:
-        excluded: set[str] = set()
+        priority = sorted(
+            selected,
+            key=lambda name: (
+                name not in self.mandatory,
+                name not in self.requested,
+                not self.by_name[name].default,
+                name,
+            ),
+        )
+        kept: list[str] = []
         dropped: dict[str, str] = {}
-        for component in self.conflict_components(selected):
-            provided = {name: _provides_of(self.by_name[name]) for name in component}
-            conflicts = {
-                name: {token.lower() for token in self.by_name[name].conflicts}
-                for name in component
-            }
-            mandatory = sorted(component & self.mandatory)
-            bad_pair = next(
+        for name in priority:
+            clash = next(
                 (
-                    (left, right)
-                    for index, left in enumerate(mandatory)
-                    for right in mandatory[index + 1 :]
-                    if conflicts[left] & provided[right] or conflicts[right] & provided[left]
+                    other
+                    for other in kept
+                    if conflicts[name] & provided[other] or conflicts[other] & provided[name]
                 ),
                 None,
             )
-            if bad_pair:
+            if clash is None:
+                kept.append(name)
+            elif name in self.mandatory and clash in self.mandatory:
                 raise ValueError(
-                    f"mandatory packages {bad_pair[0]} and {bad_pair[1]} conflict and cannot "
+                    f"mandatory packages {clash} and {name} conflict and cannot "
                     "coexist (fix their provides/conflicts in the yaml)"
                 )
-            priority = sorted(
-                component,
-                key=lambda name: (
-                    name not in self.mandatory,
-                    name not in self.requested,
-                    not self.by_name[name].default,
-                    name,
-                ),
-            )
-            kept: list[str] = []
-            for name in priority:
-                clash = next(
-                    (
-                        other
-                        for other in kept
-                        if conflicts[name] & provided[other] or conflicts[other] & provided[name]
-                    ),
-                    None,
-                )
-                if clash is None:
-                    kept.append(name)
-                else:
-                    excluded.add(name)
-                    dropped[name] = f"conflicts with {clash}"
-        return excluded, dropped
+            else:
+                dropped[name] = f"conflicts with {clash}"
+        return set(dropped), dropped
 
 
 def resolve(

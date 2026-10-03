@@ -26,13 +26,6 @@ from emu68hatcher.config.display_models import (
     WorkbenchTheme,
 )
 from emu68hatcher.config.schema import DisplayConfig
-from emu68hatcher.data.package_loader import get_package_by_name
-from emu68hatcher.data.themes import (
-    THEME_COMPONENTS,
-    WORKBENCH_THEMES_ENABLED,
-    get_workbench_theme,
-    load_workbench_themes,
-)
 from emu68hatcher.gui.widgets import select_combo_by_data
 
 
@@ -73,6 +66,8 @@ class DisplayTab(QWidget):
         self._rgb2rtg_video = None
         self._hdmi_before_rgb2rtg = None
         self.hdmi_modes = []
+        # Retain inactive theme selections when loading and saving older configs.
+        self.workbench_theme = WorkbenchTheme.DEFAULT
         self.load_screen_modes()
         self.setup_ui()
 
@@ -221,39 +216,6 @@ class DisplayTab(QWidget):
         self.hdmi_width_spin.valueChanged.connect(self._rebuild_workbench_modes)
         self.hdmi_height_spin.valueChanged.connect(self._rebuild_workbench_modes)
         self._rebuild_workbench_modes()
-
-        theme_group = QGroupBox("Themes")
-        theme_layout = QVBoxLayout(theme_group)
-        theme_row = QHBoxLayout()
-        theme_row.addWidget(QLabel("Workbench theme:"))
-        self.workbench_theme_combo = QComboBox()
-        self.workbench_theme_combo.addItem("Default (install media)", WorkbenchTheme.DEFAULT.value)
-        for theme, definition in load_workbench_themes().items():
-            self.workbench_theme_combo.addItem(definition.display_name, theme.value)
-        theme_row.addWidget(self.workbench_theme_combo)
-        theme_row.addStretch()
-        theme_layout.addLayout(theme_row)
-        components_layout = QFormLayout()
-        self.theme_component_labels: dict[str, QLabel] = {}
-        for component, label in THEME_COMPONENTS.items():
-            status = QLabel()
-            status.setWordWrap(True)
-            components_layout.addRow(f"{label}:", status)
-            self.theme_component_labels[component] = status
-        theme_layout.addLayout(components_layout)
-        theme_note = QLabel(
-            "Applies the theme's included settings during the build. "
-            "Components not included keep their existing settings."
-        )
-        theme_note.setWordWrap(True)
-        theme_layout.addWidget(theme_note)
-        self.theme_packages_note = QLabel()
-        self.theme_packages_note.setWordWrap(True)
-        theme_layout.addWidget(self.theme_packages_note)
-        self.workbench_theme_combo.currentIndexChanged.connect(self._on_workbench_theme_changed)
-        self._on_workbench_theme_changed()
-        layout.addWidget(theme_group)
-        theme_group.setVisible(WORKBENCH_THEMES_ENABLED)
 
         p96_group = QGroupBox("Picasso96 RTG")
         p96_layout = QVBoxLayout(p96_group)
@@ -552,31 +514,12 @@ class DisplayTab(QWidget):
         self.picasso96_archive_edit.setText(str(archive) if archive else "")
         self._refresh_picasso96_status()
 
-    def _on_workbench_theme_changed(self):
-        theme = WorkbenchTheme(self.workbench_theme_combo.currentData())
-        definition = get_workbench_theme(theme)
-        for component, label in self.theme_component_labels.items():
-            included = definition is not None and bool(definition.components.get(component))
-            label.setText("From theme" if included else "Unchanged")
-        packages = []
-        if definition:
-            for name in definition.required_packages:
-                package = get_package_by_name(name)
-                packages.append(package.friendly_name if package else name)
-        self.theme_packages_note.setText(
-            f"Also installs: {', '.join(packages)}, even if unchecked under Software."
-            if packages
-            else ""
-        )
-        self.theme_packages_note.setVisible(bool(packages))
-        self.settings_changed.emit()
-
     def get_config(self) -> dict:
         hdmi_mode_name = self.hdmi_mode_combo.currentData() or "1280*720-50"
         return {
             "hdmi_mode": hdmi_mode_name,
             "workbench_mode": self.workbench_mode_combo.currentData(),
-            "workbench_theme": self.workbench_theme_combo.currentData(),
+            "workbench_theme": self.workbench_theme.value,
             "width": self.hdmi_width_spin.value(),
             "height": self.hdmi_height_spin.value(),
             "framerate": self.hdmi_hz_spin.value(),
@@ -600,5 +543,5 @@ class DisplayTab(QWidget):
             select_combo_by_data(self.hdmi_rb_combo, config.custom.reduced_blanking)
         self._rebuild_workbench_modes()
         select_combo_by_data(self.workbench_mode_combo, config.workbench_mode.value)
-        select_combo_by_data(self.workbench_theme_combo, config.workbench_theme.value)
+        self.workbench_theme = config.workbench_theme
         self._on_workbench_mode_changed()

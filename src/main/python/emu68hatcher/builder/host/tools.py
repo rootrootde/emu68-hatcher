@@ -4,14 +4,12 @@ import logging
 import os
 import shutil
 import subprocess
-import tarfile
 import tempfile
 from pathlib import Path
 from urllib.request import urlopen
 
 from emu68hatcher.builder.host.archive import (
-    DEFAULT_MAX_EXTRACTED_BYTES,
-    _validate_tar_member,
+    _extract_tar,
     extract_archive,
 )
 from emu68hatcher.data.data_manager import load_yaml_data
@@ -151,7 +149,8 @@ def download_7zip(force: bool = False, progress_callback=None) -> Path | None:
         if extract_method == "self-installer-win":
             wanted = _extract_7z_installer(archive_path, extract_dir, temp_path)
         elif extract_method == "tar-xz":
-            wanted = _extract_7z_tarxz(archive_path, extract_dir)
+            _extract_tar(archive_path, extract_dir)
+            wanted = ["7zz", "License.txt"]
         else:
             logger.error(f"Unknown 7-Zip extract method: {extract_method}")
             return None
@@ -204,25 +203,6 @@ def _extract_7z_installer(
         logger.error(f"7zr extraction failed: {stderr[:300] or e}")
         return None
     return ["7z.exe", "7z.dll", "License.txt"]
-
-
-def _extract_7z_tarxz(archive_path: Path, extract_dir: Path) -> list[str]:
-    """extract the unix tar.xz build with a zip-bomb guard; return wanted files"""
-    with tarfile.open(archive_path, "r:xz") as tar:
-        members = tar.getmembers()
-        cumulative = 0
-        for member in members:
-            _validate_tar_member(member, extract_dir)
-            cumulative += getattr(member, "size", 0) or 0
-            if cumulative > DEFAULT_MAX_EXTRACTED_BYTES:
-                raise RuntimeError(
-                    f"tar would exceed {DEFAULT_MAX_EXTRACTED_BYTES} bytes uncompressed (bomb?)"
-                )
-        try:
-            tar.extractall(extract_dir, filter="data")
-        except TypeError:
-            tar.extractall(extract_dir)
-    return ["7zz", "License.txt"]
 
 
 def _first_in_tree(root: Path, name: str) -> Path | None:

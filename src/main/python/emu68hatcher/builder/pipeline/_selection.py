@@ -36,7 +36,6 @@ def resolve_selection(
         kickstart_version,
         emu68_version,
         config.network_stack,
-        config.display.workbench_theme,
     )
     if resolution.unsatisfiable:
         details = "; ".join(

@@ -102,7 +102,6 @@ def plan_ags_layout(
     layout: PartitionConfig,
     requirements: Mapping[AGSRole, object],
     selected_roles: tuple[AGSRole, ...] | list[AGSRole],
-    requested_edits: Mapping[str, int] | None = None,
     *,
     source_identity: object | None = None,
     selection_revision: int = 0,
@@ -123,21 +122,6 @@ def plan_ags_layout(
     parts = [
         part for part in parts if not part.ags_reservation or part.ags_reservation.role in selected
     ]
-    edits = requested_edits or {}
-    for device, size in edits.items():
-        part = old_by_device.get(device.upper())
-        if part is None or part not in parts:
-            errors.append(f"Cannot resize unknown partition {device}")
-            continue
-        if part.ags_reservation:
-            errors.append(f"{device}: imported partition size is fixed")
-            continue
-        if size <= 0 or size % CYLINDER_SIZE:
-            errors.append(f"{device}: requested size must be positive and cylinder aligned")
-            continue
-        next(
-            part_new for part_new in parts if part_new.device.upper() == device.upper()
-        ).size = size
     existing_roles: dict[AGSRole, AmigaPartition] = {}
     for part in parts:
         reservation = part.ags_reservation

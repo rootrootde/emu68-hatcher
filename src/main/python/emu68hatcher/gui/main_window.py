@@ -21,7 +21,7 @@ from emu68hatcher import __version__
 from emu68hatcher.builder.staging.scripts.generator import render_boot_partition_files
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.defaults import create_default_config
-from emu68hatcher.config.display_models import CustomScreenMode
+from emu68hatcher.config.display_models import CustomScreenMode, WorkbenchTheme
 from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import (
     CURRENT_CONFIG_VERSION,
@@ -98,9 +98,6 @@ class MainWindow(QMainWindow):
             self.network_tab.radio_miamidx,
         ):
             radio.toggled.connect(self._refresh_package_context)
-        self.display_tab.workbench_theme_combo.currentIndexChanged.connect(
-            self._refresh_package_context
-        )
         self._refresh_package_context()
 
         self.kickstart_tab.version_changed.connect(self.packages_tab.set_kickstart_version)
@@ -420,14 +417,11 @@ class MainWindow(QMainWindow):
         self._refresh_boot_files_preview()
 
     def _refresh_package_context(self):
-        self.packages_tab.set_context(
-            self.network_tab.get_network_stack(),
-            self.display_tab.workbench_theme_combo.currentData(),
-        )
+        self.packages_tab.set_context(self.network_tab.get_network_stack())
 
     def _select_minimal(self):
+        self.display_tab.workbench_theme = WorkbenchTheme.DEFAULT
         self.network_tab.set_network_stack(None)
-        self.display_tab.workbench_theme_combo.setCurrentIndex(0)
         self.packages_tab.select_none()
         self._refresh_package_context()
         self.statusBar().showMessage(
