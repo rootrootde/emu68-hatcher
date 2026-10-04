@@ -35,6 +35,10 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
         if not out_path.parent.exists():
             raise BuildError(f"Output directory not found: {out_path.parent}")
         if output.flash_target:
+            if output.verify_after_flash:
+                from emu68hatcher.builder.host.disk_writer import check_flash_verification_support
+
+                check_flash_verification_support()
             info = find_disk(output.flash_target)
             if info is None:
                 raise BuildError(

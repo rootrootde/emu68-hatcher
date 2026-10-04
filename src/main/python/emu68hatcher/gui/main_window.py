@@ -346,6 +346,7 @@ class MainWindow(QMainWindow):
                 "path": out["path"],
                 "sparse": out.get("sparse", True),
                 "flash_target": out.get("flash_target"),
+                "verify_after_flash": out.get("verify_after_flash", True),
             }
 
         wifi = self.network_tab.get_wifi_config()

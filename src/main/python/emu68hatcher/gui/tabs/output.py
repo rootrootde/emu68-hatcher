@@ -106,6 +106,15 @@ class OutputTab(QWidget):
         disk_row.addWidget(self.refresh_btn)
         disk_layout.addLayout(disk_row)
 
+        self.verify_after_flash_cb = QCheckBox("Verify after writing")
+        self.verify_after_flash_cb.setChecked(True)
+        self.verify_after_flash_cb.setToolTip(
+            "Write the image first, then read back and verify the blocks written. "
+            "All-zero image blocks are skipped and not verified. "
+            "Uncheck for faster write-only flashing."
+        )
+        disk_layout.addWidget(self.verify_after_flash_cb)
+
         warning = QLabel("⚠ This will ERASE the selected disk!")
         warning.setStyleSheet("color: #b00; font-weight: bold;")
         warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -126,6 +135,7 @@ class OutputTab(QWidget):
 
         self.image_group.setVisible(is_img_only or is_flash)
         self.disk_group.setVisible(is_flash or is_device)
+        self.verify_after_flash_cb.setVisible(is_flash)
 
         if is_device or is_flash:
             # both modes write to a real card, so disk_size is locked to it
@@ -248,6 +258,7 @@ class OutputTab(QWidget):
                 "path": self.disk_combo.currentData() or "",
                 "sparse": False,
                 "flash_target": None,
+                "verify_after_flash": self.verify_after_flash_cb.isChecked(),
             }
         flash_target = self.disk_combo.currentData() if self.mode_img_flash.isChecked() else None
         return {
@@ -255,11 +266,13 @@ class OutputTab(QWidget):
             "path": self.output_path.text(),
             "sparse": self.sparse_cb.isChecked(),
             "flash_target": flash_target,
+            "verify_after_flash": self.verify_after_flash_cb.isChecked(),
         }
 
     def set_config(self, config: OutputConfig | None) -> None:
         if config is None:
             return
+        self.verify_after_flash_cb.setChecked(config.verify_after_flash)
         if config.type == OutputType.DEVICE:
             self.mode_device.setChecked(True)
         elif config.flash_target:

@@ -56,7 +56,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     flash_image_to_disk(
         image_path,
         output.flash_target,
-        verify=True,
+        verify=output.verify_after_flash,
         skip_unused_sectors=True,  # huge saving on sparse images
         elevation=workflow.state.elevation,
         progress_callback=progress_cb,
@@ -65,5 +65,6 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     )
 
     workflow._update_state(progress=100.0)
-    workflow._milestone(f"Flashed to {output.flash_target}")
+    verification = "verified written blocks" if output.verify_after_flash else "not verified"
+    workflow._milestone(f"Flashed to {output.flash_target} ({verification})")
     return image

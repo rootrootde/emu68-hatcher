@@ -44,6 +44,10 @@
     - **Image file + flash to SD card** - keeps the image and then flashes it; fastest for large builds.
     - **Direct to SD card** - skips the image, but is slower with large partitions.
 
+    For image + flash, **Verify after writing** is checked by default. Writing finishes before a separate readback pass starts; the card stays unmounted between passes. Uncheck it for write-only flashing. All-zero image blocks are skipped in both modes, so verification checks only the blocks written—not untouched sectors. Progress and speed are shown separately for writing and verification.
+
+    Post-write verification requires the updated Hatcher fork of hst-imager with `--verify-after`. Older tools are rejected before the build starts; write-only flashing still works with them.
+
     !!! danger "Double-check the target!"
         **Picking the wrong disk will wipe it.** Emu68 Hatcher will refuse to write to mounted root partitions (=your operating system) but has no problem with wiping anything else you have connected.
 
