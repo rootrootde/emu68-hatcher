@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
     QFrame,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -33,7 +34,9 @@ from emu68hatcher.data.themes import (
     get_workbench_theme,
     load_workbench_themes,
 )
+from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
+from emu68hatcher.gui.work_areas import scroll_to
 
 
 def _read_picasso96_version(archive: Path) -> str | None:
@@ -107,18 +110,10 @@ class DisplayTab(QWidget):
         scroll.setWidget(content)
         outer.addWidget(scroll)
 
-        layout = QVBoxLayout(content)
+        self.content = content
+        layout = page_layout(content)
 
-        header = QHBoxLayout()
-        header.addWidget(QLabel("Display settings"))
-        header.addStretch()
-        self.advanced_button = QPushButton("Show Advanced")
-        self.advanced_button.setCheckable(True)
-        self.advanced_button.toggled.connect(self._set_advanced_visible)
-        header.addWidget(self.advanced_button)
-        layout.addLayout(header)
-
-        hdmi_group = QGroupBox("HDMI Output Mode (Pi - Monitor)")
+        hdmi_group = QGroupBox("HDMI output")
         hdmi_layout = QVBoxLayout(hdmi_group)
 
         hdmi_h = QHBoxLayout()
@@ -158,8 +153,10 @@ class DisplayTab(QWidget):
         size_row.addStretch()
         custom_outer.addLayout(size_row)
 
-        cvt_row = QHBoxLayout()
-        cvt_row.addWidget(QLabel("Aspect:"))
+        cvt_row = QGridLayout()
+        cvt_row.setColumnStretch(1, 1)
+        cvt_row.setColumnStretch(3, 1)
+        cvt_row.addWidget(QLabel("Aspect:"), 0, 0)
         self.hdmi_aspect_combo = QComboBox()
         for value, label in (
             (3, "16:9"),
@@ -170,31 +167,36 @@ class DisplayTab(QWidget):
             (6, "15:9"),
         ):
             self.hdmi_aspect_combo.addItem(label, value)
-        cvt_row.addWidget(self.hdmi_aspect_combo)
-        cvt_row.addWidget(QLabel("Margins:"))
+        cvt_row.addWidget(self.hdmi_aspect_combo, 0, 1)
+        cvt_row.addWidget(QLabel("Margins:"), 0, 2)
         self.hdmi_margins_combo = QComboBox()
         self.hdmi_margins_combo.addItem("Disabled", False)
         self.hdmi_margins_combo.addItem("Enabled", True)
-        cvt_row.addWidget(self.hdmi_margins_combo)
-        cvt_row.addWidget(QLabel("Scan:"))
+        cvt_row.addWidget(self.hdmi_margins_combo, 0, 3)
+        cvt_row.addWidget(QLabel("Scan:"), 1, 0)
         self.hdmi_interlace_combo = QComboBox()
         self.hdmi_interlace_combo.addItem("Progressive", False)
         self.hdmi_interlace_combo.addItem("Interlace", True)
-        cvt_row.addWidget(self.hdmi_interlace_combo)
-        cvt_row.addWidget(QLabel("Blanking:"))
+        cvt_row.addWidget(self.hdmi_interlace_combo, 1, 1)
+        cvt_row.addWidget(QLabel("Blanking:"), 1, 2)
         self.hdmi_rb_combo = QComboBox()
         self.hdmi_rb_combo.addItem("Normal", False)
         self.hdmi_rb_combo.addItem("Reduced", True)
-        cvt_row.addWidget(self.hdmi_rb_combo)
-        cvt_row.addStretch()
+        cvt_row.addWidget(self.hdmi_rb_combo, 1, 3)
         custom_outer.addLayout(cvt_row)
 
         self.custom_res_widget.setVisible(False)
         hdmi_layout.addWidget(self.custom_res_widget)
+        self.force_hdmi_check = QCheckBox("Force HDMI output without EDID")
+        self.force_hdmi_check.setChecked(True)
+        self.force_hdmi_check.setToolTip(
+            "Forces HDMI output when no display or EDID is detected during boot."
+        )
+        hdmi_layout.addWidget(self.force_hdmi_check)
 
         layout.addWidget(hdmi_group)
 
-        workbench_group = QGroupBox("Workbench Screen Mode")
+        workbench_group = QGroupBox("Workbench screen")
         workbench_layout = QVBoxLayout(workbench_group)
         workbench_row = QHBoxLayout()
         workbench_row.addWidget(QLabel("Display Mode:"))
@@ -208,6 +210,7 @@ class DisplayTab(QWidget):
             "Native mode keeps the ScreenMode setup window on first boot."
         )
         self.workbench_mode_note.setWordWrap(True)
+        self.workbench_mode_note.setProperty("tone", "muted")
         workbench_layout.addWidget(self.workbench_mode_note)
         layout.addWidget(workbench_group)
 
@@ -215,6 +218,8 @@ class DisplayTab(QWidget):
         self.hdmi_height_spin.valueChanged.connect(self._rebuild_workbench_modes)
         self._rebuild_workbench_modes()
 
+        self.appearance_content = QWidget()
+        appearance_layout = page_layout(self.appearance_content)
         theme_group = QGroupBox("Themes")
         theme_layout = QVBoxLayout(theme_group)
         theme_row = QHBoxLayout()
@@ -245,8 +250,9 @@ class DisplayTab(QWidget):
         theme_layout.addWidget(self.theme_packages_note)
         self.workbench_theme_combo.currentIndexChanged.connect(self._on_workbench_theme_changed)
         self._on_workbench_theme_changed()
-        layout.addWidget(theme_group)
+        appearance_layout.addWidget(theme_group)
         theme_group.setVisible(WORKBENCH_THEMES_ENABLED)
+        layout.addWidget(self.appearance_content)
 
         p96_group = QGroupBox("Picasso96 RTG")
         p96_layout = QVBoxLayout(p96_group)
@@ -272,12 +278,9 @@ class DisplayTab(QWidget):
         self.framethrower_group = self._create_framethrower_group()
         layout.addWidget(self.framethrower_group)
 
-        self.hdmi_behavior_group = self._create_hdmi_behavior_group()
-        layout.addWidget(self.hdmi_behavior_group)
-
         layout.addStretch()
         self._connect_settings_signals(content)
-        self._set_advanced_visible(False)
+        self._connect_settings_signals(self.appearance_content)
         self._update_framethrower_fields()
 
     @staticmethod
@@ -376,19 +379,6 @@ class DisplayTab(QWidget):
         form.addRow(self.framethrower_note)
         return group
 
-    def _create_hdmi_behavior_group(self) -> QGroupBox:
-        group = QGroupBox("Advanced display settings")
-        form = self._form_layout(group)
-        self.force_hdmi_check = QCheckBox("Force HDMI output without EDID")
-        self.force_hdmi_check.setChecked(True)
-        self._add_form_row(
-            form,
-            "HDMI hotplug:",
-            self.force_hdmi_check,
-            "Forces HDMI output when no display or EDID is detected during boot.",
-        )
-        return group
-
     def _connect_settings_signals(self, content: QWidget):
         for combo in content.findChildren(QComboBox):
             combo.currentIndexChanged.connect(self._emit_settings_changed)
@@ -401,9 +391,8 @@ class DisplayTab(QWidget):
     def _emit_settings_changed(self, _value=None):
         self.settings_changed.emit()
 
-    def _set_advanced_visible(self, visible: bool):
-        self.hdmi_behavior_group.setVisible(visible)
-        self.advanced_button.setText("Show Basic" if visible else "Show Advanced")
+    def navigate(self, section):
+        scroll_to(self.appearance_content if section == "appearance" else self.hdmi_mode_combo)
 
     def on_hdmi_mode_changed(self):
         mode_name = self.hdmi_mode_combo.currentData()
@@ -468,6 +457,15 @@ class DisplayTab(QWidget):
         smooth = self.framethrower_scaling_combo.currentData() == "smooth"
         self.framethrower_b_spin.setEnabled(framethrower and smooth)
         self.framethrower_c_spin.setEnabled(framethrower and smooth)
+        form = self.framethrower_group.layout()
+        for field in (
+            self.unicam_device_combo,
+            self.framethrower_boot_check,
+            self.framethrower_scaling_combo,
+        ):
+            form.setRowVisible(field, framethrower)
+        for field in (self.framethrower_b_spin, self.framethrower_c_spin):
+            form.setRowVisible(field, framethrower and smooth)
         self.framethrower_note.setVisible(framethrower)
 
     def get_emu68_boot_settings(self) -> dict:

@@ -1,6 +1,6 @@
 # AGS partition import
 
-The AGS tab copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. The source Workbench, boot scripts and FAT partition are not imported.
+**Storage → AGS import** copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. The source Workbench, boot scripts and FAT partition are not imported.
 
 **WHDLoad:AGS** and **WHDLoad:AGS2/Start_AGS** retain their original contents. The required paths and assigns are set in **S:User-Startup** when Workbench boots.
 
@@ -8,20 +8,20 @@ The AGS tab copies complete filesystem partitions from a local AGS image. Start 
 
 | Selection | Source volume | Default |
 | --- | --- | --- |
-| WHDLoad games, demos and AGS | WHDLoad, including AGS2, games, demos and magazines | Required |
+| WHDLoad & AGS | WHDLoad, including AGS2, games, demos and magazines | Required |
 | Extra games and Premium | Games | On |
-| Emulators and applications | Work | On |
+| Work | Work (complete source partition) | On |
 | Media | Media | Off |
 
-Choose a local **.img** or **.hdf**. Hatcher checks the source automatically and shows the size of each content group. Selecting or deselecting content updates the planned partitions immediately. **Refresh** repeats the source check. Supported profiles are v30 and v31 beta 160726. The source must contain a direct RDB with 16 heads, 63 sectors and 512-byte blocks. Other geometries and network-share sources are rejected before target initialization.
+Select **Import AGS** to reveal the source and content controls, then choose a local **.img** or **.hdf**. Hatcher checks the source automatically and shows the size of each content group. Selecting or deselecting content updates the planned partitions immediately. **Refresh** repeats the source check. Supported profiles are v30 and v31 beta 160726. The source must contain a direct RDB with 16 heads, 63 sectors and 512-byte blocks. Other geometries and network-share sources are rejected before target initialization.
 
 Each imported volume keeps its original name and directory structure. Device names are allocated from the target layout and can be changed. Imported sizes are the exact source partition lengths, including unused filesystem blocks. Size, volume, filesystem and boot status are locked. Copies use the Hatcher PFS3 handler, are automatically mounted and are not bootable. Changing PDS3 to PFS3 affects the RDB entry; the copied filesystem is not formatted or converted.
 
-The default layout contains **EMU68BOOT** and **Workbench**, with the remaining RDB space unallocated. Add other partitions manually or select content in the AGS tab. Loading a configuration restores the layout and checks its AGS source again. A manual Work volume conflicts with an imported Work volume and must be renamed or removed explicitly. Existing partitions are never shrunk automatically to fit AGS. Imported partitions cannot receive extra-content folders. The partition editor marks them **AGS image · fixed size**; **Change AGS content…** returns to the content selection.
+The default layout contains **EMU68BOOT** and **Workbench**, with the remaining RDB space unallocated. Add other partitions in **Storage → Partition layout** or select content in **AGS import**. Loading a configuration restores the layout and checks its AGS source again. A manual Work volume conflicts with an imported Work volume and must be renamed or removed explicitly. Existing partitions are never shrunk automatically to fit AGS. Imported partitions cannot receive extra-content folders. The partition editor marks them **AGS · fixed**. Change their selection in **AGS import** above the layout.
 
-Configuration version 1.3.0 distinguishes partition copies from the former file import. Loading an older AGS configuration sets its allocation to pending. The former Emulators selection proposes the whole Work partition, including applications. Former reservations become ordinary partitions and remain in the layout. The source is checked automatically. Resolve any conflicts shown in the AGS tab before building.
+Configuration version 1.3.0 distinguishes partition copies from the former file import. Loading an older AGS configuration sets its allocation to pending. The former Emulators selection proposes the whole Work partition, including applications. Former reservations become ordinary partitions and remain in the layout. The source is checked automatically. Resolve any conflicts shown in **Storage → AGS import** before building.
 
-The layout bar shows the same planned partitions as the Partitions tab. If the selection exceeds available space, the AGS tab shows the shortfall. Deselect content, use **Change target size…**, or open **Adjust partitions…**. Building remains blocked until the layout is valid. Disabling AGS removes its imported partitions from the configuration. These edits do not write to an image or card; the physical-disk confirmation still appears when starting a build.
+Storage shows import controls and one layout bar on the same scrolling page. If the selection exceeds available space, AGS import shows the shortfall without discarding the selection. Deselect content or adjust capacity and manual partitions under **Partition layout**. Building remains blocked until the layout is valid. Disabling AGS removes its imported partitions from the configuration. These edits do not write to an image or card; the physical-disk confirmation still appears when starting a build.
 
 ## Portable launcher
 

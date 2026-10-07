@@ -4,7 +4,7 @@ Build ready-to-run SD cards with pre-configured Workbench installation (+batteri
 
 Runs on macOS, Linux and Windows.
 
-<a href="assets/screenshot_macos.png" target="_blank"><img src="assets/screenshot_macos.png" alt="Emu68 Hatcher Start tab on macOS" width="900"></a>
+<a href="assets/screenshots/overview.png" target="_blank"><img src="assets/screenshots/overview.png" alt="Emu68 Hatcher configuration overview (offscreen Qt)" width="900"></a>
 
 - Bootable Emu68 install for pistorm32-lite, pistorm and pistorm16
 - Workbench install from stock ADFs (3.1 / 3.2 / 3.2.2.1 / 3.2.3), identified by hash

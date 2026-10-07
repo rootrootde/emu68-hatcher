@@ -22,7 +22,7 @@ COL_FS = 3
 COL_BOOTABLE = 4
 COL_EXTRA = 5
 COL_AGS = 6
-MIN_VISIBLE_ROWS = 2
+MIN_VISIBLE_ROWS = 1
 
 _EXTRA_COLORS = {
     "ok": QColor("#17823b"),
@@ -43,7 +43,7 @@ class PartitionTable(QTableWidget):
         self._rendering = False
         self.setColumnCount(7)
         self.setHorizontalHeaderLabels(
-            ["Device", "Volume", "Size (MB)", "Filesystem", "Boot", "Extra / usable", "Source"]
+            ["Device", "Volume", "Size (MiB)", "Filesystem", "Boot", "Extra / usable", "Source"]
         )
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.horizontalHeader().setSectionResizeMode(
@@ -58,13 +58,18 @@ class PartitionTable(QTableWidget):
         self,
         partitions: list[AmigaPartition],
         extra_statuses: list[tuple[str, str | None]] | None = None,
+        identities: list[str] | None = None,
     ) -> None:
         self._rendering = True
         try:
             self.setRowCount(len(partitions))
             for row, partition in enumerate(partitions):
                 reserved = partition.ags_reservation
-                self.setItem(row, COL_DEVICE, QTableWidgetItem(partition.device))
+                device_item = QTableWidgetItem(partition.device)
+                device_item.setData(
+                    Qt.ItemDataRole.UserRole, identities[row] if identities else partition.device
+                )
+                self.setItem(row, COL_DEVICE, device_item)
                 volume_item = QTableWidgetItem(partition.volume)
                 if reserved:
                     volume_item.setFlags(volume_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -80,13 +85,11 @@ class PartitionTable(QTableWidget):
                 self.setCellWidget(row, COL_BOOTABLE, self._bootable_widget(row, partition))
                 text, state = extra_statuses[row] if extra_statuses else ("", None)
                 self.set_extra_status(row, text, state)
-                label = "AGS image · fixed size" if reserved else ""
+                label = "AGS · fixed" if reserved else ""
                 role_item = QTableWidgetItem(label)
                 role_item.setFlags(role_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 role_item.setToolTip(
-                    "Select Change AGS content to include or remove this partition."
-                    if reserved
-                    else ""
+                    "Use AGS import above to include or remove this partition." if reserved else ""
                 )
                 self.setItem(row, COL_AGS, role_item)
         finally:
@@ -109,7 +112,17 @@ class PartitionTable(QTableWidget):
         )
         header_height = self.horizontalHeader().sizeHint().height()
         content_height = header_height + sum(row_heights) + 2 * self.frameWidth()
-        self.setMinimumHeight(max(content_height, self.minimumSizeHint().height()))
+        minimum = max(content_height, self.minimumSizeHint().height())
+        self.setMinimumHeight(minimum)
+        visible_rows = max(MIN_VISIBLE_ROWS, min(6, self.rowCount()))
+        self.setMaximumHeight(
+            max(
+                minimum,
+                header_height
+                + visible_rows * self.verticalHeader().defaultSectionSize()
+                + 2 * self.frameWidth(),
+            )
+        )
 
     def selected_row(self) -> int:
         rows = self.selectionModel().selectedRows() if self.selectionModel() else []

@@ -4,7 +4,7 @@ Build ready-to-run SD cards with pre-configured Workbench installation (+batteri
 
 Runs on macOS, Linux and Windows.
 
-<a href="docs/assets/screenshot_macos.png"><img src="docs/assets/screenshot_macos.png" alt="Emu68 Hatcher Start tab on macOS" width="900"></a>
+<a href="docs/assets/screenshots/overview.png"><img src="docs/assets/screenshots/overview.png" alt="Emu68 Hatcher configuration overview (offscreen Qt)" width="900"></a>
 
 **Features**
 

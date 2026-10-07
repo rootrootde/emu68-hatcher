@@ -1,4 +1,4 @@
-"""output tab - image file, image+flash, or direct-to-SD"""
+"""Storage output controls: image file, image+flash, or direct-to-SD."""
 
 from pathlib import Path
 from time import monotonic
@@ -20,11 +20,12 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher.config.schema import OutputConfig, OutputType
+from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.workers import DiskListWorker
 
 
 class OutputTab(QWidget):
-    """output config tab"""
+    """Output settings adapter for the shared storage draft."""
 
     # `object` so the byte count stays a python int - Qt would truncate
     # multi-GB values on a 32-bit signed int signal
@@ -38,30 +39,35 @@ class OutputTab(QWidget):
         self._disk_workers: set[DiskListWorker] = set()
         self._disk_generation = 0
         self._pending_device: str | None = None
-        self._last_emitted_device: str | None = None
+        self._last_emitted_device: tuple[str, int] | None = None
         self.setup_ui()
-        # disk list populates lazily - first refresh on tab show is fine
+        # Card modes request the disk list; ordinary navigation does not scan devices.
 
     # ------------------------------------------------------------------ UI
 
     def setup_ui(self):
-        layout = QVBoxLayout(self)
-
-        # --- Output mode radio group ---
-        mode_group = QGroupBox("Output mode")
-        mode_layout = QVBoxLayout(mode_group)
+        layout = page_layout(self)
+        mode_group = QGroupBox("Output target")
+        target_layout = QVBoxLayout(mode_group)
+        mode_layout = QHBoxLayout()
+        target_layout.addLayout(mode_layout)
         self.mode_buttons = QButtonGroup(self)
 
-        self.mode_img = QRadioButton("Image file (.img)")
+        self.mode_img = QRadioButton("Image")
+        self.mode_img.setToolTip("Write an .img file without writing a card.")
         self.mode_img.setChecked(True)
         self.mode_buttons.addButton(self.mode_img)
         mode_layout.addWidget(self.mode_img)
 
-        self.mode_img_flash = QRadioButton("Image file + flash to SD card")
+        self.mode_img_flash = QRadioButton("Image + SD card")
+        self.mode_img_flash.setToolTip(
+            "Keep the image file and then write it to the selected card."
+        )
         self.mode_buttons.addButton(self.mode_img_flash)
         mode_layout.addWidget(self.mode_img_flash)
 
-        self.mode_device = QRadioButton("Direct to SD card (no .img file)")
+        self.mode_device = QRadioButton("Direct to SD card")
+        self.mode_device.setToolTip("Write directly to the selected card, without an image file.")
         self.mode_buttons.addButton(self.mode_device)
         mode_layout.addWidget(self.mode_device)
 
@@ -71,10 +77,13 @@ class OutputTab(QWidget):
         layout.addWidget(mode_group)
 
         # --- Image file group ---
-        self.image_group = QGroupBox("Image file")
+        self.image_group = QWidget()
         image_layout = QVBoxLayout(self.image_group)
+        image_layout.setContentsMargins(0, 0, 0, 0)
+        image_layout.setSpacing(10)
 
         path_row = QHBoxLayout()
+        path_row.addWidget(QLabel("Image file:"))
         self.output_path = QLineEdit()
         self.output_path.setPlaceholderText("Select output location...")
         path_row.addWidget(self.output_path)
@@ -83,22 +92,23 @@ class OutputTab(QWidget):
         path_row.addWidget(self.browse_btn)
         image_layout.addLayout(path_row)
 
-        self.sparse_cb = QCheckBox(
-            "Sparse - allocates only the data actually used (saves disk space)"
-        )
+        self.sparse_cb = QCheckBox("Save disk space with a sparse image")
+        self.sparse_cb.setToolTip("Allocate only the data actually written to the image.")
         self.sparse_cb.setChecked(True)
         image_layout.addWidget(self.sparse_cb)
 
-        layout.addWidget(self.image_group)
+        target_layout.addWidget(self.image_group)
 
         # --- SD card group ---
-        self.disk_group = QGroupBox("SD card")
+        self.disk_group = QWidget()
         disk_layout = QVBoxLayout(self.disk_group)
+        disk_layout.setContentsMargins(0, 0, 0, 0)
+        disk_layout.setSpacing(10)
 
         disk_row = QHBoxLayout()
         disk_row.addWidget(QLabel("Disk:"))
         self.disk_combo = QComboBox()
-        self.disk_combo.setMinimumWidth(380)
+        self.disk_combo.setMinimumWidth(160)
         self.disk_combo.currentIndexChanged.connect(self._on_disk_selected)
         disk_row.addWidget(self.disk_combo, 1)
         self.refresh_btn = QPushButton("Refresh")
@@ -115,13 +125,13 @@ class OutputTab(QWidget):
         )
         disk_layout.addWidget(self.verify_after_flash_cb)
 
-        warning = QLabel("⚠ This will ERASE the selected disk!")
-        warning.setStyleSheet("color: #b00; font-weight: bold;")
+        warning = QLabel("⚠ All data on the selected SD card will be erased.")
+        warning.setProperty("alert", True)
         warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        warning.setWordWrap(True)
         disk_layout.addWidget(warning)
 
-        layout.addWidget(self.disk_group)
-        layout.addStretch()
+        target_layout.addWidget(self.disk_group)
 
         self._on_mode_changed()  # apply initial visibility
 
@@ -244,9 +254,10 @@ class OutputTab(QWidget):
             self._last_emitted_device = None
             self.target_size_cleared.emit()
             return
-        if not force and device == self._last_emitted_device:
+        identity = (device, info.size_bytes)
+        if not force and identity == self._last_emitted_device:
             return
-        self._last_emitted_device = device
+        self._last_emitted_device = identity
         self.target_size_changed.emit(info.size_bytes, info.display_label)
 
     # ------------------------------------------------------------------ config IO
@@ -263,7 +274,7 @@ class OutputTab(QWidget):
         flash_target = self.disk_combo.currentData() if self.mode_img_flash.isChecked() else None
         return {
             "type": OutputType.IMG.value,
-            "path": self.output_path.text(),
+            "path": self.output_path.text().strip(),
             "sparse": self.sparse_cb.isChecked(),
             "flash_target": flash_target,
             "verify_after_flash": self.verify_after_flash_cb.isChecked(),
@@ -271,7 +282,13 @@ class OutputTab(QWidget):
 
     def set_config(self, config: OutputConfig | None) -> None:
         if config is None:
+            self.mode_img.setChecked(True)
+            self.output_path.clear()
+            self.sparse_cb.setChecked(True)
+            self.verify_after_flash_cb.setChecked(True)
+            self._on_mode_changed()
             return
+        self.output_path.setText(str(config.path) if config.type == OutputType.IMG else "")
         self.verify_after_flash_cb.setChecked(config.verify_after_flash)
         if config.type == OutputType.DEVICE:
             self.mode_device.setChecked(True)

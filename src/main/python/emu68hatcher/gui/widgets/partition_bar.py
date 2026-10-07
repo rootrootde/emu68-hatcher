@@ -1,7 +1,7 @@
 """partition bar - horizontal disk-layout viz with drag-resize"""
 
 from PySide6.QtCore import QPoint, QRect, Qt, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen, QPolygon
+from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPalette, QPen, QPolygon
 from PySide6.QtWidgets import QToolTip, QWidget
 
 from emu68hatcher.config.constants import (
@@ -12,22 +12,12 @@ from emu68hatcher.config.constants import (
 from emu68hatcher.config.partition_helpers import round_to_cylinder
 from emu68hatcher.config.partition_models import Filesystem
 
-BOOT_COLOR = QColor("#546E7A")  # blue-gray
+BOOT_COLOR = QColor("#65758c")
 AMIGA_COLORS = [
-    QColor("#009688"),  # teal
-    QColor("#FF9800"),  # orange
-    QColor("#4CAF50"),  # green
-    QColor("#9C27B0"),  # purple
-    QColor("#F44336"),  # red
-    QColor("#3F51B5"),  # indigo
+    QColor(color) for color in ("#365fbe", "#287b79", "#8056a6", "#98722b", "#a54e61", "#4a6b93")
 ]
-FREE_COLOR = QColor("#424242")  # dark gray
-SELECTED_BORDER = QColor("#FFEB3B")  # yellow highlight
-FRAME_COLOR = QColor("#90A4AE")  # container chrome - frames, captions, strip text; never a fill
-BAND_BG = QColor("#37474F")
-RDB_BADGE = QColor("#263238")
-RDB_BADGE_BORDER = QColor("#607D8B")
-FREE_HATCH = QColor("#616161")  # diagonal hatch marks absence, solid fills mean data
+FREE_COLOR = QColor("#e8edf5")
+SELECTED_BORDER = QColor("#cfdeff")
 
 
 def _format_size(size_bytes: int) -> str:
@@ -108,7 +98,11 @@ class PartitionBar(QWidget):
         name_w = painter.fontMetrics().horizontalAdvance(label)
         painter.setFont(self._sub_font)
         sub_w = painter.fontMetrics().horizontalAdvance(sub_text)
-        painter.setPen(QColor("#FFFFFF"))
+        painter.setPen(
+            self.palette().color(QPalette.ColorRole.WindowText)
+            if label == "Unallocated"
+            else QColor("#FFFFFF")
+        )
         text_rect = rect.adjusted(6, 4, -6, -4)
         if seg_w > max(name_w, sub_w) + 14:
             painter.setFont(self._name_font)
@@ -163,19 +157,19 @@ class PartitionBar(QWidget):
         boot_rect = QRect(1, bar_top, boot_width, bar_height)
         self._rects.append((boot_rect, _tooltip(boot_label, boot_size, boot_sub)))
         painter.fillRect(boot_rect, QBrush(boot_color))
-        painter.setPen(QPen(QColor("#222222"), 1))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(boot_rect)
         if not self._draw_segment_label(
             painter, boot_rect, boot_width, boot_label, boot_size, boot_sub
         ):
             painter.setFont(self._sub_font)
-            painter.setPen(FRAME_COLOR)
+            painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
             painter.drawText(
                 QRect(1, 0, width, self.STRIP_H - 4),
                 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                 f"{boot_label} · {boot_sub} · {_format_size(boot_size)}",
             )
-            painter.setPen(QPen(FRAME_COLOR, 2))
+            painter.setPen(QPen(BOOT_COLOR, 2))
             tick_x = 1 + boot_width // 2
             painter.drawLine(tick_x, self.STRIP_H - 4, tick_x, bar_top)
         return boot_width
@@ -192,7 +186,7 @@ class PartitionBar(QWidget):
         boot_size = self._segments[0][1]
         container_rect = QRect(1 + boot_width, bar_top, width - boot_width, bar_height)
         container_bytes = total - boot_size
-        painter.setPen(QPen(FRAME_COLOR, 2))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(container_rect.adjusted(1, 1, -1, -1))
         band = QRect(
             container_rect.left() + 2,
@@ -200,13 +194,12 @@ class PartitionBar(QWidget):
             container_rect.width() - 4,
             self.BAND_H,
         )
-        painter.fillRect(band, QBrush(BAND_BG))
+        painter.fillRect(band, self.palette().color(QPalette.ColorRole.Window))
         badge = QRect(band.left() + 6, band.top() + 7, 10, 10)
-        painter.fillRect(badge, QBrush(RDB_BADGE))
-        painter.setPen(QPen(RDB_BADGE_BORDER, 1))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(badge)
         painter.setFont(self._sub_font)
-        painter.setPen(QColor("#ECEFF1"))
+        painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
         caption = painter.fontMetrics().elidedText(
             self._capacity_caption(container_bytes),
             Qt.TextElideMode.ElideRight,
@@ -251,17 +244,23 @@ class PartitionBar(QWidget):
             rect = QRect(x, children.top(), seg_w, children.height())
             self._rects.append((rect, _tooltip(label, size, sublabel)))
 
-            painter.fillRect(rect, QBrush(color))
             if is_free:
-                painter.fillRect(rect, QBrush(FREE_HATCH, Qt.BrushStyle.BDiagPattern))
+                color = (
+                    QColor("#343d4c")
+                    if self.palette().color(QPalette.ColorRole.Window).lightness() < 128
+                    else FREE_COLOR
+                )
+            painter.fillRect(rect, color)
 
             if selected:
                 painter.setPen(QPen(SELECTED_BORDER, 3))
                 painter.drawRect(rect.adjusted(1, 1, -2, -2))
 
-            painter.setPen(QPen(QColor("#222222"), 1))
+            painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
             painter.drawRect(rect)
-            drew = self._draw_segment_label(painter, rect, seg_w, label, size, sublabel)
+            drew = self._draw_segment_label(
+                painter, rect, seg_w, "Unallocated" if is_free else label, size, sublabel
+            )
             if not drew and not is_free and seg_w > 18:
                 painter.setFont(self._name_font)
                 painter.setPen(QColor("#FFFFFF"))
