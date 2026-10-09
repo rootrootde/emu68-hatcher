@@ -15,6 +15,7 @@ from emu68hatcher.config.boot_models import (
     UnicamDevice,
 )
 from emu68hatcher.data.data_manager import load_yaml_data
+from emu68hatcher.data.emu68_releases import kernel_table
 from emu68hatcher.utils.paths import ensure_dir
 
 
@@ -29,23 +30,7 @@ def get_screen_modes() -> list[dict]:
 
 
 # kernel filenames per release. modern = pistorm32-lite/16, classic = old PiStorm. 1.1+ ships .gz
-EMU68_KERNELS: dict[str, dict[str, str]] = {
-    "1.0.7": {
-        "modern": "Emu68-pistorm32lite",
-        "classic": "Emu68-pistorm",
-        "pistorm16": "Emu68-pistorm",
-    },
-    "1.1.0-alpha.1": {
-        "modern": "Emu68-pistorm.gz",
-        "classic": "Emu68-pistorm-classic.gz",
-        "pistorm16": "Emu68-pistorm.gz",
-    },
-    "1.1.0-beta.1": {
-        "modern": "Emu68-pistorm.gz",
-        "classic": "Emu68-pistorm-classic.gz",
-        "pistorm16": "Emu68-pistorm.gz",
-    },
-}
+EMU68_KERNELS: dict[str, dict[str, str]] = kernel_table()
 
 
 def _is_emu68_11(emu68_version: str) -> bool:
