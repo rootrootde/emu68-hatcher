@@ -12,7 +12,7 @@ versions:
 download:
   source: local
   path: Emu68-Manager.lha
-  hash: 5277531CF6D02E549338A6A163ABD004
+  hash: 81A94A2DD887AA86978B03BECD4FFA25
   filename: Emu68-Manager.lha
 install:
 - from: Emu68-Manager

@@ -12,7 +12,7 @@ versions:
 download:
   source: local
   path: Hatcher-Packages.lha
-  hash: D4FDBA9399521A9B508A0DF4C5DD7721
+  hash: 5F67CD9316EA535498A88EDDF9AD5F24
   filename: Hatcher-Packages.lha
 install:
 - from: Hatcher-Packages

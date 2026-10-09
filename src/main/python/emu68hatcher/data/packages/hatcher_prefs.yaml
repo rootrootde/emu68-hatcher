@@ -12,7 +12,7 @@ versions:
 download:
   source: local
   path: Hatcher-Prefs.lha
-  hash: EB88D93CE4986434068E9D5E60CCDB13
+  hash: 663FBF4B6C41EA6B933723813FE1C688
   filename: Hatcher-Prefs.lha
 install:
 # SYS:C/Hatcher-Prefs is fixed: the network launchers, the startup-time hook and

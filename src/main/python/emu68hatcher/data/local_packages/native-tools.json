@@ -2,31 +2,31 @@
   "emu68-manager": {
     "archive": "amiga/.build/Emu68-Manager.lha",
     "built_clean": true,
-    "commit": "ae885d222e82a2f577c2cff516dd8e5f96cc5dda",
+    "commit": "bbb08c50b1e2d08ae0c47b90a7b3c4b767c7b71b",
     "file": "Emu68-Manager.lha",
-    "md5": "5277531cf6d02e549338a6a163abd004",
+    "md5": "81a94a2dd887aa86978b03becd4ffa25",
     "repository": "emu68-manager",
-    "sha256": "a16017a7de96c25b9834b35e760ebb4069afa9bb61182ae8783f9bd553996a22",
-    "size": 457463
+    "sha256": "ddb22dd93cb69d259592f1493a6c09b0cdba91efc2015f5e202854b70ac6d58d",
+    "size": 459274
   },
   "hatcher-packages": {
     "archive": "amiga/.build/Hatcher-Packages-dev.lha",
     "built_clean": true,
     "commit": "1232d5d92a943f7b02ea2c5c66be36df602550f3",
     "file": "Hatcher-Packages.lha",
-    "md5": "d4fdba9399521a9b508a0df4c5dd7721",
+    "md5": "5f67cd9316ea535498a88eddf9ad5f24",
     "repository": "hatcher-packages",
-    "sha256": "1e2605559444d7298e5677bcc806aea3d345cded5ed081a6961bfecdb21b8f61",
+    "sha256": "3ac1c1485b822cb588eb2ff2f33ed2856ee697f705fd37e91fd6871bafd43810",
     "size": 467963
   },
   "hatcher-prefs": {
     "archive": ".build/Hatcher-Prefs-dev.lha",
     "built_clean": true,
-    "commit": "36523935430c6e2ee1c379b9f04986c9fb4e3ff4",
+    "commit": "025e143a1a5b948526394e5035524a73f42b8f68",
     "file": "Hatcher-Prefs.lha",
-    "md5": "eb88d93ce4986434068e9d5e60ccdb13",
+    "md5": "663fbf4b6c41ea6b933723813fe1c688",
     "repository": "hatcher-prefs",
-    "sha256": "37315d5ae88522263bfd77edf67a39249f15cb60b7fdd029281805314673b3ca",
-    "size": 161319
+    "sha256": "6793b40f3ff9f7fc12e6d43b81a942efc0e6374864b1064fc97c63bc73c858bf",
+    "size": 161412
   }
 }
