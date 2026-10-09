@@ -11,8 +11,10 @@ versions:
 download:
   source: local
 install:
-# NetworkConfig.rexx is no longer launched; kept one release as a Shell fallback
-# (rx S:NetworkConfig.rexx, rx S:NetworkConfig.rexx ONLINE WIFI|ETHERNET)
+# NetworkConfig.rexx is no longer a launcher; kept one release as a Shell fallback
+# (rx S:NetworkConfig.rexx, rx S:NetworkConfig.rexx ONLINE WIFI|ETHERNET) and for
+# the licensed Roadshow boot-time SYNCTIME call. hatcher-prefs' migration checks
+# its exact bytes, so do not edit it.
 - from: System/S/NetworkConfig.rexx
   to: S/
 - from: System/Utilities/Network Config

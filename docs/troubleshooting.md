@@ -42,11 +42,16 @@ rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
 
 ### Clock is not set after boot (full Roadshow)
 
-Boot-time time sync now runs **C:Hatcher-Prefs startup-time**, which does nothing
-until you opt in once from a Shell with `Hatcher-Prefs migrate enable-startup-time SYS:`
-and then retire that change as described in
-**SYS:Emu68-Hatcher/Tools/Hatcher-Prefs/ReadMe.txt**. The opt-in is tied to the
-installed program, so repeat it after updating Hatcher Prefs.
+With the full Roadshow archive, User-Startup syncs the clock after the network comes
+up with `rx S:NetworkConfig.rexx SYNCTIME`, as in earlier releases. Check that
+**S:Network-disabled** does not exist and that the network connects at boot.
+
+Hatcher Prefs can take over this job: run `Hatcher-Prefs migrate enable-startup-time SYS:`
+once from a Shell and retire that change as described in
+**SYS:Emu68-Hatcher/Tools/Hatcher-Prefs/ReadMe.txt**. It replaces the SYNCTIME line
+with **C:Hatcher-Prefs startup-time** and also saves the time to the clock chip. The
+opt-in is tied to the installed program and the card, so Emu68 Hatcher cannot set it
+up when it builds the image, and it has to be repeated after updating Hatcher Prefs.
 `Hatcher-Prefs startup-status SYS:` shows whether it is active.
 
 ### Browser reports a DNS error

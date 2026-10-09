@@ -78,6 +78,10 @@ scripts:
     ; Network-Startup not auto-executed - Roadshow demo timer starts when
     ; bsdsocket.library opens. Use "Connect" from the Network menu instead.
     ;END Roadshow
+# boot-time clock sync stays on the old rexx hook: Hatcher-Prefs startup-time only
+# runs after "Hatcher-Prefs migrate enable-startup-time SYS:", whose record binds
+# volume and file identities that exist only once the image is written. that
+# migration recognises this exact block and replaces it.
 - name: Roadshow TCP/IP
   when_user_archive: true
   content: |
@@ -85,7 +89,7 @@ scripts:
     If NOT EXISTS S:Network-disabled
       If EXISTS S:Network-Startup
         Execute S:Network-Startup
-        Run >NIL: SYS:C/Hatcher-Prefs startup-time
+        Run >NIL: SYS:Rexxc/rx S:NetworkConfig.rexx SYNCTIME
       EndIf
     EndIf
     ;END Roadshow
