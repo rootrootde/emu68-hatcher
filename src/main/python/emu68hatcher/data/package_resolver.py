@@ -22,6 +22,7 @@ class Resolution:
     required_by: dict[str, list[str]] = field(default_factory=dict)
     recommended_by: dict[str, list[str]] = field(default_factory=dict)
     selection_reasons: dict[str, str] = field(default_factory=dict)
+    requested: set[str] = field(default_factory=set)  # selected because asked for, not pulled in
 
 
 def _provides_of(pkg: Package) -> set[str]:
@@ -248,6 +249,7 @@ def resolve(
         unsatisfiable={key: sorted(set(value)) for key, value in unsatisfiable.items()},
         required_by={key: sorted(value) for key, value in requirers.items()},
         recommended_by=recommended_by,
+        requested=requested & selected,
     )
 
 

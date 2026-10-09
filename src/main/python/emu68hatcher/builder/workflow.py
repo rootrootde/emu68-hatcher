@@ -8,6 +8,7 @@ from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
 from emu68hatcher.builder.host.elevation import cleanup_elevation
+from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.state import (
     BuildLogCallback,
     BuildProgressCallback,
@@ -56,6 +57,8 @@ class BuildWorkflow:
         self._log_callback = log_callback
         self.state = BuildState()
         self._resolution: Resolution | None = None
+        # package and extras file writes on the boot partition, for the build receipts
+        self.write_log: StagingWriteLog | None = None
         self.logger = get_logger()
         self._cancelled = False
 

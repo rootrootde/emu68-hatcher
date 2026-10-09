@@ -82,6 +82,16 @@ and have not been tested on real hardware yet:
 Hatcher Packages and Emu68 Manager are installed to **SYS:Emu68-Hatcher/Tools/**
 with their manuals.
 
+Each image also gets two records the Amiga tools can read.
+**SYS:Emu68-Hatcher/Packages/build-receipts.json** lists, per package, the files the
+build wrote with their sizes and SHA-256, startup blocks and menu entries, and marks
+files your extra content replaced as locally modified. Packages that installed no
+files get no receipt. **SYS:Emu68-Hatcher/Installation.json** records the Kickstart and
+Emu68 versions, the network stack and hashes of the generated config.txt and
+cmdline.txt. Both describe the image as built; they are not signed, and Hatcher
+Packages lists the packages as untracked until you adopt them with a signed package
+set. Neither file contains WiFi passwords, archive paths or registration keys.
+
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream
 Vera, DejaVu, Roboto). Installing a pack does not change the active font.

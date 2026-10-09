@@ -12,7 +12,8 @@ from emu68hatcher.builder.staging.files import (
     resolve_source_path,
     resolve_staging_path,
 )
-from emu68hatcher.builder.staging.tree_copy import copy_contained_tree
+from emu68hatcher.builder.staging.receipts import StagingWriteLog
+from emu68hatcher.builder.staging.tree_copy import FileCopied, copy_contained_tree
 from emu68hatcher.config.defaults import DEFAULT_BOOT_DEVICE
 from emu68hatcher.data.package_loader import get_package_by_name
 from emu68hatcher.data.package_schema import InstallRule, Package
@@ -40,9 +41,9 @@ def _set_icon_stack(info_path: Path, size: int) -> None:
         info_path.write_bytes(data)
 
 
-def _merge_tree(source: Path, dest: Path) -> int:
+def _merge_tree(source: Path, dest: Path, on_file: FileCopied | None = None) -> int:
     """recursively merge source into dest; same-name collisions overwrite (case-insensitive)"""
-    result = copy_contained_tree(source, dest, resolve_target=resolve_staging_path)
+    result = copy_contained_tree(source, dest, resolve_target=resolve_staging_path, on_file=on_file)
     if result.skipped_cycles:
         get_logger().warning(
             f"Skipped {result.skipped_cycles} repeated directories while copying {source}"
@@ -60,6 +61,7 @@ class PackageInstaller:
         local_packages_dir: Path | None = None,
         boot_device: str | None = None,
         extracted_paths: dict[str, Path] | None = None,
+        write_log: StagingWriteLog | None = None,
     ):
         # must match the tree configure/install_workbench stage into, or finalize splits the device
         self.boot_device = boot_device or DEFAULT_BOOT_DEVICE
@@ -71,6 +73,13 @@ class PackageInstaller:
             path.resolve() for path in (extracted_paths or {}).values()
         )
         self.logger = get_logger()
+        # receipts are built from what was actually copied, never from the rules
+        self.write_log = write_log
+        self._package: str | None = None
+
+    def _wrote(self, path: Path) -> None:
+        if self.write_log is not None and self._package is not None:
+            self.write_log.package_wrote(self._package, path)
 
     def install_package(self, package_name: str) -> int:
         """install a single package"""
@@ -81,6 +90,7 @@ class PackageInstaller:
             return 0
 
         files_installed = 0
+        self._package = pkg.name
 
         source_dir = self._get_source_dir(pkg)
 
@@ -268,8 +278,8 @@ class PackageInstaller:
             merge_dirs=rule.recursive,
         )
 
-    @staticmethod
     def _copy_item(
+        self,
         source: Path,
         destination: Path,
         stack: int | None,
@@ -280,10 +290,11 @@ class PackageInstaller:
             return 0
         destination.parent.mkdir(parents=True, exist_ok=True)
         if source.is_dir() and merge_dirs:
-            return _merge_tree(source, destination)
+            return _merge_tree(source, destination, self._wrote)
         shutil.copy2(source, destination)
         if xor_byte is not None:
             destination.write_bytes(bytes(value ^ xor_byte for value in destination.read_bytes()))
         if stack:
             _set_icon_stack(destination, stack)
+        self._wrote(destination)
         return 1
