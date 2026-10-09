@@ -20,17 +20,37 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src" / "main" / "python"))
 
-from emu68hatcher.data.catalog import load_catalog_source  # noqa: E402
+from emu68hatcher.data.catalog import load_catalog_source, read_catalog_yaml  # noqa: E402
 from emu68hatcher.data.package_schema import DownloadInfo, SourceType  # noqa: E402
+
+_ARTIFACT_LOCK = ROOT / "updates" / "amiga-artifacts.lock.yaml"
 
 _GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 _MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 
 @dataclass(frozen=True)
+class ArtifactPin:
+    """reviewed native pin from updates/amiga-artifacts.lock.yaml"""
+
+    url: str
+    size: int
+    sha256: str
+    md5: str
+
+
+@dataclass(frozen=True)
 class PackageSpec:
     name: str
     download: DownloadInfo
+    pin: ArtifactPin | None = None
+
+
+@dataclass(frozen=True)
+class Digest:
+    md5: str
+    sha256: str
+    size: int
 
 
 @dataclass(frozen=True)
@@ -45,10 +65,24 @@ class CheckResult:
         return self.status == "current"
 
 
-def _load_specs(packages_dir: Path) -> list[PackageSpec]:
+def _load_pins(lock_path: Path) -> dict[str, ArtifactPin]:
+    if not lock_path.is_file():
+        return {}
+    artifacts = (read_catalog_yaml(lock_path) or {}).get("artifacts") or {}
+    return {
+        name: ArtifactPin(entry["url"], int(entry["size"]), entry["sha256"], entry["md5"])
+        for name, entry in artifacts.items()
+    }
+
+
+def _load_specs(packages_dir: Path, lock_path: Path = _ARTIFACT_LOCK) -> list[PackageSpec]:
     catalog = load_catalog_source(packages_dir)
+    pins = _load_pins(lock_path)
+    unknown = pins.keys() - catalog.packages.keys()
+    if unknown:
+        raise ValueError(f"artifact lock names unknown packages: {', '.join(sorted(unknown))}")
     return [
-        PackageSpec(p.name, p.download)
+        PackageSpec(p.name, p.download, pins.get(p.name))
         for p in catalog.packages.values()
         if p.download and p.download.source != SourceType.LOCAL
     ]
@@ -111,8 +145,9 @@ def _download_url(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     raise ValueError(f"unsupported source: {download.source.value}")
 
 
-def _remote_md5(url: str, timeout: float) -> tuple[str, int]:
-    digest = hashlib.md5()
+def _remote_digest(url: str, timeout: float) -> Digest:
+    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
     size = 0
     with _request(url, timeout) as response:
         length = response.headers.get("Content-Length")
@@ -122,15 +157,31 @@ def _remote_md5(url: str, timeout: float) -> tuple[str, int]:
             size += len(chunk)
             if size > _MAX_DOWNLOAD_BYTES:
                 raise ValueError(f"download is larger than {_MAX_DOWNLOAD_BYTES} bytes")
-            digest.update(chunk)
-    return digest.hexdigest().upper(), size
+            md5.update(chunk)
+            sha256.update(chunk)
+    return Digest(md5.hexdigest().upper(), sha256.hexdigest(), size)
+
+
+def _pin_finding(pin: ArtifactPin, expected_md5: str | None, digest: Digest) -> str | None:
+    """why the reviewed native pin no longer describes the archive, if it does not"""
+    if expected_md5 and expected_md5.lower() != pin.md5:
+        return f"YAML MD5 {expected_md5.upper()} differs from the reviewed lock MD5 {pin.md5}"
+    if digest.sha256 != pin.sha256 or digest.size != pin.size:
+        return (
+            f"{pin.url}: got SHA-256 {digest.sha256} ({digest.size} bytes), "
+            f"lock says {pin.sha256} ({pin.size} bytes)"
+        )
+    return None
 
 
 def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
     source = spec.download.source.value
     try:
         url, latest_tag = _download_url(spec, timeout)
-        observed_hash, size = _remote_md5(url, timeout)
+        digest = _remote_digest(url, timeout)
+        pinned = None
+        if spec.pin is not None:
+            pinned = digest if spec.pin.url == url else _remote_digest(spec.pin.url, timeout)
     except urllib.error.HTTPError as error:
         return CheckResult(
             spec.name, source, "download failed", f"HTTP {error.code} at {error.url}"
@@ -139,7 +190,12 @@ def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
         detail = str(error) or type(error).__name__
         return CheckResult(spec.name, source, "download failed", detail)
 
+    observed_hash, size = digest.md5, digest.size
     expected_hash = spec.download.hash
+    if spec.pin is not None and pinned is not None:
+        finding = _pin_finding(spec.pin, expected_hash, pinned)
+        if finding:
+            return CheckResult(spec.name, source, "pinned artifact changed", finding)
     if not expected_hash:
         return CheckResult(
             spec.name,
@@ -161,7 +217,10 @@ def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
             "update available",
             f"configured {spec.download.tag}, latest release is {latest_tag}",
         )
-    return CheckResult(spec.name, source, "current", f"MD5 {observed_hash}")
+    detail = f"MD5 {observed_hash}"
+    if spec.pin is not None:
+        detail += f", pinned SHA-256 {spec.pin.sha256[:12]}"
+    return CheckResult(spec.name, source, "current", detail)
 
 
 def _markdown_cell(value: str) -> str:
@@ -194,7 +253,8 @@ def _report(results: list[CheckResult], source_counts: Counter) -> str:
             [
                 "",
                 "Changed files are not accepted automatically. Check their contents and install "
-                "rules before updating the checksum or release tag.",
+                "rules before updating the checksum or release tag, and the reviewed pin in "
+                "updates/amiga-artifacts.lock.yaml for packages the Amiga tool installs.",
                 "",
             ]
         )
@@ -212,6 +272,7 @@ def main() -> int:
         type=Path,
         default=ROOT / "src" / "main" / "python" / "emu68hatcher" / "data" / "packages",
     )
+    parser.add_argument("--lock", type=Path, default=_ARTIFACT_LOCK)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--package", action="append", default=[])
     parser.add_argument("--workers", type=int, default=8)
@@ -219,7 +280,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        specs = _load_specs(args.packages_dir)
+        specs = _load_specs(args.packages_dir, args.lock)
         if args.package:
             selected = set(args.package)
             unknown = selected - {spec.name for spec in specs}
