@@ -760,7 +760,8 @@ class Emu68Tab(QWidget):
             "1.1 overlays: emu68 (args, ICNT, CCRD, IRNG, SC, SCS, FP0, BW, DBF), "
             "diagnostic (buptest, bupiter, bupsize, membench, membase, memsize), "
             "unicam (boot, smooth, integer, full_width, full_height, width, height, bpp, "
-            "mode, x, y, b, c, scaler, phase, lanes, aspect, order, type, ftmode). "
+            "mode, x, y, b, c, scaler, phase, lanes, aspect, order, type, ftmode; "
+            "beta.1 spells them int, w, h, asp, ph and adds sc, scl). "
             "Turn off native-video capture in Display before adding a complete unicam overlay."
         )
         self.extra_config_edit.setMaximumHeight(100)

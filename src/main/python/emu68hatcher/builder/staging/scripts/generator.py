@@ -155,7 +155,8 @@ def _config_overlays(
         if config.framethrower_scaling == FramethrowerScaling.SMOOTH:
             params.extend(("smooth", f"b={config.framethrower_b}", f"c={config.framethrower_c}"))
         elif config.framethrower_scaling == FramethrowerScaling.INTEGER:
-            params.append("integer")
+            # beta.1's unicam.dtbo renamed the override to "int"; alpha.1 still uses "integer"
+            params.append("int" if beta_overlays else "integer")
         if config.unicam_device == UnicamDevice.C790:
             params.append("type=c790")
         suffix = "," + ",".join(params) if params else ""
