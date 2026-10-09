@@ -27,7 +27,27 @@ needs its matching ADF.
 
 ## AmigaOS / Workbench
 
-The Amiga-side tools run in CON windows: **SYS:Utilities/Network Config** keeps its window open after it exits so the output can be read or copied, while the Connect WiFi / Connect Ethernet launchers close their window automatically when they finish.
+**SYS:Utilities/Network Config** and **Network → Network Config** open Hatcher Prefs
+(**C:Hatcher-Prefs**). Connect and disconnect are done in its window and ask for a
+typed confirmation; there are no one-click connect icons any more.
+
+The old ARexx tools stay on the card for this release as a fallback. From a Shell:
+
+```
+rx S:NetworkConfig.rexx                    ; Roadshow / AmiTCP_NG settings
+rx S:NetworkConfig.rexx ONLINE WIFI        ; or ONLINE ETHERNET
+rx S:MiamiNetwork.rexx CONFIG              ; MiamiDX settings
+rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
+```
+
+### Clock is not set after boot (full Roadshow)
+
+Boot-time time sync now runs **C:Hatcher-Prefs startup-time**, which does nothing
+until you opt in once from a Shell with `Hatcher-Prefs migrate enable-startup-time SYS:`
+and then retire that change as described in
+**SYS:Emu68-Hatcher/Tools/Hatcher-Prefs/ReadMe.txt**. The opt-in is tied to the
+installed program, so repeat it after updating Hatcher Prefs.
+`Hatcher-Prefs startup-status SYS:` shows whether it is active.
 
 ### Browser reports a DNS error
 

@@ -84,7 +84,7 @@ scripts:
     If NOT EXISTS S:Network-disabled
       If EXISTS S:Network-Startup
         Execute S:Network-Startup
-        Run >NIL: SYS:Rexxc/rx S:NetworkConfig.rexx SYNCTIME
+        Run >NIL: SYS:C/Hatcher-Prefs startup-time
       EndIf
     EndIf
     ;END Roadshow

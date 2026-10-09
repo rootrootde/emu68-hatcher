@@ -66,6 +66,22 @@ Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools can be selecte
 separately. A network stack requires both Ethernet and WiFi support. USB and
 NVMe are offered only for compatible Emu68 versions.
 
+The **Utilities** group has three native Amiga tools. They are development builds
+and have not been tested on real hardware yet:
+
+- **Hatcher Prefs:** network settings, connect/disconnect and Emu68 boot settings.
+  Installed as **C:Hatcher-Prefs** with a copy in **SYS:Emu68-Hatcher/Tools/**.
+  Every network stack pulls it in, because **SYS:Utilities/Network Config** and
+  the Network menu now open it. Needs MUI for its window.
+- **Hatcher Packages:** browse and install signed packages on the Amiga. Needs
+  MUI, AmiSSL and XADMaster.
+- **Emu68 Manager:** download, switch and restore Emu68 releases on the card.
+  Needs MUI, AmiSSL (also offline: release plans are signature-checked) and
+  XADMaster. **Transaction-Recovery** in its drawer works without any of them.
+
+Hatcher Packages and Emu68 Manager are installed to **SYS:Emu68-Hatcher/Tools/**
+with their manuals.
+
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream
 Vera, DejaVu, Roboto). Installing a pack does not change the active font.

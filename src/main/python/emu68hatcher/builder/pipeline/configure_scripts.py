@@ -34,23 +34,14 @@ class _MenuLauncher:
     command: str
     wb_launch: bool = False
     selected_icons: bool = False
+    stack: int = 8192
 
 
-def _menu_cmd(script: str) -> str:
-    """Build an rx invocation whose diagnostic window stays open."""
-    return f"SYS:Rexxc/rx >CON:0/20/680/400/{script}/AUTO/WAIT s:{script}.rexx"
-
-
-def _connect_cmd(con_title: str, iface: str) -> str:
-    """one-click connect - AUTO/CLOSE self-dismisses on success (con title must stay space-free)"""
-    return (
-        f"SYS:Rexxc/rx >CON:0/20/680/400/{con_title}/AUTO/CLOSE s:NetworkConfig.rexx ONLINE {iface}"
-    )
-
-
-def _miamidx_cmd(con_title: str, action: str, *, close: bool) -> str:
-    window = "CLOSE" if close else "WAIT"
-    return f"SYS:Rexxc/rx >CON:0/20/680/400/{con_title}/AUTO/{window} S:MiamiNetwork.rexx {action}"
+# Hatcher-Prefs handles every stack; connect/disconnect need typed consent in its
+# window, so one entry replaces the old one-click ARexx launchers. Same form as
+# hatcher-prefs' own launcher migration writes onto older cards.
+_HATCHER_PREFS = "SYS:C/Hatcher-Prefs"
+_HATCHER_PREFS_STACK = 65536
 
 
 # System->Prefs submenu launchers.
@@ -182,41 +173,9 @@ def _collect_app_entries(all_packages: list[str]) -> list[_MenuLauncher]:
 
 
 def _network_entries(network_stack: NetworkStack | None) -> list[_MenuLauncher]:
-    entries: list[_MenuLauncher] = []
-    if network_stack in (NetworkStack.ROADSHOW, NetworkStack.AMITCP_NG):
-        entries.extend(
-            (
-                _MenuLauncher("Network", "Config", _menu_cmd("NetworkConfig")),
-                _MenuLauncher("Network", "Connect WiFi", _connect_cmd("Connect-WiFi", "WIFI")),
-                _MenuLauncher(
-                    "Network",
-                    "Connect Ethernet",
-                    _connect_cmd("Connect-Ethernet", "ETHERNET"),
-                ),
-            )
-        )
-    elif network_stack == NetworkStack.MIAMIDX:
-        entries.extend(
-            (
-                _MenuLauncher("Network", "MiamiDX", _miamidx_cmd("MiamiDX", "CONFIG", close=False)),
-                _MenuLauncher(
-                    "Network",
-                    "Connect WiFi",
-                    _miamidx_cmd("Connect-WiFi", "ONLINE WIFIPI", close=True),
-                ),
-                _MenuLauncher(
-                    "Network",
-                    "Connect Ethernet",
-                    _miamidx_cmd("Connect-Ethernet", "ONLINE GENET", close=True),
-                ),
-                _MenuLauncher(
-                    "Network",
-                    "Disconnect",
-                    _miamidx_cmd("Disconnect", "OFFLINE", close=True),
-                ),
-            )
-        )
-    return entries
+    if network_stack is None:
+        return []
+    return [_MenuLauncher("Network", "Network Config", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)]
 
 
 def _prefs_entries(all_packages: list[str], p96_modern: bool) -> list[_MenuLauncher]:
@@ -247,7 +206,7 @@ def _append_launcher(lines: list[str], entry: _MenuLauncher, keyword: str = "ITE
     if entry.wb_launch:
         lines.append(f"{_MENU_INDENT}(WB) {entry.command}{selected}")
     else:
-        lines.append(f"{_MENU_INDENT}(CLI) 8192 {entry.command}{selected}")
+        lines.append(f"{_MENU_INDENT}(CLI) {entry.stack} {entry.command}{selected}")
 
 
 def _build_toolsdaemon_menu(
