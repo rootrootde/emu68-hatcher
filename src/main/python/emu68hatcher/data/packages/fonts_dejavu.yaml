@@ -2,6 +2,7 @@ name: fonts_dejavu
 friendly_name: DejaVu
 group: Fonts
 description: 'DejaVu 2.37 TrueType families, including condensed and mono styles'
+upstream_version: '2.37'
 bundle: fonts_scalable
 requires:
 - ttflib

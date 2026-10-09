@@ -2,6 +2,7 @@ name: sysinfo
 friendly_name: SysInfo
 group: Applications
 description: 'benchmarking program'
+upstream_version: '4.4'
 versions:
 - '3.1'
 - '3.2'
@@ -23,3 +24,11 @@ menu_entry:
   title: SysInfo
   path: Programs/SysInfo/SysInfo
   menu: System
+# reviewed with hatcher-packages registry/sysinfo-4.4.json; pinned in
+# updates/amiga-artifacts.lock.yaml
+native:
+  eligibility: supported
+  preserve:
+  - Programs/SysInfo.info
+  - Programs/SysInfo/*.info
+  - Programs/SysInfo/SysInfo.boards

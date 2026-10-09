@@ -2,6 +2,7 @@ name: roadshow
 friendly_name: Roadshow
 group: Network
 description: 'TCP/IP stack (demo by default; full version when a Roadshow archive is configured)'
+upstream_version: '1.15'
 purchase_url: https://www.amigashop.org/product_info.php?cPath=2_34&products_id=200&language=de
 versions:
 - '3.1'
@@ -88,3 +89,7 @@ scripts:
       EndIf
     EndIf
     ;END Roadshow
+native:
+  eligibility: protected
+  reason: 'Network stack with startup integration; the full version needs the licensed archive'
+  reboot: cold

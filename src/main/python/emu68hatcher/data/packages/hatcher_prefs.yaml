@@ -30,3 +30,6 @@ menu_entry:
 # MUI is only needed for the window; the CLI and offline recovery run without it
 requires:
 - mui
+native:
+  eligibility: protected
+  reason: 'Hatcher tool; updated from its own release archive, not by Hatcher Packages'

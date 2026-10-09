@@ -15,6 +15,21 @@ from emu68hatcher.data.catalog import (
     use_catalog,
 )
 
+# 2 adds the optional package fields upstream_version and native. 1.1 clients
+# reject unknown package fields, so they must never be offered a schema 2 catalog.
+CATALOG_SCHEMA_VERSION = 2
+SUPPORTED_CATALOG_SCHEMAS = frozenset({1, 2})
+_SCHEMA_2_PACKAGE_FIELDS = ("upstream_version", "native")
+
+
+def schema_2_packages(data: CatalogData) -> list[str]:
+    """names of packages that use fields a schema 1 client cannot parse"""
+    return sorted(
+        name
+        for name, package in data.packages.items()
+        if any(getattr(package, field) is not None for field in _SCHEMA_2_PACKAGE_FIELDS)
+    )
+
 
 class CatalogTarget(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -50,14 +65,17 @@ class CatalogRelease(CatalogTarget):
 
     @model_validator(mode="after")
     def validate_known_schema(self):
-        if self.catalog_schema_version == 1:
+        if self.catalog_schema_version in SUPPORTED_CATALOG_SCHEMAS:
             self.data()
         return self
 
     def data(self) -> CatalogData:
-        if self.catalog_schema_version != 1:
+        if self.catalog_schema_version not in SUPPORTED_CATALOG_SCHEMAS:
             raise ValueError(f"unsupported catalog schema: {self.catalog_schema_version}")
-        return CatalogData(packages=self.packages, bundles=self.bundles, adf_rules=self.adf_rules)
+        data = CatalogData(packages=self.packages, bundles=self.bundles, adf_rules=self.adf_rules)
+        if self.catalog_schema_version == 1 and schema_2_packages(data):
+            raise ValueError("schema 1 catalog carries schema 2 package fields")
+        return data
 
     def snapshot(self) -> CatalogSnapshot:
         return CatalogSnapshot.create(

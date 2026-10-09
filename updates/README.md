@@ -40,10 +40,21 @@ target:
   id: hatcher-1_2
   min_hatcher_version: "1.2.0"
   max_hatcher_version_exclusive: null
-  catalog_schema_version: 1
+  catalog_schema_version: 2
 close_ranges:
   hatcher-1_1: "1.2.0"
 ```
+
+Catalog schema 2 (target **hatcher-1_2**, from 1.2.0) adds two optional package
+fields: **upstream_version**, a display label that never orders updates, and
+**native**, the live-install policy for the Amiga package tool (eligibility
+`supported`, `protected`, `user-archive-required` or `unsupported`, a reason for
+everything but `supported`, `preserve` paths for changed configuration files and
+`reboot: none|cold`). Packages without **native** get a conservative policy from
+their recipe (`data/package_identity.py`). 1.1 clients reject unknown package fields,
+so **hatcher-1_1** is closed at 1.2.0 and keeps its last schema 1 catalog; the
+generator refuses to put these fields into a schema 1 target. Publishing the first
+hatcher-1_2 catalog needs hatcher-1_1 in the previous signed manifest.
 
 The generator preserves previous signed catalogs outside the target. Closing a
 range changes its compatibility metadata and revision, while retaining its package,

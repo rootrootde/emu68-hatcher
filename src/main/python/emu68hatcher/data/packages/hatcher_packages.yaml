@@ -28,3 +28,6 @@ requires:
 - mui
 - amissl
 - xadmaster
+native:
+  eligibility: protected
+  reason: 'Hatcher tool; it cannot replace itself while running'

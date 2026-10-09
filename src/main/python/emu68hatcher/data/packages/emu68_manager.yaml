@@ -30,3 +30,6 @@ requires:
 - mui
 - amissl
 - xadmaster
+native:
+  eligibility: protected
+  reason: 'Hatcher tool; updated from its own release archive, not by Hatcher Packages'
