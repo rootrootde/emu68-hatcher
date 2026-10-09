@@ -1,0 +1,32 @@
+name: hatcher_prefs
+friendly_name: Hatcher Prefs
+group: Utilities
+description: 'native network and Emu68 boot settings editor (development build, not hardware-verified)'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+# archive synced from the hatcher-prefs repo by scripts/sync-native-tools.py
+download:
+  source: local
+  path: Hatcher-Prefs.lha
+  hash: EB88D93CE4986434068E9D5E60CCDB13
+  filename: Hatcher-Prefs.lha
+install:
+# SYS:C/Hatcher-Prefs is fixed: the network launchers, the startup-time hook and
+# its opt-in record all name that path
+- from: Hatcher-Prefs/Hatcher-Prefs
+  to: C/
+- from: Hatcher-Prefs
+  to: Emu68-Hatcher/Tools/
+  recursive: true
+menu_entry:
+  title: Hatcher Prefs
+  path: Emu68-Hatcher/Tools/Hatcher-Prefs/Hatcher-Prefs
+  menu: System
+  wb_launch: true
+# MUI is only needed for the window; the CLI and offline recovery run without it
+requires:
+- mui

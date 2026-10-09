@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 # roots that get auto-generated drawer icons; system dirs (C/, S/, Libs/, Devs/) stay icon-less
-_ICON_ROOTS: tuple[str, ...] = ("Programs", "Prefs")
+_ICON_ROOTS: tuple[str, ...] = ("Programs", "Prefs", "Emu68-Hatcher")
 
 # runtime-state subdirs to leave alone even when under an icon root
 _ICON_SKIP: tuple[str, ...] = ("Prefs/Env-Archive",)

@@ -1,0 +1,30 @@
+name: hatcher_packages
+friendly_name: Hatcher Packages
+group: Utilities
+description: 'native signed package browser and installer (development build, not hardware-verified)'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+# archive synced from the hatcher-packages repo by scripts/sync-native-tools.py
+download:
+  source: local
+  path: Hatcher-Packages.lha
+  hash: D4FDBA9399521A9B508A0DF4C5DD7721
+  filename: Hatcher-Packages.lha
+install:
+- from: Hatcher-Packages
+  to: Emu68-Hatcher/Tools/
+  recursive: true
+menu_entry:
+  title: Hatcher Packages
+  path: Emu68-Hatcher/Tools/Hatcher-Packages/Hatcher-Packages
+  menu: System
+  wb_launch: true
+# AmiSSL verifies signed catalogs and sets, xadmaster extracts package archives
+requires:
+- mui
+- amissl
+- xadmaster
