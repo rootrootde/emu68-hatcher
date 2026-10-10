@@ -1,0 +1,5 @@
+; Connect WiFi launcher - one-click auto-connect via IconX.
+; AUTO/CLOSE (no WAIT): the window auto-closes on success; on failure
+; NetworkConfig.rexx pops a requester with the reason before exiting.
+; CON title must stay space-free or AmigaDOS truncates the redirect target.
+SYS:Rexxc/rx >CON:0/20/680/400/Connect-WiFi/AUTO/CLOSE s:NetworkConfig.rexx ONLINE WIFI
