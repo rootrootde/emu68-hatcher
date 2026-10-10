@@ -12,13 +12,13 @@ mandatory: true
 download:
   source: github
   repo: pulchart/fat95
-  tag: v20260930
-  hash: C4FBB56027EBF4888E316A776B6B3F5A
-  filename: fat95.v20260930.lha
+  tag: v20261007
+  hash: 657A8A4D516F7D9BF37D681169EB81D4
+  filename: fat95.v20261007.lha
 install:
 # 68020+ cpu tier (Emu68 is 040-class); the handler is now split by cpu
 - from: fat95/l/68020/fat95
   to: L/
 # fat95 4 needs this for partition detection, even without the optional cfd package
-- from: fat95/libs/68020/ptable.library
+- from: fat95/libs/small/68020/ptable.library
   to: Libs/
