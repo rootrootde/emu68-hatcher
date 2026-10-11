@@ -4107,7 +4107,7 @@
               "backup_url": null,
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "D3B88EA5F91A454A1169E096A49C8639",
+              "hash": "C94BD96A08103A0C041DD1D02E48D909",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4428,12 +4428,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "AmiTCP_NG-v4.1.8.lha",
-              "hash": "02C3C528BA699B984894C292CD043E62",
+              "filename": "AmiTCP_NG-v4.1.7.lha",
+              "hash": "E2666383B99F5BACA1C8BED964254647",
               "path": null,
               "repo": "MW0MWZ/AmiTCP_NG",
               "source": "github",
-              "tag": "v4.1.8",
+              "tag": "v4.1.7",
               "url": null
             },
             "emu68_versions": null,
@@ -4749,12 +4749,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "cfd.v20261007.lha",
-              "hash": "9F317F5658C49866D7458866ED5143E2",
+              "filename": "cfd.v20260930.lha",
+              "hash": "8E9EF6CAB45D2FA193457FD5333747A8",
               "path": null,
               "repo": "pulchart/cfd",
               "source": "github",
-              "tag": "v20261007",
+              "tag": "v20260930",
               "url": null
             },
             "emu68_versions": null,
@@ -5402,12 +5402,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "emu68-drivers-2.2.0.lha",
-              "hash": "83B581A6197B79E8202CF07D346545F3",
+              "filename": "emu68-drivers-2.1.1.lha",
+              "hash": "C29D4C3F18A787422D489D73C29FD555",
               "path": null,
               "repo": "rondoval/emu68-driver-stack",
               "source": "github",
-              "tag": "v2.2.0",
+              "tag": "v2.1.1",
               "url": null
             },
             "emu68_versions": [
@@ -5911,12 +5911,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "fat95.v20261007.lha",
-              "hash": "657A8A4D516F7D9BF37D681169EB81D4",
+              "filename": "fat95.v20260930.lha",
+              "hash": "C4FBB56027EBF4888E316A776B6B3F5A",
               "path": null,
               "repo": "pulchart/fat95",
               "source": "github",
-              "tag": "v20261007",
+              "tag": "v20260930",
               "url": null
             },
             "emu68_versions": null,
@@ -5932,7 +5932,7 @@
                 "xor": null
               },
               {
-                "from": "fat95/libs/small/68020/ptable.library",
+                "from": "fat95/libs/68020/ptable.library",
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6098,14 +6098,6 @@
                 "stack": null,
                 "to": "Fonts/TrueType/",
                 "xor": null
-              },
-              {
-                "from": "amigafonts-d42987535d94ebbfb51e64fee76f9974c6ae145a/README",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/AmigaRetro/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6150,14 +6142,6 @@
                 "stack": null,
                 "to": "Fonts/",
                 "xor": null
-              },
-              {
-                "from": "Apparent.readme",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Apparent/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6199,22 +6183,6 @@
                 "rename": null,
                 "stack": null,
                 "to": "Fonts/TrueType/",
-                "xor": null
-              },
-              {
-                "from": "dejavu-fonts-ttf-2.37/LICENSE",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/DejaVu/",
-                "xor": null
-              },
-              {
-                "from": "dejavu-fonts-ttf-2.37/README.md",
-                "recursive": false,
-                "rename": "README",
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/DejaVu/",
                 "xor": null
               }
             ],
@@ -6260,22 +6228,6 @@
                 "stack": null,
                 "to": "Fonts/",
                 "xor": null
-              },
-              {
-                "from": "Dina/LICENSE",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Dina/",
-                "xor": null
-              },
-              {
-                "from": "Dina/INSTALL.TXT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Dina/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6317,14 +6269,6 @@
                 "rename": null,
                 "stack": null,
                 "to": "Fonts/",
-                "xor": null
-              },
-              {
-                "from": "MagicWB2.1p/Documents/MagicWB.guide",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/MagicWB/",
                 "xor": null
               }
             ],
@@ -6368,14 +6312,6 @@
                 "stack": null,
                 "to": "Fonts/",
                 "xor": null
-              },
-              {
-                "from": "Proptopaz/ReadMe",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/proptopaz/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6417,14 +6353,6 @@
                 "rename": null,
                 "stack": null,
                 "to": "Fonts/TrueType/",
-                "xor": null
-              },
-              {
-                "from": "LICENSE",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Roboto/",
                 "xor": null
               }
             ],
@@ -6470,38 +6398,6 @@
                 "stack": null,
                 "to": "Fonts/",
                 "xor": null
-              },
-              {
-                "from": "terminus-font/OFL.TXT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Terminus/",
-                "xor": null
-              },
-              {
-                "from": "terminus-font/COPYING",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Terminus/",
-                "xor": null
-              },
-              {
-                "from": "terminus-font/AUTHORS",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Terminus/",
-                "xor": null
-              },
-              {
-                "from": "terminus-font/README",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/Terminus/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6544,22 +6440,6 @@
                 "stack": null,
                 "to": "Fonts/",
                 "xor": null
-              },
-              {
-                "from": "dS-tpro.nfo",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/TopazPro/",
-                "xor": null
-              },
-              {
-                "from": "FILE_ID.DIZ",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/TopazPro/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -6601,30 +6481,6 @@
                 "rename": null,
                 "stack": null,
                 "to": "Fonts/TrueType/",
-                "xor": null
-              },
-              {
-                "from": "ttf-bitstream-vera-1.10/COPYRIGHT.TXT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/BitstreamVera/",
-                "xor": null
-              },
-              {
-                "from": "ttf-bitstream-vera-1.10/README.TXT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/BitstreamVera/",
-                "xor": null
-              },
-              {
-                "from": "ttf-bitstream-vera-1.10/RELEASENOTES.TXT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/BitstreamVera/",
                 "xor": null
               }
             ],
@@ -9477,7 +9333,7 @@
             "bundle": null,
             "conflicts": [],
             "default": false,
-            "description": "default Picasso96Settings",
+            "description": "Picasso96 settings generated during configuration",
             "download": {
               "backup_url": null,
               "check_latest_release": true,
@@ -11213,14 +11069,6 @@
                 "stack": null,
                 "to": "C/",
                 "xor": null
-              },
-              {
-                "from": "ttflib68040_0.85.lha/ttflib68040/ttflib.guide",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Emu68-Hatcher/Fonts/TTFLib/",
-                "xor": null
               }
             ],
             "mandatory": false,
@@ -11232,14 +11080,7 @@
             "recommends": [],
             "relocate": [],
             "requires": [],
-            "scripts": [
-              {
-                "content": "IF NOT EXISTS S:Hatcher-Fonts.done\n  IF EXISTS FONTS:TrueType\n    FailAt 21\n    C:Echo \"Registering TrueType fonts...\"\n    C:ttfinstall \"FONTS:TrueType/#?.ttf\" FONTS:\n    IF WARN\n      C:Echo \"Font registration failed. It will be retried on the next boot.\"\n    ELSE\n      C:Echo >S:Hatcher-Fonts.done \"TRUE\"\n    ENDIF\n    FailAt 10\n  ENDIF\nENDIF\n",
-                "name": "TrueType fonts",
-                "target": "S/User-Startup",
-                "when_user_archive": null
-              }
-            ],
+            "scripts": [],
             "versions": []
           },
           "unzip": {
@@ -12188,58 +12029,58 @@
             ]
           }
         },
-        "revision": 10,
-        "source_commit": "2911486f0903702df1958d93b4b5c9aebbd67126"
+        "revision": 11,
+        "source_commit": "27e254173c10ce594271dd1ddcdc5b605551f194"
       }
     ],
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.1.0-linux-arm64.deb",
-          "sha256": "185f73bd5002563272861689f86041eda1d47318d0435a9252d19a8dd16f3cca",
-          "size": 70982816,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-linux-arm64.deb"
+          "filename": "emu68hatcher-1.2.0-linux-arm64.deb",
+          "sha256": "0ef7b7718cac3702a4f3fe05992fc4d4c3eead547fdc6554ecd8a7102395d881",
+          "size": 71185940,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.1.0-linux-x64.deb",
-          "sha256": "7bc6e9dc0fc6eae2e43d60af19faa0f4fe65c22c0aa3341809778d1bf267cc70",
-          "size": 75129772,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-linux-x64.deb"
+          "filename": "emu68hatcher-1.2.0-linux-x64.deb",
+          "sha256": "1bb20480b9d57d22f0bc5cf447c1a167e39fa12a1d091132bc9f749636dacf3f",
+          "size": 75658744,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.1.0-macos-arm64.dmg",
-          "sha256": "98fe547bae522f2cd5018c021811324929178997c9eb001c205fd55cb66b0802",
-          "size": 36583166,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.2.0-macos-arm64.dmg",
+          "sha256": "9b0c29a92eea27bae73e1ea12acdaa19386264b72bd3ed4ea2e946bb5c96b245",
+          "size": 37237924,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.1.0-macos-x64.dmg",
-          "sha256": "1ec2687cb18d5d96cd4006ca0d7344a41e5f0d7e51afa37a5e40162d47efa790",
-          "size": 38605202,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-macos-x64.dmg"
+          "filename": "emu68hatcher-1.2.0-macos-x64.dmg",
+          "sha256": "66d06680970719a7fb051a1f61913a58fa88cde0befab69559dea8f579433ab6",
+          "size": 39344892,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.1.0-windows-arm64.exe",
-          "sha256": "b8ba5fc7b2811edc437d0122ecc236eddd4d158e92f32b6d916ed41e8b95f8aa",
-          "size": 40787699,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-windows-arm64.exe"
+          "filename": "emu68hatcher-1.2.0-windows-arm64.exe",
+          "sha256": "4837ad09a1cddf57354ae6b0dbd5eb13b48c183c37af2bc41506bfbb9c2802b1",
+          "size": 41482072,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.1.0-windows-x64.exe",
-          "sha256": "41dd7547eecc5b467f1962ec79273af807f176d36248b16a00710ef599b2dafd",
-          "size": 51467861,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-windows-x64.exe"
+          "filename": "emu68hatcher-1.2.0-windows-x64.exe",
+          "sha256": "802638c152cb3eed9439615360a079553bba6921ff1b8dfc782052c97c9d7fc0",
+          "size": 52084441,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.1.0",
-      "version": "1.1.0"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.0",
+      "version": "1.2.0"
     },
-    "revision": 1791675129,
+    "revision": 1791686516,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "GgAyOE8R2g+647o0zc1rgrNt7Q21elti9Bc3z6nJiSF7xA6m4pe+RQEznqR9xW0kXiyXPl7Tx6eLhk/xB58cBQ=="
+    "value": "tIV44mj9qPsL7r0HrQwotfZU/FxXITo/vXQyqmiuO7o9ulZQ/RWvCwRDTYD1EL4EmsKxipTxPtkwCFFm5dmdCA=="
   }
 }

@@ -3,50 +3,50 @@
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.1.0-linux-arm64.deb",
-          "sha256": "185f73bd5002563272861689f86041eda1d47318d0435a9252d19a8dd16f3cca",
-          "size": 70982816,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-linux-arm64.deb"
+          "filename": "emu68hatcher-1.2.0-linux-arm64.deb",
+          "sha256": "0ef7b7718cac3702a4f3fe05992fc4d4c3eead547fdc6554ecd8a7102395d881",
+          "size": 71185940,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.1.0-linux-x64.deb",
-          "sha256": "7bc6e9dc0fc6eae2e43d60af19faa0f4fe65c22c0aa3341809778d1bf267cc70",
-          "size": 75129772,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-linux-x64.deb"
+          "filename": "emu68hatcher-1.2.0-linux-x64.deb",
+          "sha256": "1bb20480b9d57d22f0bc5cf447c1a167e39fa12a1d091132bc9f749636dacf3f",
+          "size": 75658744,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.1.0-macos-arm64.dmg",
-          "sha256": "98fe547bae522f2cd5018c021811324929178997c9eb001c205fd55cb66b0802",
-          "size": 36583166,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.2.0-macos-arm64.dmg",
+          "sha256": "9b0c29a92eea27bae73e1ea12acdaa19386264b72bd3ed4ea2e946bb5c96b245",
+          "size": 37237924,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.1.0-macos-x64.dmg",
-          "sha256": "1ec2687cb18d5d96cd4006ca0d7344a41e5f0d7e51afa37a5e40162d47efa790",
-          "size": 38605202,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-macos-x64.dmg"
+          "filename": "emu68hatcher-1.2.0-macos-x64.dmg",
+          "sha256": "66d06680970719a7fb051a1f61913a58fa88cde0befab69559dea8f579433ab6",
+          "size": 39344892,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.1.0-windows-arm64.exe",
-          "sha256": "b8ba5fc7b2811edc437d0122ecc236eddd4d158e92f32b6d916ed41e8b95f8aa",
-          "size": 40787699,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-windows-arm64.exe"
+          "filename": "emu68hatcher-1.2.0-windows-arm64.exe",
+          "sha256": "4837ad09a1cddf57354ae6b0dbd5eb13b48c183c37af2bc41506bfbb9c2802b1",
+          "size": 41482072,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.1.0-windows-x64.exe",
-          "sha256": "41dd7547eecc5b467f1962ec79273af807f176d36248b16a00710ef599b2dafd",
-          "size": 51467861,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.1.0/emu68hatcher-1.1.0-windows-x64.exe"
+          "filename": "emu68hatcher-1.2.0-windows-x64.exe",
+          "sha256": "802638c152cb3eed9439615360a079553bba6921ff1b8dfc782052c97c9d7fc0",
+          "size": 52084441,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.0/emu68hatcher-1.2.0-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.1.0",
-      "version": "1.1.0"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.0",
+      "version": "1.2.0"
     },
     "packages": {
       "amelinium": {
         "backup_url": null,
         "filename": "Amelinium.lha",
-        "hash": "D3B88EA5F91A454A1169E096A49C8639",
+        "hash": "C94BD96A08103A0C041DD1D02E48D909",
         "path": null,
         "repo": null,
         "source": "web",
@@ -114,12 +114,12 @@
         "url": null
       }
     },
-    "revision": 1791675129,
+    "revision": 1791686516,
     "schema_version": 1
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "6reYZSdDGZcA34TDQ7/lERANOjSRw85VykRLr/XyBhq/DTbm3ljsnSZwlA0AOROcUVZTlvmXQD0OBEgNkfcICA=="
+    "value": "g7o+C80RyfPhO2lQnoVGLkfbtT/woyc1kOtl9/FIWQhtwpZlEjEmBekIWJXgcQWOPG41xdn7p+fH5F9NPYBYBA=="
   }
 }
