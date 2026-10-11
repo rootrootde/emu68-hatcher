@@ -75,6 +75,10 @@ if [ ! -x "$hst" ]; then
 fi
 
 amiberry=${EMU68HATCHER_AMIBERRY:-}
+if [ -n "$amiberry" ] && [ ! -x "$amiberry" ]; then
+    echo "EMU68HATCHER_AMIBERRY not found: $amiberry; falling back to /Applications" >&2
+    amiberry=
+fi
 if [ -z "$amiberry" ]; then
     for candidate in \
         /Applications/Amiberry.app/Contents/MacOS/Amiberry \
