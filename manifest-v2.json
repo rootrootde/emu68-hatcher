@@ -4107,7 +4107,7 @@
               "backup_url": null,
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "C94BD96A08103A0C041DD1D02E48D909",
+              "hash": "D3B88EA5F91A454A1169E096A49C8639",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4428,12 +4428,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "AmiTCP_NG-v4.1.7.lha",
-              "hash": "E2666383B99F5BACA1C8BED964254647",
+              "filename": "AmiTCP_NG-v4.1.8.lha",
+              "hash": "02C3C528BA699B984894C292CD043E62",
               "path": null,
               "repo": "MW0MWZ/AmiTCP_NG",
               "source": "github",
-              "tag": "v4.1.7",
+              "tag": "v4.1.8",
               "url": null
             },
             "emu68_versions": null,
@@ -4749,12 +4749,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "cfd.v20260930.lha",
-              "hash": "8E9EF6CAB45D2FA193457FD5333747A8",
+              "filename": "cfd.v20261007.lha",
+              "hash": "9F317F5658C49866D7458866ED5143E2",
               "path": null,
               "repo": "pulchart/cfd",
               "source": "github",
-              "tag": "v20260930",
+              "tag": "v20261007",
               "url": null
             },
             "emu68_versions": null,
@@ -5402,12 +5402,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "emu68-drivers-2.1.1.lha",
-              "hash": "C29D4C3F18A787422D489D73C29FD555",
+              "filename": "emu68-drivers-2.2.0.lha",
+              "hash": "83B581A6197B79E8202CF07D346545F3",
               "path": null,
               "repo": "rondoval/emu68-driver-stack",
               "source": "github",
-              "tag": "v2.1.1",
+              "tag": "v2.2.0",
               "url": null
             },
             "emu68_versions": [
@@ -5911,12 +5911,12 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "fat95.v20260930.lha",
-              "hash": "C4FBB56027EBF4888E316A776B6B3F5A",
+              "filename": "fat95.v20261007.lha",
+              "hash": "657A8A4D516F7D9BF37D681169EB81D4",
               "path": null,
               "repo": "pulchart/fat95",
               "source": "github",
-              "tag": "v20260930",
+              "tag": "v20261007",
               "url": null
             },
             "emu68_versions": null,
@@ -5932,7 +5932,7 @@
                 "xor": null
               },
               {
-                "from": "fat95/libs/68020/ptable.library",
+                "from": "fat95/libs/small/68020/ptable.library",
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -12029,8 +12029,8 @@
             ]
           }
         },
-        "revision": 11,
-        "source_commit": "27e254173c10ce594271dd1ddcdc5b605551f194"
+        "revision": 12,
+        "source_commit": "c28d8af9429e296f9a7fcc4fdca7c80ffbe8a22c"
       }
     ],
     "hatcher": {
@@ -12075,12 +12075,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.0",
       "version": "1.2.0"
     },
-    "revision": 1791686516,
+    "revision": 1791687300,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "tIV44mj9qPsL7r0HrQwotfZU/FxXITo/vXQyqmiuO7o9ulZQ/RWvCwRDTYD1EL4EmsKxipTxPtkwCFFm5dmdCA=="
+    "value": "TACu8chld6YuNM0D8OkwLMWiAaSo0x0KQFaNy+YR9AsLDlNLyIue7V+UbStQb16iw/VnUXe0xfCcgBwrf8AJBQ=="
   }
 }

@@ -46,7 +46,7 @@
       "amelinium": {
         "backup_url": null,
         "filename": "Amelinium.lha",
-        "hash": "C94BD96A08103A0C041DD1D02E48D909",
+        "hash": "D3B88EA5F91A454A1169E096A49C8639",
         "path": null,
         "repo": null,
         "source": "web",
@@ -114,12 +114,12 @@
         "url": null
       }
     },
-    "revision": 1791686516,
+    "revision": 1791687300,
     "schema_version": 1
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "g7o+C80RyfPhO2lQnoVGLkfbtT/woyc1kOtl9/FIWQhtwpZlEjEmBekIWJXgcQWOPG41xdn7p+fH5F9NPYBYBA=="
+    "value": "chGCqlYqhpm+W+/+qWs/HJ1WlMHkWU9wh0WS3COZ90lm7whnx9cgMpFsm8/i4z52aeJSSpgQqiowuD0D2FtcDg=="
   }
 }
