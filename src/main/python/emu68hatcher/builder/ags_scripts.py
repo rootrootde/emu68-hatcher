@@ -113,6 +113,14 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
             "AGS hardware default",
             # AGS scripts branch on HW and PiStorm but never detect the host. Set per
             # boot, not saved: PiStorm is always Real, an emulator keeps a menu choice.
+            # ADULT and ECS normally come from the AGS system partition, which is not
+            # imported; the defaults match its ENVARC.
+            "If NOT EXISTS ENV:ADULT\n"
+            " SetEnv ADULT 0\n"
+            "EndIf\n"
+            "If NOT EXISTS ENV:ECS\n"
+            " SetEnv ECS 0\n"
+            "EndIf\n"
             'If "$SYSTEM" EQ "PiStorm"\n'
             " SetEnv PiStorm 1\n"
             ' SetEnv HW "Real"\n'
