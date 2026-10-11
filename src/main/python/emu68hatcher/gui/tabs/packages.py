@@ -1,5 +1,7 @@
 """Software requests and their resolved dependencies."""
 
+import sys
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
@@ -7,6 +9,7 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QPushButton,
+    QStyleFactory,
     QTreeWidget,
     QTreeWidgetItem,
     QWidget,
@@ -56,6 +59,10 @@ class PackagesTab(QWidget):
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.tree.setAlternatingRowColors(True)
+        if sys.platform == "darwin":
+            # the macOS style draws no item check boxes on macOS 27
+            self._tree_style = QStyleFactory.create("Fusion")
+            self.tree.setStyle(self._tree_style)
         self.tree.itemChanged.connect(self._on_item_changed)
         layout.addWidget(self.tree, 1)
         self.catalog_notice = QLabel()

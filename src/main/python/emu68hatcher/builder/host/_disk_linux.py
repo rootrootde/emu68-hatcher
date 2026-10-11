@@ -27,7 +27,7 @@ def list_disks() -> list[DiskInfo]:
         return []
     disks = []
     for device in json.loads(result.stdout).get("blockdevices", []):
-        if device.get("type") != "disk" or not device.get("rm") or device.get("ro"):
+        if device.get("type") != "disk" or not device.get("rm"):
             continue
         size = int(device.get("size") or 0)
         if not size:
@@ -47,6 +47,7 @@ def list_disks() -> list[DiskInfo]:
                 is_removable=True,
                 is_system_disk=any(mount in ("/", "/boot", "/boot/efi") for mount in mounted),
                 mounted_partitions=mounted,
+                is_read_only=bool(device.get("ro")),
             )
         )
     return disks
