@@ -1,6 +1,6 @@
 # AGS partition import
 
-**Storage → AGS import** copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. The source Workbench, boot scripts and FAT partition are not imported.
+**Storage → AGS import** copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. With ToolsDaemon installed, the **Games** menu also starts AGS and iGame. The source Workbench, boot scripts and FAT partition are not imported.
 
 **WHDLoad:AGS** and **WHDLoad:AGS2/Start_AGS** retain their original contents. The required paths and assigns are set in **S:User-Startup** when Workbench boots.
 
