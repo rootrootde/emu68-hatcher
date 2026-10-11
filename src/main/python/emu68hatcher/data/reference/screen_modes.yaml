@@ -1,7 +1,6 @@
 - name: Auto
   friendly_name: Automatic
   hdmi_group: 0
-  disable_overscan: 1
 
 - name: "1920*1080-60"
   friendly_name: 1080p 60hz

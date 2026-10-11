@@ -118,11 +118,9 @@ max_framebuffer_width={{ mode.max_framebuffer_width }}
 # Sets the maximum framebuffer height in pixels.
 max_framebuffer_height={{ mode.max_framebuffer_height }}
 {% endif %}
-{% if mode.disable_overscan is defined %}
-# Removes the firmware overscan border.
-disable_overscan={{ mode.disable_overscan }}
-{% endif %}
 {% endfor %}
+# Stops the firmware shrinking the picture by its overscan margins on CEA modes.
+disable_overscan=1
 
 {% if overlays %}
 # Emu68 overlays
