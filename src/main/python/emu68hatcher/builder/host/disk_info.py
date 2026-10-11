@@ -11,6 +11,7 @@ class DiskInfo:
     is_removable: bool
     is_system_disk: bool
     mounted_partitions: list[str] = field(default_factory=list)
+    is_read_only: bool = False
 
     @property
     def size_human(self) -> str:
@@ -23,7 +24,8 @@ class DiskInfo:
 
     @property
     def display_label(self) -> str:
-        return f"{self.name} ({self.size_human}) - {self.device}"
+        label = f"{self.name} ({self.size_human}) - {self.device}"
+        return f"{label} [write-protected]" if self.is_read_only else label
 
 
 @dataclass(frozen=True)

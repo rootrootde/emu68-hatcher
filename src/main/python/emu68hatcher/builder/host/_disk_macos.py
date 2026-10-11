@@ -40,6 +40,7 @@ def list_disks() -> list[DiskInfo]:
                 is_system_disk=bool(info.get("SystemImage"))
                 or any(mount in ("/", "/System/Volumes/Data") for mount in mounted),
                 mounted_partitions=mounted,
+                is_read_only=info.get("WritableMedia") is False,
             )
         )
     return disks

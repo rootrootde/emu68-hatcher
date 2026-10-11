@@ -1,6 +1,7 @@
 """Page containers and compact configuration summaries."""
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -9,13 +10,12 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QScrollArea,
-    QStyle,
     QTabWidget,
     QVBoxLayout,
     QWidget,
 )
 
-from emu68hatcher.gui.design import FIELD_GAP, page_layout
+from emu68hatcher.gui.design import FIELD_GAP, page_layout, status_pixmap
 
 PAGE_LABELS = {
     "overview": "Overview",
@@ -139,12 +139,8 @@ class SummaryPage(QWidget):
         self.issues.clear()
         for issue in issues:
             item = QListWidgetItem(f"{PAGE_LABELS[issue.page]} · {issue.message}")
-            icon = (
-                QStyle.StandardPixmap.SP_BrowserReload
-                if issue.severity == "pending"
-                else QStyle.StandardPixmap.SP_MessageBoxWarning
-            )
-            item.setIcon(self.style().standardIcon(icon))
+            state = issue.severity if issue.severity in {"pending", "error"} else "warning"
+            item.setIcon(QIcon(status_pixmap(state, 20, self.devicePixelRatioF())))
             item.setToolTip(issue.message)
             item.setData(Qt.ItemDataRole.AccessibleTextRole, f"{issue.severity}: {item.text()}")
             item.setData(

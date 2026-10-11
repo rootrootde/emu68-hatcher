@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher.gui.design import page_layout, set_tone
+from emu68hatcher.gui.widgets.status_row import StatusRow
 from emu68hatcher.gui.workers import ADFScanWorker, ROMScanWorker
 
 
@@ -69,25 +70,22 @@ class AssetScanPanel(QWidget):
 
         detected_group = QGroupBox("Detected files")
         detected_layout = QVBoxLayout(detected_group)
-        self.rom_status = QLabel("Add a folder to scan for ROMs and installation media.")
-        self.rom_status.setWordWrap(True)
-        self.rom_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.whdload_status = QLabel("")
-        self.whdload_status.setWordWrap(True)
-        self.whdload_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.adf_status = QLabel("")
-        self.adf_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        for label in (self.rom_status, self.whdload_status, self.adf_status):
-            set_tone(label, "muted")
-        detected_layout.addWidget(self.rom_status)
-        detected_layout.addWidget(self.whdload_status)
-        self.details_layout = QHBoxLayout()
-        self.details_layout.addWidget(self.adf_status, 1)
+        detected_layout.setSpacing(12)
+        self.hint = QLabel("Add a folder that contains your Kickstart ROMs and Workbench ADFs.")
+        self.hint.setWordWrap(True)
+        self.hint.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        set_tone(self.hint, "muted")
+        detected_layout.addWidget(self.hint)
+        self.rom_row = StatusRow("Kickstart ROM")
+        self.whdload_row = StatusRow("WHDLoad Kickstarts")
+        self.adf_row = StatusRow("Installation media")
+        for row in (self.rom_row, self.whdload_row, self.adf_row):
+            row.hide()
+            detected_layout.addWidget(row)
         self.details_button = QPushButton("Show details…")
         self.details_button.setEnabled(False)
         self.details_button.clicked.connect(self._show_details)
-        self.details_layout.addWidget(self.details_button)
-        detected_layout.addLayout(self.details_layout)
+        self.adf_row.trailing.addWidget(self.details_button)
         layout.addWidget(detected_group)
 
     @property
@@ -142,17 +140,21 @@ class AssetScanPanel(QWidget):
             self._adf_rows = []
             self.adf_results.emit([], False)
             self._refresh_details_button()
+            for row in (self.rom_row, self.whdload_row, self.adf_row):
+                row.hide()
             if configured_directories:
                 paths = "\n".join(str(path) for path in configured_directories)
-                self.rom_status.setText(
-                    f"Configured directory not available:\n{paths}\n"
-                    "Mount the drive or choose another directory, then rescan."
+                self.hint.setText(
+                    f"Folder not available:\n{paths}\n"
+                    "Connect the drive or choose another folder, then rescan."
                 )
+                set_tone(self.hint, "warning")
             else:
-                self.rom_status.setText("Add a folder to scan for ROMs and installation media.")
-            set_tone(self.rom_status, "muted")
-            self.whdload_status.clear()
-            self.adf_status.clear()
+                self.hint.setText(
+                    "Add a folder that contains your Kickstart ROMs and Workbench ADFs."
+                )
+                set_tone(self.hint, "muted")
+            self.hint.show()
             self.state_changed.emit()
             return
         self._rom_rows = []
@@ -161,11 +163,12 @@ class AssetScanPanel(QWidget):
         self.adf_results.emit([], False)
         self._dialog_title = ""
         self._refresh_details_button()
-        self.rom_status.setText("Scanning for ROMs...")
-        set_tone(self.rom_status, "muted")
-        self.whdload_status.clear()
-        self.adf_status.setText("Scanning for ADFs...")
-        set_tone(self.adf_status, "muted")
+        self.hint.hide()
+        self.rom_row.set_status("pending", "Kickstart ROM", "Scanning…")
+        self.rom_row.show()
+        self.whdload_row.hide()
+        self.adf_row.set_status("pending", "Installation media", "Scanning…")
+        self.adf_row.show()
         self._start_worker(ROMScanWorker(directories, self), generation, True)
         self._start_worker(ADFScanWorker(directories, self), generation, False)
 
@@ -198,9 +201,8 @@ class AssetScanPanel(QWidget):
     def _scan_error(self, generation: int, message: str, rom: bool) -> None:
         if generation != self._generation:
             return
-        label = self.rom_status if rom else self.adf_status
-        label.setText(f"{'ROM' if rom else 'Media'} scan failed: {message}")
-        set_tone(label, "warning")
+        row = self.rom_row if rom else self.adf_row
+        row.set_status("error", None, f"Scan failed: {message}")
         self.state_changed.emit()
 
     def _worker_finished(self, worker) -> None:
@@ -233,37 +235,34 @@ class AssetScanPanel(QWidget):
         self._rom_rows = self._build_rom_rows(found_roms, boot_path)
         self._update_whdload_status(found_roms)
         self._refresh_details_button()
+        title = f"Kickstart {self._version} ROM"
         if not found_roms:
-            if truncated:
-                text = "No ROMs found (scan stopped - too many files, narrow the directories)"
-            else:
-                text = "No valid Kickstart ROMs found in the configured directories"
-            self.rom_status.setText(text)
-            set_tone(self.rom_status, "warning")
+            detail = (
+                "Scan stopped after too many files. Choose a narrower folder."
+                if truncated
+                else "No Kickstart ROMs found in these folders."
+            )
+            self.rom_row.set_status("error", title, detail)
             return
         if boot_path:
             boot_rom = next((rom for rom in found_roms if rom["path"] == boot_path), None)
             if boot_rom:
-                self.rom_status.setText(
-                    f"Boot ROM: {boot_path.name} - Kickstart {boot_rom['version']} "
-                    f"({boot_rom['model']})"
-                )
-                set_tone(self.rom_status, "success")
+                self.rom_row.set_status("ok", title, f"{boot_path.name} · {boot_rom['model']}")
                 return
         excluded = [
             rom for rom in found_roms if rom["version"] == self._version and rom.get("excluded")
         ]
         if excluded:
             message = excluded[0].get("exclude_message", "ROM is not supported")
-            self.rom_status.setText(f"ROM found but excluded: {message}")
-            set_tone(self.rom_status, "warning")
+            self.rom_row.set_status("error", title, f"Found, but not usable: {message}")
             return
         versions = sorted(
             {rom["version"] for rom in found_roms if not rom.get("excluded")},
             reverse=True,
         )
-        self.rom_status.setText(f"No {self._version} ROM. Available: {', '.join(versions)}")
-        set_tone(self.rom_status, "warning")
+        self.rom_row.set_status(
+            "error", title, f"Not found. ROMs for {', '.join(versions)} are available."
+        )
 
     def _build_rom_rows(self, found_roms: list, boot_path) -> list[tuple]:
         rows = []
@@ -292,17 +291,14 @@ class AssetScanPanel(QWidget):
             ("found" if name in paths else "missing", name, paths.get(name, ""))
             for name in WHDLOAD_ROM_NAMES
         ]
-        found = sorted(paths)
-        missing = [name for name in WHDLOAD_ROM_NAMES if name not in paths]
-        if not found:
-            self.whdload_status.setText("WHDLoad ROMs → DEVS:Kickstarts/ : none found")
-            set_tone(self.whdload_status, "muted")
-            return
-        self.whdload_status.setText(
-            f"WHDLoad ROMs → DEVS:Kickstarts/ ({len(found)}/{len(WHDLOAD_ROM_NAMES)} "
-            "will be copied)"
+        total = len(WHDLOAD_ROM_NAMES)
+        found = len(paths)
+        self.whdload_row.set_status(
+            "ok" if found == total else "info",
+            "WHDLoad Kickstarts",
+            f"{found} of {total} found · copied to DEVS:Kickstarts" if found else "None found",
         )
-        set_tone(self.whdload_status, "success" if not missing else "muted")
+        self.whdload_row.show()
 
     @Slot(list, bool)
     def _show_adf_results(self, found_media: list, truncated: bool = False) -> None:
@@ -311,15 +307,15 @@ class AssetScanPanel(QWidget):
 
         self._adf_rows = []
         self._refresh_details_button()
+        title = "AmigaOS 3.9 CD" if self._version == "3.9" else f"Workbench {self._version} ADFs"
         if not found_media:
             if truncated:
-                text = "No media found (scan stopped - too many files, narrow the directories)"
+                detail = "Scan stopped after too many files. Choose a narrower folder."
             elif self._version == "3.9":
-                text = "Add your AmigaOS 3.9 CD image (.iso) - do not mount it"
+                detail = "Add the CD image (.iso) to one of these folders. Do not mount it."
             else:
-                text = "No recognized Workbench ADFs found in the configured directories"
-            self.adf_status.setText(text)
-            set_tone(self.adf_status, "warning")
+                detail = "No Workbench ADFs found in these folders."
+            self.adf_row.set_status("error", title, detail)
             return
         expected = {rule.adf for rule in get_adf_rules_for_version(self._version)}
         required = set(get_required_install_media(self._version))
@@ -346,23 +342,26 @@ class AssetScanPanel(QWidget):
         self._refresh_details_button()
         if self._version == "3.9":
             if required_missing:
-                text = "Add your AmigaOS 3.9 CD image (.iso) - do not mount it"
-                color = "orange"
+                self.adf_row.set_status(
+                    "error",
+                    title,
+                    "Add the CD image (.iso) to one of these folders. Do not mount it.",
+                )
             else:
-                text = "AmigaOS 3.9 CD detected (BoingBags download automatically)"
-                color = "green"
-        else:
-            text = (
-                f"Workbench {self._version} - {len(required_found)}/{len(required)} required, "
-                f"{len(optional_found)}/{len(optional)} optional found"
-            )
-            color = "orange" if required_missing else "green"
-        self.adf_status.setText(text)
-        set_tone(self.adf_status, "success" if color == "green" else "warning")
+                self.adf_row.set_status(
+                    "ok", title, "Found · BoingBags are downloaded during the build"
+                )
+            return
+        detail = (
+            f"{len(required_found)} of {len(required)} required · "
+            f"{len(optional_found)} of {len(optional)} optional"
+        )
+        if required_missing:
+            names = ", ".join(self._infer_adf_labels(name)[0] for name in sorted(required_missing))
+            detail += f"\nMissing: {names}"
+        self.adf_row.set_status("error" if required_missing else "ok", title, detail)
 
     def _update_result_visibility(self, *_args):
-        for label in (self.rom_status, self.whdload_status, self.adf_status):
-            label.setVisible(bool(label.text()))
         self.details_button.setVisible(self.details_button.isEnabled())
 
     def _refresh_details_button(self) -> None:

@@ -28,6 +28,7 @@ from emu68hatcher.config.schema import (
 )
 from emu68hatcher.data.package_loader import get_package_by_name
 from emu68hatcher.gui.design import page_layout
+from emu68hatcher.gui.widgets.status_row import StatusRow
 
 # permissive dotted-quad: lets the field be typed; the schema does the real IPv4 check
 _IP_RE = QRegularExpression(r"^(\d{1,3})(\.\d{1,3}){0,3}$")
@@ -96,16 +97,6 @@ class NetworkTab(QWidget):
         roadshow_row.setContentsMargins(0, 0, 0, 0)
         roadshow_row.setSpacing(6)
         roadshow_row.addWidget(self.radio_roadshow)
-        roadshow_pkg = get_package_by_name("roadshow")
-        if roadshow_pkg and roadshow_pkg.purchase_url:
-            self._roadshow_status_label = QLabel(
-                f'(Demo version - buy the full version <a href="{roadshow_pkg.purchase_url}">here</a>)'
-            )
-            self._roadshow_status_label.setTextFormat(Qt.TextFormat.RichText)
-            self._roadshow_status_label.setOpenExternalLinks(True)
-        else:
-            self._roadshow_status_label = QLabel("(Demo version)")
-        roadshow_row.addWidget(self._roadshow_status_label)
         roadshow_row.addStretch()
         net_layout.addLayout(roadshow_row)
 
@@ -125,9 +116,14 @@ class NetworkTab(QWidget):
 
         # full-version archive picker: empty -> bundled demo
         self._roadshow_full_box = QWidget()
-        full_layout = QHBoxLayout(self._roadshow_full_box)
-        full_layout.setContentsMargins(20, 0, 0, 0)
+        full_box_layout = QVBoxLayout(self._roadshow_full_box)
+        full_box_layout.setContentsMargins(20, 0, 0, 0)
+        full_box_layout.setSpacing(10)
+        full_layout = QHBoxLayout()
         full_layout.setSpacing(6)
+        full_box_layout.addLayout(full_layout)
+        self._roadshow_status = StatusRow()
+        full_box_layout.addWidget(self._roadshow_status)
         full_layout.addWidget(QLabel("Full version archive:"))
         self.roadshow_archive_edit = QLineEdit()
         self.roadshow_archive_edit.setPlaceholderText("Roadshow.lha (leave empty for demo)")
@@ -140,6 +136,7 @@ class NetworkTab(QWidget):
         clear_btn.clicked.connect(self._clear_roadshow_archive)
         full_layout.addWidget(clear_btn)
         net_layout.addWidget(self._roadshow_full_box)
+        self._refresh_roadshow_status()
 
         self._miamidx_keys_box = QWidget()
         keys_layout = QHBoxLayout(self._miamidx_keys_box)
@@ -349,19 +346,17 @@ class NetworkTab(QWidget):
     def _refresh_roadshow_status(self):
         path = self.roadshow_archive_edit.text().strip()
         if path:
-            self._roadshow_status_label.setTextFormat(Qt.TextFormat.PlainText)
-            self._roadshow_status_label.setText(f"(Full version: {Path(path).name})")
-        else:
-            roadshow_pkg = get_package_by_name("roadshow")
-            if roadshow_pkg and roadshow_pkg.purchase_url:
-                self._roadshow_status_label.setTextFormat(Qt.TextFormat.RichText)
-                self._roadshow_status_label.setText(
-                    f"(Demo version - buy the full version "
-                    f'<a href="{roadshow_pkg.purchase_url}">here</a>)'
-                )
+            archive = Path(path)
+            if archive.is_file():
+                self._roadshow_status.set_status("ok", "Roadshow full version", archive.name)
             else:
-                self._roadshow_status_label.setTextFormat(Qt.TextFormat.PlainText)
-                self._roadshow_status_label.setText("(Demo version)")
+                self._roadshow_status.set_status("warning", "Archive not found", path)
+            return
+        roadshow_pkg = get_package_by_name("roadshow")
+        detail = "Add the full version archive to remove the demo limits."
+        if roadshow_pkg and roadshow_pkg.purchase_url:
+            detail += f' <a href="{roadshow_pkg.purchase_url}">Buy Roadshow</a>'
+        self._roadshow_status.set_status("info", "Roadshow demo", detail)
 
     def get_roadshow_archive(self) -> Path | None:
         text = self.roadshow_archive_edit.text().strip()

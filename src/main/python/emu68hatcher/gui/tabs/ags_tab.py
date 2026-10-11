@@ -17,6 +17,7 @@ from emu68hatcher.config.ags_layout import AGS_VOLUMES
 from emu68hatcher.config.ags_models import AGS_ROLES
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.storage_controller import StorageController
+from emu68hatcher.gui.widgets.status_row import StatusRow
 
 
 class AGSTab(QWidget):
@@ -47,10 +48,9 @@ class AGSTab(QWidget):
         self.inspect_btn.clicked.connect(self.controller.refresh_source)
         source_row.addWidget(self.inspect_btn)
         details_layout.addLayout(source_row)
-        self.result_label = QLabel()
-        self.result_label.setWordWrap(True)
-        self.result_label.setTextFormat(Qt.TextFormat.PlainText)
-        details_layout.addWidget(self.result_label)
+        self.result_row = StatusRow()
+        self.result_row.detail.setTextFormat(Qt.TextFormat.PlainText)
+        details_layout.addWidget(self.result_row)
         self.component_checks = {}
         self.component_sizes = {}
         for role, label in (
@@ -131,15 +131,16 @@ class AGSTab(QWidget):
                 state.enabled and bool(state.source) and not state.inspection_pending()
             )
             if state.inspection_error:
-                text = f"Source check failed: {state.inspection_error}"
+                self.result_row.set_status("error", "Source check failed", state.inspection_error)
             elif state.inspection_pending():
-                text = "Checking AGS source…"
+                self.result_row.set_status("pending", "Checking AGS source", "")
             elif state.inventory:
-                text = f"AGS {state.inventory.version}"
-            else:
-                text = ""
-            self.result_label.setText(text)
-            self.result_label.setVisible(bool(text))
+                self.result_row.set_status(
+                    "ok", f"AGS {state.inventory.version}", "Source image recognised"
+                )
+            self.result_row.setVisible(
+                bool(state.inspection_error or state.inspection_pending() or state.inventory)
+            )
             sizes = (
                 {p.volume.casefold(): p.size for p in state.inventory.partitions}
                 if state.inventory

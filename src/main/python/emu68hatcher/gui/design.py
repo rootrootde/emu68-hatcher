@@ -54,6 +54,44 @@ _ICON_PATHS = {
 }
 
 
+# Drawn status marks so every platform shows the same symbols as the navigation icons.
+_STATUS_MARKS = {
+    "ok": ("#2f9e5b", '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16.5 9"/>'),
+    "warning": (
+        "#d08a1c",
+        '<path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5m0 2.7v.1"/>',
+    ),
+    "error": ("#d0473f", '<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/>'),
+    "info": ("#527de0", '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5m0-9v.1"/>'),
+    "pending": ("#8a94a6", '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+}
+
+
+def status_pixmap(state, size=20, pixel_ratio=1.0):
+    color, paths = _STATUS_MARKS[state]
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
+        f'fill="none" stroke="{color}" stroke-width="1.8" '
+        'stroke-linecap="round" stroke-linejoin="round">' + paths + "</svg>"
+    )
+    pixmap = QPixmap(QSize(size, size) * pixel_ratio)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    QSvgRenderer(svg.encode()).render(painter)
+    painter.end()
+    pixmap.setDevicePixelRatio(pixel_ratio)
+    return pixmap
+
+
+def set_status_icon(label, state, accessible_name=""):
+    screen = label.screen() or QApplication.primaryScreen()
+    ratio = screen.devicePixelRatio() if screen is not None else 1.0
+    label.setPixmap(status_pixmap(state, 20, ratio))
+    label.setFixedSize(24, 24)
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    label.setAccessibleName(accessible_name or state)
+
+
 def navigation_icon(name, color, pixel_ratio=1.0):
     icon = QIcon()
     for mode, stroke in ((QIcon.Mode.Normal, color), (QIcon.Mode.Selected, "#ffffff")):

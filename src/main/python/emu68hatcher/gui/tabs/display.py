@@ -36,6 +36,7 @@ from emu68hatcher.data.themes import (
 )
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
+from emu68hatcher.gui.widgets.status_row import StatusRow
 from emu68hatcher.gui.work_areas import scroll_to
 
 
@@ -271,8 +272,9 @@ class DisplayTab(QWidget):
         p96_clear.clicked.connect(self._clear_picasso96_archive)
         p96_row.addWidget(p96_clear)
         p96_layout.addLayout(p96_row)
-        self._picasso96_status_label = QLabel("(Default version)")
-        p96_layout.addWidget(self._picasso96_status_label)
+        self._picasso96_status = StatusRow()
+        p96_layout.addWidget(self._picasso96_status)
+        self._refresh_picasso96_status()
         layout.addWidget(p96_group)
 
         self.framethrower_group = self._create_framethrower_group()
@@ -511,14 +513,19 @@ class DisplayTab(QWidget):
     def _refresh_picasso96_status(self):
         path = self.picasso96_archive_edit.text().strip()
         if not path:
-            self._picasso96_status_label.setText("(Default version)")
+            self._picasso96_status.set_status(
+                "info",
+                "Free Picasso96 from Aminet",
+                "Add the full version archive to install Picasso96 3.x instead.",
+            )
             return
-        name = Path(path).name
-        version = _read_picasso96_version(Path(path))
-        if version:
-            self._picasso96_status_label.setText(f"(Full version {version}: {name})")
-        else:
-            self._picasso96_status_label.setText(f"(Full version: {name})")
+        archive = Path(path)
+        if not archive.is_file():
+            self._picasso96_status.set_status("warning", "Archive not found", path)
+            return
+        version = _read_picasso96_version(archive)
+        title = f"Picasso96 {version}" if version else "Picasso96 full version"
+        self._picasso96_status.set_status("ok", title, archive.name)
 
     def get_picasso96_archive(self) -> Path | None:
         text = self.picasso96_archive_edit.text().strip()

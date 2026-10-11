@@ -93,9 +93,6 @@ class KickstartTab(QWidget):
 
         self.asset_panel = AssetScanPanel(self.get_selected_version())
         self.dir_list = self.asset_panel.dir_list
-        self.rom_status = self.asset_panel.rom_status
-        self.whdload_status = self.asset_panel.whdload_status
-        self.adf_status = self.asset_panel.adf_status
         self.asset_panel.adf_results.connect(self._on_adf_results)
         layout.addWidget(self.asset_panel)
 
