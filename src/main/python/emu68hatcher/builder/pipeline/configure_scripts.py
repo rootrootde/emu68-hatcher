@@ -288,8 +288,9 @@ def _build_toolsdaemon_menu(
     if rgb2rtg:
         lines.append(f"{_MENU_INDENT}ITEM RGB2RTG")
         for title, command in (
-            ("On/off...", "ASK"),
-            ("RTG Image...", "IMAGE"),
+            ("Init...", "ASK"),
+            ("Settings...", "IMAGE"),
+            ("Sound...", "HDMISOUND=ASK"),
             ("About...", "ABOUT"),
         ):
             _append_launcher(

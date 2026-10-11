@@ -17,30 +17,32 @@ from emu68hatcher.config.schema import Emu68Version, Unit0Mode, WorkbenchScreenM
 
 _CHECKSUMS = {
     "Amiga/RGB2RTG.info": "dd03d5812540909b825397b16ee4a912",
-    "Amiga/RGB2RTG/Commands.txt": "063fc4bba3674a03b7f340840988cc7c",
+    "Amiga/RGB2RTG/Commands.txt": "d0373cd93ebd5be5d1a39bea604a3540",
     "Amiga/RGB2RTG/Commands.txt.info": "bd32146bda117699539a7bba2a102c5e",
-    "Amiga/RGB2RTG/Files/C/rgb2rtg": "8b7a46b5fb4708041812c3223b7f6d77",
-    "Amiga/RGB2RTG/Files/Kernel/Emu68-rgb2rtg.gz": "4369f790dd2ed50bcc9b9fa63e38c152",
-    "Amiga/RGB2RTG/Files/Libs/Picasso96/VideoCore.card": "9eafc739ab9ae051656c18ed87f7e875",
+    "Amiga/RGB2RTG/Files/C/rgb2rtg": "c93c571b54b8c2234b023529bd1b1d55",
+    "Amiga/RGB2RTG/Files/Kernel/Pi3/Emu68-rgb2rtg.gz": "f74cc01b0619286cf09711b7c6f55777",
+    "Amiga/RGB2RTG/Files/Kernel/Pi4/Emu68-rgb2rtg.gz": "73002badb7e82e4c883c3dea2937f388",
+    "Amiga/RGB2RTG/Files/Libs/Picasso96/VideoCore.card": "9c2395a8aa3f4d0014c65c49dfddc829",
+    "Amiga/RGB2RTG/Files/Overlays/sdhc.dtbo": "6b8d01c1c19a169a3678d6a00c84cfa0",
     "Amiga/RGB2RTG/Files/Overlays/unicam.dtbo": "8178d6f103b3f45ec0d8d0a9f14da91c",
-    "Amiga/RGB2RTG/Install": "d23f3ce0c7efb2143da75102e524fe5d",
+    "Amiga/RGB2RTG/Install": "e9bb0fb1924e3359a05e66c4a07e2b55",
     "Amiga/RGB2RTG/Install.info": "79d544d40d5e76b402d0ff48964f129c",
-    "Amiga/RGB2RTG/ReadMe.txt": "545ce1e3d747e8472027b4d7abc206d7",
+    "Amiga/RGB2RTG/ReadMe.txt": "f5f2c52e0b8282f51c4e7dbdee124003",
     "Amiga/RGB2RTG/ReadMe.txt.info": "bd32146bda117699539a7bba2a102c5e",
-    "Amiga/RGB2RTG/Uninstall": "f18003e7a321f268a1dbdaea5415ae2e",
+    "Amiga/RGB2RTG/Uninstall": "ebc60fcc88c002f725ec63711ec02716",
     "Amiga/RGB2RTG/Uninstall.info": "b08325e3dd8dbb4e591f0d8e08111f81",
-    "Commands.txt": "d13354e46c432164bba7bdc324d39a77",
+    "Commands.txt": "f39d902fa619b9e103f7c0c4a99ae7ab",
     "Licenses/Capstone-LICENSE.txt": "46aad282a6e300251bde9300e4855bc0",
     "Licenses/Capstone-LICENSE_LLVM.txt": "d240dcec849d48db9ab3d08bf4f08642",
     "Licenses/Emu68-third-party-notices.txt": "b054c6e9efbe49677bb3961bfd7fe0f3",
     "Licenses/GPL-2.0.txt": "ffa10f40b98be2c2bc9608f56827ed23",
     "Licenses/MPL-2.0.txt": "55a288862ec4d1fd20f996344d511a1f",
-    "Licenses/UAE-WinUAE-notice.txt": "83f929bde0e5a3235f26e31b81d58716",
+    "Licenses/UAE-WinUAE-notice.txt": "26f4d16ee5376f6e660d418bd5ec93c1",
     "Licenses/libdeflate-COPYING.txt": "d6cb6968598d941138672496e0afb212",
-    "PC/SD-Setup.ps1": "39c770b073b2f96e77ab6ddafd8912c7",
-    "README.txt": "c30b81b5dd35ad60fc698428db8d8c4f",
+    "PC/SD-Setup.ps1": "fb069c567c28b4ed056c3ebf29616130",
+    "README.txt": "60ee9735a408bb531645db70e5917dd3",
     "SD-Setup.cmd": "143464c2b2f96a36dc0fc57523df4a45",
-    "Source/RGB2RTG-0.73-src.zip": "4e8d6809eab0ce0c2a12ebbfbd9f01d7",
+    "Source/RGB2RTG-0.75-src.zip": "589bd0ec940977e36988f5d5befd202a",
 }
 
 
@@ -50,12 +52,12 @@ def extract_rgb2rtg(archive: Path, destination: Path) -> Path:
         raise BuildError(f"Cannot extract RGB2RTG: {result.error}")
     roots = list(destination.rglob("CHECKSUMS.txt"))
     if len(roots) != 1:
-        raise BuildError("RGB2RTG archive must contain the v0.73 release")
+        raise BuildError("RGB2RTG archive must contain the v0.75 release")
     root = roots[0].parent
     for relative, digest in _CHECKSUMS.items():
         source = root / relative
         if not source.is_file() or hashlib.md5(source.read_bytes()).hexdigest() != digest:
-            raise BuildError(f"RGB2RTG v0.73 file is missing or changed: {relative}")
+            raise BuildError(f"RGB2RTG v0.75 file is missing or changed: {relative}")
     return root
 
 
@@ -64,7 +66,7 @@ def validate_rgb2rtg(workflow) -> None:
     if not config.rgb2rtg.enabled:
         return
     if config.emu68_version != Emu68Version.V1_1_0_BETA_1:
-        raise BuildError("RGB2RTG v0.73 requires the Emu68 1.1.0-beta.1 baseline")
+        raise BuildError("RGB2RTG v0.75 requires the Emu68 1.1.0-beta.1 baseline")
     if config.display.workbench_mode == WorkbenchScreenMode.NATIVE:
         raise BuildError("RGB2RTG requires a VideoCore Workbench screen mode")
     if config.emu68_boot.config_txt.framethrower:
@@ -83,7 +85,7 @@ def validate_rgb2rtg(workflow) -> None:
         ):
             raise BuildError(f"Remove the additional RGB2RTG display override: {line}")
     if config.rgb2rtg.archive is None or not config.rgb2rtg.archive.expanduser().is_file():
-        raise BuildError("Select the local RGB2RTG_A1200_v0.73.7z release archive")
+        raise BuildError("Select the local RGB2RTG_A1200_v0.75.7z release archive")
     workflow._check_cancelled()
     with TemporaryDirectory(prefix="hatcher-rgb2rtg-") as scratch:
         extract_rgb2rtg(config.rgb2rtg.archive, Path(scratch))
@@ -178,7 +180,7 @@ def configure_rgb2rtg(workflow, image, boot: Path) -> None:
     command.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(files / "C/rgb2rtg", command)
     (fat / "kernel").mkdir(exist_ok=True)
-    shutil.copy2(files / "Kernel/Emu68-rgb2rtg.gz", fat / "kernel/Emu68-rgb2rtg.gz")
+    shutil.copy2(files / "Kernel/Pi4/Emu68-rgb2rtg.gz", fat / "kernel/Emu68-rgb2rtg.gz")
     (fat / "overlays").mkdir(exist_ok=True)
     shutil.copy2(files / "Overlays/unicam.dtbo", fat / "overlays/unicam.dtbo")
     for name in ("config.txt", "configBAK.txt"):
@@ -231,4 +233,4 @@ def configure_rgb2rtg(workflow, image, boot: Path) -> None:
     asset = Path(__file__).parent.parent / "data/rgb2rtg"
     for name in ("Recover", "RemoveMenus.rexx", "Hatcher.txt"):
         shutil.copy2(asset / name, recovery / name)
-    workflow.logger.info("Installed RGB2RTG v0.73 for A1200/PiStorm32-lite with Pi 4")
+    workflow.logger.info("Installed RGB2RTG v0.75 for A1200/PiStorm32-lite with Pi 4")

@@ -170,10 +170,10 @@ They illustrate navigation, not a completed image or device-write test.
 
 ## RGB2RTG
 
-RGB2RTG v0.73 is an optional experimental installation for an A1200 with
+RGB2RTG v0.75 is an optional experimental installation for an A1200 with
 PiStorm32-lite and a Raspberry Pi 4 or CM4. Pi 3 is not tested. Enable it in the
 **System** work area under **Hardware & Emu68** and browse to your local
-**RGB2RTG_A1200_v0.73.7z** release from
+**RGB2RTG_A1200_v0.75.7z** release from
 [the author](https://astair86.itch.io/rgb2rtg-amiga1200). Hatcher checks the release
 files before building. The archive is not included or downloaded automatically.
 
@@ -184,11 +184,11 @@ for the command to save boot settings. Enabling RGB2RTG selects the matching
 Emu68 1.1.0-beta.1 baseline and installs ToolsDaemon and Picasso96 dependencies.
 The custom kernel and VideoCore 1.5 driver are installed together.
 
-The desktop menu is **System → RGB2RTG**, with **On/off...**, **RTG Image...**
+The desktop menu is **System → RGB2RTG**, with **Init...**, **Settings...**, **Sound...**
 and **About...**. Saved preferences are applied during User-Startup. New
 installations default to `picture=off`: the RTG desktop still shows, but native
 Amiga screens show black on HDMI after the preferences are applied. Turn the
-picture on through **On/off...** or run `C:rgb2rtg ON`; the choice is saved for
+picture on through **Init...** or run `C:rgb2rtg ON`; the choice is saved for
 later boots. Existing preferences are kept. This does not disable the RGB2RTG
 kernel or its boot-time capture setup.
 

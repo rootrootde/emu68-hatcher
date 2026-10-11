@@ -24,20 +24,22 @@ removeMenu: procedure
 file = 'S:ToolsDaemon.menu'
 if ~open('input', file, 'r') then return 20
 expected.1 = 'ITEM RGB2RTG'
-expected.2 = 'SUB On/off...'
+expected.2 = 'SUB Init...'
 expected.3 = '(CLI) 8192 C:rgb2rtg ASK'
-expected.4 = 'SUB RTG Image...'
+expected.4 = 'SUB Settings...'
 expected.5 = '(CLI) 8192 C:rgb2rtg IMAGE'
-expected.6 = 'SUB About...'
-expected.7 = '(CLI) 8192 C:rgb2rtg ABOUT'
-expected.8 = 'ITEMBAR'
+expected.6 = 'SUB Sound...'
+expected.7 = '(CLI) 8192 C:rgb2rtg HDMISOUND=ASK'
+expected.8 = 'SUB About...'
+expected.9 = '(CLI) 8192 C:rgb2rtg ABOUT'
+expected.10 = 'ITEMBAR'
 text = ''
 system = 0
 do while ~eof('input')
     line = readln('input')
     if left(strip(line), 6) = 'TITLE ' then system = strip(line) = 'TITLE System'
     if system & strip(line) = expected.1 then do
-        do i = 2 to 8
+        do i = 2 to 10
             if eof('input') then do
                 call close 'input'
                 return 20

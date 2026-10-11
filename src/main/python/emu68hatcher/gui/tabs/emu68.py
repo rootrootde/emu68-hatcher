@@ -346,13 +346,13 @@ class Emu68Tab(QWidget):
         return release_group
 
     def _create_rgb2rtg_group(self) -> QGroupBox:
-        group = QGroupBox("RGB2RTG v0.73 (experimental)")
+        group = QGroupBox("RGB2RTG v0.75 (experimental)")
         form = self._form_layout(group)
         self.rgb2rtg_check = QCheckBox("A1200 / PiStorm32-lite with Pi 4 or CM4")
         self.rgb2rtg_check.toggled.connect(self._rgb2rtg_toggled)
         form.addRow(self.rgb2rtg_check)
         self.rgb2rtg_archive = QLineEdit()
-        self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.73.7z")
+        self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.75.7z")
         self.rgb2rtg_archive.textChanged.connect(self._queue_settings_changed)
         browse = QPushButton("Browse...")
         browse.clicked.connect(self._browse_rgb2rtg)
