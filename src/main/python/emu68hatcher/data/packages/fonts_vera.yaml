@@ -13,9 +13,3 @@ download:
 install:
 - from: ttf-bitstream-vera-1.10/*.ttf
   to: Fonts/TrueType/
-- from: ttf-bitstream-vera-1.10/COPYRIGHT.TXT
-  to: Emu68-Hatcher/Fonts/BitstreamVera/
-- from: ttf-bitstream-vera-1.10/README.TXT
-  to: Emu68-Hatcher/Fonts/BitstreamVera/
-- from: ttf-bitstream-vera-1.10/RELEASENOTES.TXT
-  to: Emu68-Hatcher/Fonts/BitstreamVera/

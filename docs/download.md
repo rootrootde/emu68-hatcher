@@ -12,5 +12,5 @@ Pick the right file for your platform:
 
 See [Installation](installation.md) for the install steps for your OS.
 
-New releases appear on the **Start** tab. **Download Update...** saves the verified file in
+New releases appear under **Overview → Updates**. **Download Update...** saves the verified file in
 Downloads and can open it. On Linux this is only offered for Debian-based systems.

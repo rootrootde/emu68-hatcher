@@ -8,6 +8,7 @@ from pathlib import Path
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.config.display_models import WorkbenchScreenModeInfo
+from emu68hatcher.data.picasso96 import load_default_settings, workbench_mode_ids
 
 # AmigaOS IFF prefs PRHD: BYTE ph_Version + BYTE ph_Type + ULONG ph_Flags = 6 bytes.
 _PRHD_BODY = b"\x00\x00\x00\x00\x00\x00"
@@ -115,6 +116,27 @@ def patch_workbench_backdrop(data: bytes) -> bytes:
         offset = chunk_end + (chunk_size & 1)
 
     raise ValueError("WBConfig.prefs has no WBCF chunk")
+
+
+def configure_picasso96_settings(
+    boot_staging: Path, mode: WorkbenchScreenModeInfo | None = None
+) -> Path:
+    try:
+        data = load_default_settings()
+        ids = workbench_mode_ids(data)
+        if mode is not None and ids.get((mode.width, mode.height)) != mode.mode_id:
+            raise ValueError(f"No matching active BGRA mode for {mode.width}x{mode.height}")
+        target = resolve_staging_path(boot_staging, "Devs/Picasso96Settings")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        temporary = target.with_name(f"{target.name}.tmp")
+        try:
+            temporary.write_bytes(data)
+            temporary.replace(target)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return target
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise BuildError(f"Cannot generate Picasso96Settings: {exc}") from exc
 
 
 def configure_workbench_screen_mode(

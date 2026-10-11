@@ -21,6 +21,10 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
 
     workflow._update_state(BuildStage.FINALIZE, 0.0)
     workflow._milestone("Finalizing")
+    if workflow.config.ags_import is not None and workflow.config.ags_import.enabled:
+        from emu68hatcher.builder.pipeline.import_ags import verify_ags_staging
+
+        verify_ags_staging(workflow, image)
 
     output = workflow.config.output
     assert output is not None
@@ -33,6 +37,9 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
     workflow._milestone("Copying staged files to image")
     _copy_staged_files_to_image(workflow, image)
 
+    from emu68hatcher.builder.pipeline.import_ags import verify_ags_target
+
+    verify_ags_target(workflow, image)
     workflow._update_state(progress=90.0)
     workflow._milestone("Cleaning up")
     if image.workspace.work_dir.exists():
@@ -96,6 +103,18 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
         if not device_dir.is_dir():
             continue
         workflow._check_cancelled()
+        from emu68hatcher.builder.staging.hst_metadata import prepare_workbench_metadata
+
+        reserved = image.workspace.validated.ags_plan
+        is_ags_overlay = bool(
+            reserved and any(t.device == device_dir.name for t in reserved.targets)
+        )
+        if not is_ags_overlay and device_dir.name != EMU68_BOOT_PARTITION_NAME:
+            prepare_workbench_metadata(
+                device_dir,
+                cancel_check=lambda: workflow._cancelled,
+                allow_stale_metadata=device_dir.name == workflow.config.boot_device,
+            )
         file_count, total_bytes = _staging_inventory(device_dir)
         if file_count == 0:
             workflow.logger.info(f"Skipping empty staging directory: {device_dir.name}")
@@ -108,6 +127,7 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
             device_to_mbr,
             file_count,
             total_bytes,
+            use_metafiles=device_dir.name != EMU68_BOOT_PARTITION_NAME,
         )
         if copied:
             devices_copied += 1
@@ -152,6 +172,8 @@ def _copy_staging_device(
     device_to_mbr: dict[str, int],
     file_count: int,
     total_bytes: int,
+    *,
+    use_metafiles: bool = False,
 ) -> bool:
     from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine, hst_path
 
@@ -174,7 +196,7 @@ def _copy_staging_device(
         "TRUE",
     ]
     if device_name != EMU68_BOOT_PARTITION_NAME:
-        args.extend(["--uaemetadata", "UaeFsDb"])
+        args.extend(["--uaemetadata", "UaeMetafile" if use_metafiles else "UaeFsDb"])
     command = HSTCommandLine(
         command=HSTCommand.FS_COPY,
         args=args,

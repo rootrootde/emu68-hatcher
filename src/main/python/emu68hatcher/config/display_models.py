@@ -6,6 +6,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from emu68hatcher.data.picasso96 import load_default_settings, workbench_mode_ids
+
 
 def _optional_path(value):
     if value is None or value == "":
@@ -63,16 +65,18 @@ class WorkbenchScreenModeInfo:
         return f"VideoCore {self.width}x{self.height}, 32-bit BGRA"
 
 
-WORKBENCH_RTG_MODES = (
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_800X600, 800, 600, 0x50061303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_960X540, 960, 540, 0x50171303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1024X768, 1024, 768, 0x50071303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1280X720, 1280, 720, 0x500A1303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1280X1024, 1280, 1024, 0x50321303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1366X768, 1366, 768, 0x501B1303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1600X900, 1600, 900, 0x50341303),
-    WorkbenchScreenModeInfo(WorkbenchScreenMode.VIDEOCORE_1920X1080, 1920, 1080, 0x50311303),
-)
+def _workbench_rtg_modes() -> tuple[WorkbenchScreenModeInfo, ...]:
+    ids = workbench_mode_ids(load_default_settings())
+    modes = []
+    for mode in WorkbenchScreenMode:
+        if mode == WorkbenchScreenMode.NATIVE:
+            continue
+        width, height = map(int, mode.value.removeprefix("videocore_").split("x"))
+        modes.append(WorkbenchScreenModeInfo(mode, width, height, ids[width, height]))
+    return tuple(modes)
+
+
+WORKBENCH_RTG_MODES = _workbench_rtg_modes()
 
 WORKBENCH_RTG_MODE_BY_NAME = {item.mode: item for item in WORKBENCH_RTG_MODES}
 

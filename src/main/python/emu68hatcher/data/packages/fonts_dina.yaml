@@ -11,7 +11,3 @@ download:
 install:
 - from: Dina/Dina*
   to: Fonts/
-- from: Dina/LICENSE
-  to: Emu68-Hatcher/Fonts/Dina/
-- from: Dina/INSTALL.TXT
-  to: Emu68-Hatcher/Fonts/Dina/

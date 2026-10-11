@@ -2,20 +2,33 @@
 set -eu
 
 usage() {
-    echo "usage: $0 [--reuse] /path/to/emu68hatcher.img"
+    echo "usage: $0 [--reuse] [--native] [--offline] /path/to/emu68hatcher.img"
 }
 
 reuse=false
-case "${1:-}" in
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    --reuse)
-        reuse=true
-        shift
-        ;;
-esac
+rtg_size=128
+bsdsocket=true
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --reuse)
+            reuse=true
+            shift
+            ;;
+        --native)
+            rtg_size=0
+            shift
+            ;;
+        --offline)
+            bsdsocket=false
+            shift
+            ;;
+        *) break ;;
+    esac
+done
 
 if [ "$#" -ne 1 ]; then
     usage
@@ -140,6 +153,8 @@ else
     mv -f "$hdf_tmp" "$hdf_path"
 fi
 
+echo "Amiberry executable: $amiberry"
+echo "Emulator networking: $bsdsocket"
 echo "Starting Amiberry with $hdf_path"
 echo "The original image is not modified. Emulator writes stay in the cached HDF."
 echo "Boot log: $amiberry_home/Amiberry.log"
@@ -157,7 +172,8 @@ exec "$amiberry" \
     -s cpu_speed=max \
     -s cpu_compatible=false \
     -s cpu_24bit_addressing=false \
+    -s "bsdsocket_emu=$bsdsocket" \
     -s z3mem_size=256 \
     -s gfxcard_type=ZorroIII \
-    -s gfxcard_size=128 \
+    -s "gfxcard_size=$rtg_size" \
     -G

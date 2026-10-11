@@ -11,5 +11,3 @@ download:
 install:
 - from: Fonts/Apparent*
   to: Fonts/
-- from: Apparent.readme
-  to: Emu68-Hatcher/Fonts/Apparent/

@@ -14,8 +14,3 @@ download:
 install:
 - from: dejavu-fonts-ttf-2.37/ttf/*.ttf
   to: Fonts/TrueType/
-- from: dejavu-fonts-ttf-2.37/LICENSE
-  to: Emu68-Hatcher/Fonts/DejaVu/
-- from: dejavu-fonts-ttf-2.37/README.md
-  to: Emu68-Hatcher/Fonts/DejaVu/
-  rename: README

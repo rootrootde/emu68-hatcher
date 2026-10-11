@@ -17,12 +17,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from emu68hatcher.gui.design import page_layout, set_tone
 from emu68hatcher.gui.workers import ADFScanWorker, ROMScanWorker
 
 
 class AssetScanPanel(QWidget):
     rom_results = Signal(list, bool)
     adf_results = Signal(list, bool)
+    state_changed = Signal()
 
     def __init__(self, version: str, parent=None):
         super().__init__(parent)
@@ -35,16 +37,18 @@ class AssetScanPanel(QWidget):
         self._adf_rows: list[tuple[str, str, str, str, bool]] = []
         self._dialog_title = ""
         self._setup_ui()
+        self.state_changed.connect(self._update_result_visibility)
+        self.rom_results.connect(self._update_result_visibility)
+        self.adf_results.connect(self._update_result_visibility)
+        self._update_result_visibility()
 
     def _setup_ui(self) -> None:
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        directory_group = QGroupBox("Asset Directories (Kickstart ROMs + Workbench ADFs)")
+        layout = page_layout(self)
+        directory_group = QGroupBox("ROMs && installation media")
         directory_layout = QVBoxLayout(directory_group)
         self.dir_list = QListWidget()
         self.dir_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
-        self.dir_list.setMinimumHeight(80)
-        self.dir_list.setMaximumHeight(120)
+        self.dir_list.setFixedHeight(88)
         directory_layout.addWidget(self.dir_list)
         buttons = QHBoxLayout()
         self.add_button = QPushButton("Add...")
@@ -63,9 +67,9 @@ class AssetScanPanel(QWidget):
         )
         layout.addWidget(directory_group)
 
-        detected_group = QGroupBox("Detected Files")
+        detected_group = QGroupBox("Detected files")
         detected_layout = QVBoxLayout(detected_group)
-        self.rom_status = QLabel("Add at least one directory above to scan for ROMs and ADFs")
+        self.rom_status = QLabel("Add a folder to scan for ROMs and installation media.")
         self.rom_status.setWordWrap(True)
         self.rom_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.whdload_status = QLabel("")
@@ -74,7 +78,7 @@ class AssetScanPanel(QWidget):
         self.adf_status = QLabel("")
         self.adf_status.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         for label in (self.rom_status, self.whdload_status, self.adf_status):
-            label.setStyleSheet("color: gray;")
+            set_tone(label, "muted")
         detected_layout.addWidget(self.rom_status)
         detected_layout.addWidget(self.whdload_status)
         self.details_layout = QHBoxLayout()
@@ -84,7 +88,7 @@ class AssetScanPanel(QWidget):
         self.details_button.clicked.connect(self._show_details)
         self.details_layout.addWidget(self.details_button)
         detected_layout.addLayout(self.details_layout)
-        layout.addWidget(detected_group, 1)
+        layout.addWidget(detected_group)
 
     @property
     def directories(self) -> list[Path]:
@@ -145,12 +149,11 @@ class AssetScanPanel(QWidget):
                     "Mount the drive or choose another directory, then rescan."
                 )
             else:
-                self.rom_status.setText(
-                    "Add at least one directory above to scan for ROMs and ADFs"
-                )
-            self.rom_status.setStyleSheet("color: gray;")
+                self.rom_status.setText("Add a folder to scan for ROMs and installation media.")
+            set_tone(self.rom_status, "muted")
             self.whdload_status.clear()
             self.adf_status.clear()
+            self.state_changed.emit()
             return
         self._rom_rows = []
         self._whdload_rows = []
@@ -159,10 +162,10 @@ class AssetScanPanel(QWidget):
         self._dialog_title = ""
         self._refresh_details_button()
         self.rom_status.setText("Scanning for ROMs...")
-        self.rom_status.setStyleSheet("color: blue;")
+        set_tone(self.rom_status, "muted")
         self.whdload_status.clear()
         self.adf_status.setText("Scanning for ADFs...")
-        self.adf_status.setStyleSheet("color: blue;")
+        set_tone(self.adf_status, "muted")
         self._start_worker(ROMScanWorker(directories, self), generation, True)
         self._start_worker(ADFScanWorker(directories, self), generation, False)
 
@@ -197,7 +200,8 @@ class AssetScanPanel(QWidget):
             return
         label = self.rom_status if rom else self.adf_status
         label.setText(f"{'ROM' if rom else 'Media'} scan failed: {message}")
-        label.setStyleSheet("color: red;")
+        set_tone(label, "warning")
+        self.state_changed.emit()
 
     def _worker_finished(self, worker) -> None:
         self._workers.discard(worker)
@@ -208,6 +212,7 @@ class AssetScanPanel(QWidget):
         enabled = self._active == 0
         for button in (self.add_button, self.remove_button, self.rescan_button):
             button.setEnabled(enabled)
+        self.state_changed.emit()
 
     def shutdown_workers(self, timeout_ms: int = 500) -> bool:
         workers = tuple(worker for worker in self._workers if worker.isRunning())
@@ -231,12 +236,10 @@ class AssetScanPanel(QWidget):
         if not found_roms:
             if truncated:
                 text = "No ROMs found (scan stopped - too many files, narrow the directories)"
-                color = "red"
             else:
                 text = "No valid Kickstart ROMs found in the configured directories"
-                color = "orange"
             self.rom_status.setText(text)
-            self.rom_status.setStyleSheet(f"color: {color};")
+            set_tone(self.rom_status, "warning")
             return
         if boot_path:
             boot_rom = next((rom for rom in found_roms if rom["path"] == boot_path), None)
@@ -245,7 +248,7 @@ class AssetScanPanel(QWidget):
                     f"Boot ROM: {boot_path.name} - Kickstart {boot_rom['version']} "
                     f"({boot_rom['model']})"
                 )
-                self.rom_status.setStyleSheet("color: green;")
+                set_tone(self.rom_status, "success")
                 return
         excluded = [
             rom for rom in found_roms if rom["version"] == self._version and rom.get("excluded")
@@ -253,14 +256,14 @@ class AssetScanPanel(QWidget):
         if excluded:
             message = excluded[0].get("exclude_message", "ROM is not supported")
             self.rom_status.setText(f"ROM found but excluded: {message}")
-            self.rom_status.setStyleSheet("color: red;")
+            set_tone(self.rom_status, "warning")
             return
         versions = sorted(
             {rom["version"] for rom in found_roms if not rom.get("excluded")},
             reverse=True,
         )
         self.rom_status.setText(f"No {self._version} ROM. Available: {', '.join(versions)}")
-        self.rom_status.setStyleSheet("color: orange;")
+        set_tone(self.rom_status, "warning")
 
     def _build_rom_rows(self, found_roms: list, boot_path) -> list[tuple]:
         rows = []
@@ -293,13 +296,13 @@ class AssetScanPanel(QWidget):
         missing = [name for name in WHDLOAD_ROM_NAMES if name not in paths]
         if not found:
             self.whdload_status.setText("WHDLoad ROMs → DEVS:Kickstarts/ : none found")
-            self.whdload_status.setStyleSheet("color: gray;")
+            set_tone(self.whdload_status, "muted")
             return
         self.whdload_status.setText(
             f"WHDLoad ROMs → DEVS:Kickstarts/ ({len(found)}/{len(WHDLOAD_ROM_NAMES)} "
             "will be copied)"
         )
-        self.whdload_status.setStyleSheet("color: green;" if not missing else "color: gray;")
+        set_tone(self.whdload_status, "success" if not missing else "muted")
 
     @Slot(list, bool)
     def _show_adf_results(self, found_media: list, truncated: bool = False) -> None:
@@ -311,15 +314,12 @@ class AssetScanPanel(QWidget):
         if not found_media:
             if truncated:
                 text = "No media found (scan stopped - too many files, narrow the directories)"
-                color = "red"
             elif self._version == "3.9":
                 text = "Add your AmigaOS 3.9 CD image (.iso) - do not mount it"
-                color = "orange"
             else:
                 text = "No recognized Workbench ADFs found in the configured directories"
-                color = "orange"
             self.adf_status.setText(text)
-            self.adf_status.setStyleSheet(f"color: {color};")
+            set_tone(self.adf_status, "warning")
             return
         expected = {rule.adf for rule in get_adf_rules_for_version(self._version)}
         required = set(get_required_install_media(self._version))
@@ -358,7 +358,12 @@ class AssetScanPanel(QWidget):
             )
             color = "orange" if required_missing else "green"
         self.adf_status.setText(text)
-        self.adf_status.setStyleSheet(f"color: {color};")
+        set_tone(self.adf_status, "success" if color == "green" else "warning")
+
+    def _update_result_visibility(self, *_args):
+        for label in (self.rom_status, self.whdload_status, self.adf_status):
+            label.setVisible(bool(label.text()))
+        self.details_button.setVisible(self.details_button.isEnabled())
 
     def _refresh_details_button(self) -> None:
         self.details_button.setEnabled(bool(self._rom_rows or self._whdload_rows or self._adf_rows))

@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTreeWidget,
     QTreeWidgetItem,
-    QVBoxLayout,
     QWidget,
 )
 
@@ -21,12 +20,12 @@ from emu68hatcher.data.package_loader import (
     load_all_packages,
 )
 from emu68hatcher.data.package_selection import resolve_choices, software_defaults
+from emu68hatcher.gui.design import page_layout
 
 _NETWORK_STACK_PACKAGES = {stack.value.lower() for stack in NetworkStack}
 
 
 class PackagesTab(QWidget):
-    minimal_requested = Signal()
     selection_changed = Signal()
 
     def __init__(self, parent=None, kickstart_version="3.2.3", emu68_version=None):
@@ -39,25 +38,18 @@ class PackagesTab(QWidget):
         self._updating = False
         self.checkboxes: dict[str, QTreeWidgetItem] = {}
         self._key_to_packages: dict[str, list[str]] = {}
-        layout = QVBoxLayout(self)
+        layout = page_layout(self)
         actions = QHBoxLayout()
         for label, callback in (
             ("Select All", self.select_all),
             ("Select None", self.select_none),
             ("Defaults", self.select_defaults),
-            ("Minimal", self.minimal_requested.emit),
         ):
             button = QPushButton(label)
             button.clicked.connect(callback)
             actions.addWidget(button)
         actions.addStretch()
         layout.addLayout(actions)
-        note = QLabel(
-            "Minimal keeps the OS, RTG and FirstBoot tools; optional software and networking "
-            "are disabled. Partition extra content is still copied."
-        )
-        note.setWordWrap(True)
-        layout.addWidget(note)
         self.tree = QTreeWidget()
         self.tree.setColumnCount(2)
         self.tree.setHeaderLabels(["Package", "Description / dependency"])
@@ -68,9 +60,11 @@ class PackagesTab(QWidget):
         layout.addWidget(self.tree, 1)
         self.catalog_notice = QLabel()
         self.catalog_notice.setWordWrap(True)
+        self.catalog_notice.setProperty("tone", "warning")
         layout.addWidget(self.catalog_notice)
         self.status = QLabel()
         self.status.setWordWrap(True)
+        self.status.setProperty("tone", "muted")
         layout.addWidget(self.status)
         self.refresh_packages()
 
@@ -141,6 +135,8 @@ class PackagesTab(QWidget):
                 )
             elif auto:
                 description += " (Selected by network, theme or recommendation)"
+            if auto and key not in {"mui38", "mui5"}:
+                category = "Required packages"
             item = QTreeWidgetItem(group(category), [label, description])
             item.setToolTip(1, description)
             item.setData(0, Qt.ItemDataRole.UserRole, key)
@@ -191,10 +187,11 @@ class PackagesTab(QWidget):
             f"{token}: needed by {', '.join(names)}"
             for token, names in self.resolution.unsatisfiable.items()
         ]
+        self.catalog_notice.setVisible(bool(self.catalog_notice.text()))
         self.status.setText(
             "Missing requirements: " + "; ".join(problems)
             if problems
-            else "Dependencies are included automatically; saved choices stay separate."
+            else f"{len(selected)} packages selected"
         )
 
     def _on_item_changed(self, item, column):

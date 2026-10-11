@@ -27,6 +27,7 @@ from emu68hatcher.config.schema import (
     WifiConfig,
 )
 from emu68hatcher.data.package_loader import get_package_by_name
+from emu68hatcher.gui.design import page_layout
 
 # permissive dotted-quad: lets the field be typed; the schema does the real IPv4 check
 _IP_RE = QRegularExpression(r"^(\d{1,3})(\.\d{1,3}){0,3}$")
@@ -75,10 +76,10 @@ class NetworkTab(QWidget):
         scroll.setWidget(content)
         outer.addWidget(scroll)
 
-        layout = QVBoxLayout(content)
+        layout = page_layout(content)
 
         # network stack selection
-        net_group = QGroupBox("Network Stack")
+        net_group = QGroupBox("Network stack")
         net_layout = QVBoxLayout(net_group)
         self.radio_none = QRadioButton("None")
         self.radio_roadshow = QRadioButton("Roadshow")

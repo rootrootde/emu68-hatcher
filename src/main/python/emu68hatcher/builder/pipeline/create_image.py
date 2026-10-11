@@ -29,6 +29,18 @@ def stage_create_image(
     partitions = workflow.config.partitions
     assert output is not None and partitions is not None
     workspace = extracted.downloaded.workspace
+    if workspace.validated.ags_plan is not None:
+        from emu68hatcher.builder.ags_blocks import read_source_blocks
+        from emu68hatcher.builder.ags_source import validate_source_identity
+        from emu68hatcher.builder.ags_validation import (
+            check_elevated_source_access,
+            check_source_destination,
+        )
+
+        validate_source_identity(workspace.validated.ags_plan.inventory)
+        read_source_blocks(workspace.validated.ags_plan.inventory.source_path)
+        check_source_destination(workflow)
+        check_elevated_source_access(workflow, workspace.validated.ags_plan)
     output_type = output.type
     raw_target = output.path
     # device targets are strings on purpose (see OutputConfig.path); re-wrapping in Path
@@ -88,6 +100,7 @@ def stage_create_image(
         image_path,
         fs_handler_paths=fs_handler_paths,
         skip_blank=skip_blank,
+        ags_plan=workspace.validated.ags_plan,
     )
 
     runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
@@ -96,17 +109,19 @@ def stage_create_image(
         progress = (current / total) * 100
         workflow._update_state(progress=progress, message=desc)
 
-    result = runner.run_script(
-        script,
-        progress_callback=progress_cb,
-        elevation=workflow.state.elevation,
-    )
+    if workspace.validated.ags_plan is None:
+        result = runner.run_script(
+            script, progress_callback=progress_cb, elevation=workflow.state.elevation
+        )
+        if not result.success:
+            failed = result.failed_commands
+            raise BuildError(
+                f"Image creation failed: {failed[0].error if failed else 'unknown error'}"
+            )
+    else:
+        from emu68hatcher.builder.ags_blocks import copy_creation_script
 
-    if not result.success:
-        failed = result.failed_commands
-        if failed:
-            raise BuildError(f"Image creation failed: {failed[0].error}")
-        raise BuildError("Image creation failed")
+        copy_creation_script(workflow, runner, script, workspace.validated.ags_plan, image_path)
 
     workflow._update_state(progress=100.0)
     workflow._milestone(

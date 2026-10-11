@@ -11,11 +11,3 @@ download:
 install:
 - from: terminus-font/Fonts/*
   to: Fonts/
-- from: terminus-font/OFL.TXT
-  to: Emu68-Hatcher/Fonts/Terminus/
-- from: terminus-font/COPYING
-  to: Emu68-Hatcher/Fonts/Terminus/
-- from: terminus-font/AUTHORS
-  to: Emu68-Hatcher/Fonts/Terminus/
-- from: terminus-font/README
-  to: Emu68-Hatcher/Fonts/Terminus/
