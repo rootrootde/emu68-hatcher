@@ -65,11 +65,12 @@ def _stream_reader(pipe, ipc_dir, seq, stream, full_buf):
                 break
             buf.extend(data)
             full_buf.extend(data)
-            if b"\\n" not in buf:
+            # hst-imager ends live progress updates with a carriage return
+            end = max(buf.rfind(b"\\n"), buf.rfind(b"\\r"))
+            if end < 0:
                 continue
-            head, _sep, tail = buf.rpartition(b"\\n")
-            _flush(bytes(head) + b"\\n")
-            buf = bytearray(tail)
+            _flush(bytes(buf[:end + 1]))
+            del buf[:end + 1]
     except OSError as e:
         trace(f"seq={seq} stream {stream} read error: {e}")
     finally:

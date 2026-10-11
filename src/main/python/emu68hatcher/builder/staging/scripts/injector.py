@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from emu68hatcher.builder.staging.files import resolve_staging_path
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,6 +17,7 @@ class InjectionAction(Enum):
     ADD = "Add"
     INJECT_BEFORE = "InjectBefore"
     INJECT_AFTER = "InjectAfter"
+    REPLACE = "Replace"
     REMOVE = "Remove"
 
 
@@ -100,6 +103,8 @@ def inject_script(
             edit = _action_inject_before(original_lines, injection_block, injection.start_pattern)
         elif injection.action == InjectionAction.INJECT_AFTER:
             edit = _action_inject_after(original_lines, injection_block, injection.start_pattern)
+        elif injection.action == InjectionAction.REPLACE:
+            edit = _action_replace(original_lines, injection_block, injection.start_pattern)
         elif injection.action == InjectionAction.REMOVE:
             edit = _action_remove(
                 original_lines, injection.start_pattern, injection.end_pattern, injection.name
@@ -202,6 +207,17 @@ def _action_inject_after(original: list[str], block: list[str], pattern: str | N
     return _EditResult(original[:insert_at] + block + original[insert_at:], True)
 
 
+def _action_replace(original: list[str], block: list[str], pattern: str | None) -> _EditResult:
+    """Replace the first matching command without moving it."""
+    if not pattern:
+        return _EditResult(original, False, "Replace requires start_pattern")
+    regex = re.compile(pattern, re.IGNORECASE)
+    index = next((i for i, line in enumerate(original) if regex.search(line)), None)
+    if index is None:
+        return _EditResult(original, False, f"Required pattern not found: {pattern}")
+    return _EditResult(original[:index] + block + original[index + 1 :], True)
+
+
 def _action_remove(
     original: list[str], start_pattern: str | None, end_pattern: str | None, name: str
 ) -> _EditResult:
@@ -261,7 +277,11 @@ STARTUP_SEQUENCE_INJECTIONS = [
         target_script="S/Startup-Sequence",
         action=InjectionAction.INJECT_BEFORE,
         content_file="S/Startup-Sequence_Iconlib",
-        start_pattern=r"^(?:C:)?SetPatch(?:\s|$)",
+        # Cloanto's conditional SetPatch calls must keep their Version return codes.
+        start_pattern=(
+            r"^(?:C:)?(?:SetPatch(?:\s|$)|"
+            r"Version\s+>NIL:\s+exec\.library\s+45\s+20(?:\s|$))"
+        ),
         name="Iconlib",
     ),
     # UAEGFX persistent monitor swap (runs 5th, furthest from anchor)
@@ -306,16 +326,9 @@ STARTUP_SEQUENCE_INJECTIONS = [
     # second+ boots: BindDrivers loads SD0 before the Mount glob, suppress the duplicate-mount error
     ScriptInjection(
         target_script="S/Startup-Sequence",
-        action=InjectionAction.REMOVE,
-        start_pattern=r"^\s*(?:C:)?Mount\s+(?:>NIL:\s+)?DEVS:DOSDrivers(?:/|\s|$)",
-        end_pattern=r"^\s*(?:C:)?Mount\s+(?:>NIL:\s+)?DEVS:DOSDrivers(?:/|\s|$)",
-        name="Mount redirect",
-    ),
-    ScriptInjection(
-        target_script="S/Startup-Sequence",
-        action=InjectionAction.INJECT_BEFORE,
+        action=InjectionAction.REPLACE,
         content="Mount >NIL: DEVS:DOSDrivers/~(#?.info)",
-        start_pattern=r"LoadMonDrvs",
+        start_pattern=r"^\s*(?:C:)?Mount\s+(?:>NIL:\s+)?DEVS:DOSDrivers(?:/|\s|$)",
         name="Mount DOSDrivers (with >NIL:)",
     ),
 ]
@@ -352,6 +365,9 @@ def apply_package_scripts(
         if not pkg or not pkg.scripts:
             continue
         for mod in pkg.scripts:
+            # cached catalogs still register fonts here; first boot now does it
+            if pkg.name.casefold() == "ttflib" and mod.name == "TrueType fonts":
+                continue
             if mod.when_user_archive is not None and mod.when_user_archive != (
                 pkg_name in user_archives
             ):
@@ -362,7 +378,7 @@ def apply_package_scripts(
                 content=mod.content,
                 name=mod.name,
             )
-            result = inject_script(staging_dir / mod.target, injection)
+            result = inject_script(resolve_staging_path(staging_dir, mod.target), injection)
             if result.error:
                 logger.warning("Package script %s failed: %s", mod.name, result.error)
             if result.changed:

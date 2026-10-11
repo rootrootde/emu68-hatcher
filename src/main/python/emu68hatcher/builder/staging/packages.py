@@ -8,6 +8,7 @@ from pathlib import Path
 from emu68hatcher.builder.host.archive import ARCHIVE_EXTENSIONS, extract_archive
 from emu68hatcher.builder.staging.files import (
     ci_match_child,
+    require_contained_path,
     resolve_source_path,
     resolve_staging_path,
 )
@@ -58,12 +59,17 @@ class PackageInstaller:
         extracted_packages_dir: Path,
         local_packages_dir: Path | None = None,
         boot_device: str | None = None,
+        extracted_paths: dict[str, Path] | None = None,
     ):
         # must match the tree configure/install_workbench stage into, or finalize splits the device
         self.boot_device = boot_device or DEFAULT_BOOT_DEVICE
         self.staging_dir = staging_dir
         self.extracted_dir = extracted_packages_dir
         self.local_packages_dir = local_packages_dir
+        # the extraction stage can link package roots into the download cache.
+        self._extracted_roots = frozenset(
+            path.resolve() for path in (extracted_paths or {}).values()
+        )
         self.logger = get_logger()
 
     def install_package(self, package_name: str) -> int:
@@ -79,6 +85,12 @@ class PackageInstaller:
         source_dir = self._get_source_dir(pkg)
 
         for rule in pkg.install:
+            # Cached catalogs can still contain the former font documentation rules.
+            destination = rule.dest.strip("/").casefold()
+            if destination == "emu68-hatcher/fonts" or destination.startswith(
+                "emu68-hatcher/fonts/"
+            ):
+                continue
             count = self._apply_install_rule(rule, source_dir)
             files_installed += count
 
@@ -87,12 +99,15 @@ class PackageInstaller:
     def has_package_source(self, package_name: str) -> bool:
         """Return whether a package with install rules has a usable source tree."""
         pkg = get_package_by_name(package_name)
-        if not pkg or not pkg.download or not pkg.install:
+        if not pkg or not (pkg.download or pkg.archive_package) or not pkg.install:
             return True
         return self._get_source_dir(pkg) is not None
 
     def _get_source_dir(self, pkg: Package) -> Path | None:
         """get the source directory for package files"""
+        if pkg.archive_package:
+            source = get_package_by_name(pkg.archive_package)
+            return self._get_source_dir(source) if source else None
         if not pkg.download:
             return None
 
@@ -134,12 +149,14 @@ class PackageInstaller:
 
         for i, part in enumerate(parts):
             matched = ci_match_child(current_path, part)
-            next_path = current_path / (matched or part)
+            next_path = require_contained_path(source_dir, current_path / (matched or part))
 
             if next_path.is_file():
                 suffix = next_path.suffix.lower()
                 if suffix in ARCHIVE_EXTENSIONS:
-                    extract_dir = next_path.parent / f"_extracted_{next_path.stem}"
+                    extract_dir = require_contained_path(
+                        source_dir, next_path.parent / f"_extracted_{next_path.stem}"
+                    )
 
                     if not extract_dir.exists():
                         self.logger.info(f"Extracting nested archive: {next_path.name}")
@@ -176,6 +193,14 @@ class PackageInstaller:
     ) -> int:
         if not source_dir:
             return 0
+        allowed = [self.extracted_dir] + (
+            [self.local_packages_dir] if self.local_packages_dir else []
+        )
+        resolved_source = source_dir.resolve()
+        if resolved_source not in self._extracted_roots and not any(
+            resolved_source.is_relative_to(root.resolve()) for root in allowed
+        ):
+            raise ValueError(f"package source leaves extraction directory: {source_dir}")
         source_dir, source_pattern = self._resolve_nested_archive(source_dir, rule.source)
         dest_base = self.staging_dir / self.boot_device
         dest_dir = resolve_staging_path(dest_base, rule.dest.strip("/"))
@@ -206,6 +231,7 @@ class PackageInstaller:
         if not search_dir.exists():
             return installed
         for source_item in search_dir.glob(_ci_glob_pattern(glob_part)):
+            require_contained_path(source_dir, source_item)
             relative = source_item.relative_to(search_dir).parts
             keep = relative[strip_levels:] if len(relative) > strip_levels else (source_item.name,)
             destination = resolve_staging_path(

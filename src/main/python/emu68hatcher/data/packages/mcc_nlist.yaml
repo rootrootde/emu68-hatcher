@@ -1,6 +1,6 @@
 name: mcc_nlist
 friendly_name: MCC NList
-group: System
+group: Libraries
 description: 'MUI NList classes'
 versions:
 - '3.1'
@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 requires:
 - mui
 download:
@@ -19,3 +19,4 @@ download:
 install:
 - from: MCC_NList/Libs/MUI/AmigaOS3/*
   to: Programs/MUI/Libs/mui/
+default: true

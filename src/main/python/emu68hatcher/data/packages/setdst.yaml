@@ -1,14 +1,14 @@
 name: setdst
 friendly_name: SetDST
-group: System
-description: 'DST handler (DST.Dat from environment_variables)'
+group: Utilities
+description: 'Adjust the system clock for daylight saving time'
 versions:
 - '3.1'
 - '3.2'
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: aminet
   path: util/time/SetDST.lha
@@ -21,4 +21,8 @@ install:
   to: C/
 scripts:
 - name: SetDST
-  content: 'C:SetDST NOASK NOREQ QUIET >NIL:'
+  content: |
+    If Exists C:SetDST
+      C:SetDST NOASK NOREQ QUIET >NIL:
+    EndIf
+default: true

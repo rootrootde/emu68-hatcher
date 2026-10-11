@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: web
   url: https://ftp2.grandis.nu/turran/FTP/Misc/WHDUpdate/datafile/Amiga/Prism2v2.lha

@@ -8,6 +8,14 @@ import subprocess
 from emu68hatcher.builder.host.disk_info import DiskInfo, DiskOperationResult
 
 
+def _mountpoints(device: dict):
+    for mount in device.get("mountpoints") or [device.get("mountpoint")]:
+        if mount:
+            yield mount
+    for child in device.get("children", []) or []:
+        yield from _mountpoints(child)
+
+
 def list_disks() -> list[DiskInfo]:
     result = subprocess.run(
         ["lsblk", "-J", "-b", "-o", "NAME,SIZE,TYPE,MOUNTPOINT,MOUNTPOINTS,RM,RO,MODEL,VENDOR"],
@@ -19,17 +27,12 @@ def list_disks() -> list[DiskInfo]:
         return []
     disks = []
     for device in json.loads(result.stdout).get("blockdevices", []):
-        if device.get("type") != "disk" or not device.get("rm") or device.get("ro"):
+        if device.get("type") != "disk" or not device.get("rm"):
             continue
         size = int(device.get("size") or 0)
         if not size:
             continue
-        mounted = [
-            mount
-            for child in device.get("children", []) or []
-            for mount in child.get("mountpoints") or [child.get("mountpoint")]
-            if mount
-        ]
+        mounted = list(dict.fromkeys(_mountpoints(device)))
         name = (
             " ".join(
                 filter(None, [device.get("vendor", "").strip(), device.get("model", "").strip()])
@@ -44,6 +47,7 @@ def list_disks() -> list[DiskInfo]:
                 is_removable=True,
                 is_system_disk=any(mount in ("/", "/boot", "/boot/efi") for mount in mounted),
                 mounted_partitions=mounted,
+                is_read_only=bool(device.get("ro")),
             )
         )
     return disks

@@ -36,6 +36,11 @@ class FloppySwap(str, Enum):
     DF3 = "df3"
 
 
+class UnicamDevice(str, Enum):
+    FRAMETHROWER = "ft"
+    C790 = "c790"
+
+
 class FramethrowerScaling(str, Enum):
     NONE = "none"
     SMOOTH = "smooth"
@@ -55,6 +60,7 @@ class ConfigTxtSettings(BaseModel):
     force_hdmi: bool = True
     antenna: AntennaMode = AntennaMode.DEFAULT
     framethrower: bool = False
+    unicam_device: UnicamDevice = UnicamDevice.FRAMETHROWER
     framethrower_start_on_boot: bool = True
     framethrower_scaling: FramethrowerScaling = FramethrowerScaling.SMOOTH
     framethrower_b: int = Field(default=200, ge=0, le=1000)

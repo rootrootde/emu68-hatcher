@@ -1,6 +1,6 @@
 FailAt 21
 ; Hatcher first-boot wizard. dispatched from S:Startup-Sequence after
-; BindDrivers. self-deletes after the interactive wizard completes.
+; BindDrivers. kept until font registration succeeds.
 
 IF $FIRSTTIMEBOOT EQ "TRUE"
    C:Echo ""
@@ -56,6 +56,22 @@ IF $REBOOT EQ "TRUE"
    C:Reboot
 ENDIF
 
+Set HatcherFontsPending "FALSE"
+IF NOT EXISTS S:Hatcher-Fonts.done
+   IF EXISTS C:ttfinstall
+      IF EXISTS FONTS:TrueType
+         C:Echo "Registering TrueType fonts..."
+         C:ttfinstall "FONTS:TrueType/#?.ttf" FONTS:
+         IF WARN
+            Set HatcherFontsPending "TRUE"
+            C:Echo "Font registration failed. It will be retried on the next boot."
+         ELSE
+            C:Echo >S:Hatcher-Fonts.done "TRUE"
+         ENDIF
+      ENDIF
+   ENDIF
+ENDIF
+
 IF $HATCHERFIRSTBOOT EQ "TRUE"
    C:Echo "Step 3/4: Mounting boot partition..."
    C:Echo ""
@@ -98,9 +114,14 @@ IF $HATCHERFIRSTBOOT EQ "TRUE"
       C:Delete >NIL: "SYS:WBStartup/Disabled" ALL FORCE
    ENDIF
 
-   ; this script has done its job
-   C:Delete >NIL: S:Hatcher-FirstBoot QUIET
+ENDIF
 
+; a failed font install retries without repeating the interactive setup
+IF NOT "$HatcherFontsPending" EQ "TRUE"
+   C:Delete >NIL: S:Hatcher-FirstBoot QUIET
+ENDIF
+
+IF $HATCHERFIRSTBOOT EQ "TRUE"
    C:Echo ""
    C:Echo "Setup will now reboot to apply changes."
    IF EXISTS SYS:WBStartup/FirstBootWB

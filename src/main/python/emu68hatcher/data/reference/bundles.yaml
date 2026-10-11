@@ -2,10 +2,28 @@
 # members declare membership via `bundle: <id>` in their own YAML.
 # bundle-level default wins over member `default:` flags.
 
+toolsdaemon:
+  display_name: ToolsDaemon 2.2
+  group: Commodities
+  description: Custom Workbench menus and preferences editor
+  default: true
+
+whdload:
+  display_name: WHDLoad
+  group: Games
+  description: WHDLoad with the Emu68 wrapper and RTB files
+  default: true
+
+image_datatypes:
+  display_name: Image datatypes
+  group: Datatypes
+  description: akGIF, akJFIF (JPEG), akPNG and akTIFF image datatypes
+  default: true
+
 hippoplayer:
   display_name: HippoPlayer
   group: Applications
-  description: "music player (with update)"
+  description: "MOD and other tracker module player"
   default: true
 
 picasso96:
@@ -17,7 +35,7 @@ picasso96:
 magicmenu:
   display_name: MagicMenu
   group: Commodities
-  description: "intuition menu enhancer 3.0"
+  description: "intuition menu enhancer 3.1"
   default: false
 
 fonts_workbench:
@@ -29,7 +47,7 @@ fonts_workbench:
 fonts_magicwb:
   display_name: MagicWB fonts
   group: Fonts
-  description: "XEN, XHelvetica and XCourier (MagicWB shareware)"
+  description: "XEN, XHelvetica and XCourier"
   default: false
 
 fonts_retro:

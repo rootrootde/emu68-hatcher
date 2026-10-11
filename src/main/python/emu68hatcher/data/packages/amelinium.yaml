@@ -30,3 +30,5 @@ menu_entries:
 - title: Amelinium JS
   path: Programs/Amelinium/Amelinium_040_JS
   menu: Network
+recommends:
+- amissl

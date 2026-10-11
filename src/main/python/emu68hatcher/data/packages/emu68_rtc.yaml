@@ -1,0 +1,18 @@
+name: emu68_rtc
+friendly_name: SetClockI2C
+group: Drivers
+description: Read and set a Raspberry Pi I2C hardware clock
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+default: true
+archive_package: emu68_tools
+install:
+- from: I2C/i2c.library
+  to: Libs/
+- from: I2C/SetClockI2C
+  to: C/

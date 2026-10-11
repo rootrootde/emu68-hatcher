@@ -25,3 +25,7 @@ install:
   to: Utilities/
 - from: System/Utilities/Connect Ethernet.info
   to: Utilities/
+requires:
+- rexxreqtools
+- ethernet_driver
+- emu68_wifi

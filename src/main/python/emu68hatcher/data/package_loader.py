@@ -1,21 +1,9 @@
 """YAML package and ADF-rule loader."""
 
-import logging
-from functools import cache
 from pathlib import Path
 
-import yaml
-from pydantic import ValidationError
-
+from emu68hatcher.data.catalog import get_catalog_snapshot, read_catalog_yaml
 from emu68hatcher.data.package_schema import ADFRule, Bundle, Package, _group_rank
-from emu68hatcher.data.update_manifest import (
-    get_active_selection,
-    get_package_download_override,
-)
-
-logger = logging.getLogger(__name__)
-
-_PACKAGES_DIR = Path(__file__).parent / "packages"
 
 # bundled Amiga files + scripts
 LOCAL_PACKAGES_DIR = Path(__file__).parent / "local_packages"
@@ -25,115 +13,28 @@ def get_local_packages_dir() -> Path:
     return LOCAL_PACKAGES_DIR
 
 
-_ADF_RULES_PATH = Path(__file__).parent / "reference" / "adf_rules.yaml"
-_BUNDLES_PATH = Path(__file__).parent / "reference" / "bundles.yaml"
-
-_adf_rules_cache: dict[str, list[ADFRule]] | None = None
-_packages_cache: list[Package] | None = None
-_package_index_cache: dict[str, Package] | None = None
-_bundles_cache: dict[str, Bundle] | None = None
-
-
 def load_package(yaml_path: Path) -> Package:
     """load a single package from a YAML file"""
-    with open(yaml_path, encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+    data = read_catalog_yaml(yaml_path)
     if not data:
         raise ValueError("empty package definition")
     return Package.model_validate(data)
 
 
 def load_all_packages() -> list[Package]:
-    """load all packages from the packages/ directory (cached, returns a copy)"""
-    global _package_index_cache, _packages_cache
-
-    if _packages_cache is None:
-        packages: list[Package] = []
-        origins: dict[str, Path] = {}
-        errors: list[str] = []
-        if _PACKAGES_DIR.exists():
-            for yaml_file in sorted(_PACKAGES_DIR.glob("*.yaml")):
-                try:
-                    pkg = load_package(yaml_file)
-                except (OSError, yaml.YAMLError, ValidationError, ValueError) as e:
-                    errors.append(f"{yaml_file.name}: {e}")
-                    continue
-                key = pkg.name.lower()
-                if key in origins:
-                    errors.append(
-                        f"{yaml_file.name}: duplicate package name {pkg.name!r}; "
-                        f"first defined in {origins[key].name}"
-                    )
-                    continue
-                override = get_package_download_override(pkg.name)
-                if override is not None:
-                    pkg = pkg.model_copy(update={"download": override})
-                origins[key] = yaml_file
-                packages.append(pkg)
-        unknown_overrides = get_active_selection().manifest.packages.keys() - origins.keys()
-        if unknown_overrides:
-            logger.warning(
-                "update manifest references unknown package(s): %s",
-                ", ".join(sorted(unknown_overrides)),
-            )
-        if errors:
-            raise ValueError("invalid package files:\n  " + "\n  ".join(errors))
-        _validate_dependency_graph(packages)  # fail fast on bad requires/conflicts/provides
-        _packages_cache = packages
-        _package_index_cache = {pkg.name.lower(): pkg for pkg in packages}
-
-    # return a copy so callers can't mutate the shared cache
-    return list(_packages_cache)
+    return get_catalog_snapshot().packages()
 
 
 def clear_package_caches() -> None:
-    """Drop package views after a manifest change."""
-    global _adf_rules_cache, _bundles_cache, _package_index_cache, _packages_cache
+    from emu68hatcher.data.catalog import clear_bundled_catalog_cache
 
-    _packages_cache = None
-    _package_index_cache = None
-    _bundles_cache = None
-    _adf_rules_cache = None
-    get_packages_for_version.cache_clear()
+    clear_bundled_catalog_cache()
 
 
-def _validate_dependency_graph(packages: list[Package]) -> None:
-    """check requires/recommends/conflicts reference known packages or provides-tokens."""
-    # raise on bad refs so a yaml typo fails the build instead of under-resolving silently
-    tokens = {p.name.lower() for p in packages}
-    for p in packages:
-        tokens.update(t.lower() for t in p.provides)
-
-    errors: list[str] = []
-    for p in packages:
-        for t in p.requires + p.recommends:
-            if t.lower() not in tokens:
-                errors.append(
-                    f"{p.name}: requires/recommends unknown '{t}' (no package or provides)"
-                )
-        unknown_conflicts = [t for t in p.conflicts if t.lower() not in tokens]
-        if unknown_conflicts:
-            logger.warning(f"{p.name}: conflicts reference unknown token(s) {unknown_conflicts}")
-        both = {t.lower() for t in p.requires} & {t.lower() for t in p.conflicts}
-        if both:
-            errors.append(f"{p.name}: both requires and conflicts {sorted(both)}")
-        # a package's own name in its requires/conflicts is always an authoring mistake
-        # (the provides+conflicts mutual-exclusion idiom uses a separate token, not the name)
-        name = p.name.lower()
-        if name in {t.lower() for t in p.requires}:
-            errors.append(f"{p.name}: requires itself")
-        if name in {t.lower() for t in p.conflicts}:
-            errors.append(f"{p.name}: conflicts with itself")
-
-    if errors:
-        raise ValueError("invalid package dependency graph:\n  " + "\n  ".join(errors))
-
-
-@cache
 def get_packages_for_version(
     kickstart_version: str, emu68_version: str | None = None
 ) -> list[Package]:
-    """packages compatible with a Kickstart (and optionally Emu68) version; cached - don't mutate"""
+    """Return packages compatible with both selected versions."""
     packages = load_all_packages()
     compatible = [
         p
@@ -155,11 +56,7 @@ def get_mandatory_packages(
 
 def get_package_by_name(name: str) -> Package | None:
     """get a specific package by name"""
-    global _package_index_cache
-
-    if _package_index_cache is None:
-        load_all_packages()
-    return _package_index_cache.get(name.lower()) if _package_index_cache else None
+    return get_catalog_snapshot().package(name)
 
 
 ###########
@@ -169,36 +66,7 @@ def get_package_by_name(name: str) -> Package | None:
 
 def load_all_bundles() -> dict[str, Bundle]:
     """load bundle definitions from reference/bundles.yaml, validate against packages"""
-    global _bundles_cache
-
-    if _bundles_cache is not None:
-        return _bundles_cache
-
-    bundles: dict[str, Bundle] = {}
-
-    if _BUNDLES_PATH.exists():
-        try:
-            with open(_BUNDLES_PATH, encoding="utf-8") as f:
-                data = yaml.safe_load(f) or {}
-            for bundle_id, fields in data.items():
-                try:
-                    bundles[bundle_id] = Bundle.model_validate({"id": bundle_id, **fields})
-                except ValidationError as e:
-                    logger.warning(f"Error parsing bundle {bundle_id!r}: {e}")
-        except yaml.YAMLError as e:
-            logger.warning(f"Error loading bundles.yaml: {e}")
-
-    # validate: every package.bundle reference resolves
-    referenced = {p.bundle for p in load_all_packages() if p.bundle}
-    missing = referenced - bundles.keys()
-    if missing:
-        raise ValueError(
-            f"packages reference undefined bundle ids: {sorted(missing)}. "
-            f"add them to bundles.yaml or fix the `bundle:` field."
-        )
-
-    _bundles_cache = bundles
-    return _bundles_cache
+    return get_catalog_snapshot().bundles()
 
 
 def get_bundles_for_version(
@@ -236,37 +104,7 @@ def get_bundle_members(
 
 def load_adf_rules() -> dict[str, list[ADFRule]]:
     """load all ADF extraction rules from adf_rules.yaml."""
-    global _adf_rules_cache
-
-    if _adf_rules_cache is not None:
-        return _adf_rules_cache
-
-    _adf_rules_cache = {}
-
-    if not _ADF_RULES_PATH.exists():
-        return _adf_rules_cache
-
-    try:
-        with open(_ADF_RULES_PATH, encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-
-        if not data:
-            return _adf_rules_cache
-
-        for version, rules_data in data.items():
-            rules = []
-            for rule_dict in rules_data:
-                try:
-                    rule = ADFRule.model_validate(rule_dict)
-                    rules.append(rule)
-                except ValidationError as e:
-                    logger.warning(f"Error parsing ADF rule for {version}: {e}")
-            _adf_rules_cache[str(version)] = rules
-
-    except yaml.YAMLError as e:
-        logger.warning(f"Error loading ADF rules: {e}")
-
-    return _adf_rules_cache
+    return get_catalog_snapshot().adf_rules()
 
 
 def get_adf_rules_for_version(kickstart_version: str) -> list[ADFRule]:

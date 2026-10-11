@@ -5,7 +5,6 @@ import re
 from emu68hatcher.config.constants import (
     CYLINDER_SIZE,
     DEFAULT_BOOT_DEVICE,
-    DEFAULT_WORK_DEVICE,
     MBR_OVERHEAD,
     MBR_SECTOR_SIZE,
     PFS3_MAX_PARTITION_SIZE,
@@ -130,75 +129,20 @@ def build_partition_config(
 def create_default_partition_layout(
     disk_size_gb: int = 8, disk_size_bytes: int | None = None
 ) -> PartitionConfig:
-    """default: SDH0=Workbench (disk/15), SDH1+=Work (split at PFS3's 101GB cap)"""
+    """Workbench with unallocated space for additional partitions."""
     disk_size = disk_size_bytes if disk_size_bytes is not None else disk_size_for_gb(disk_size_gb)
-    PFS3_MAX = PFS3_MAX_CREATE
-
     boot_size = calculate_boot_default(disk_size)
-
-    remaining_for_id76 = disk_size - MBR_OVERHEAD - boot_size
-    id76_size = round_to_mbr_sector(remaining_for_id76)
-
-    workbench_size = round_to_cylinder(disk_size // 15)
-
-    work_remaining = id76_size - RDB_OVERHEAD - workbench_size
-
-    # split into multiple Work partitions if total exceeds PFS3_MAX (101GB)
-    num_work_partitions = max(1, (work_remaining + PFS3_MAX - 1) // PFS3_MAX)
-
-    boot_partition = AmigaPartition(
-        device=DEFAULT_BOOT_DEVICE,
-        volume="Workbench",
-        filesystem=Filesystem.PFS3,
-        size=workbench_size,
-        bootable=True,
-        priority=0,
-    )
-
-    if num_work_partitions == 1:
-        amiga_partitions = [
-            boot_partition,
+    return build_partition_config(
+        disk_size,
+        boot_size,
+        [
             AmigaPartition(
-                device=DEFAULT_WORK_DEVICE,
-                volume="Work",
+                device=DEFAULT_BOOT_DEVICE,
+                volume="Workbench",
                 filesystem=Filesystem.PFS3,
-                size=round_to_cylinder(work_remaining),
-                bootable=False,
-            ),
-        ]
-    else:
-        # divide evenly, last partition gets remainder
-        work_per_partition = round_to_cylinder(work_remaining // num_work_partitions)
-        amiga_partitions = [boot_partition]
-
-        allocated = 0
-        for i in range(num_work_partitions):
-            if i == num_work_partitions - 1:
-                size = round_to_cylinder(work_remaining - allocated)
-            else:
-                size = work_per_partition
-                allocated += size
-
-            volume = "Work" if i == 0 else f"Work_{i}"
-            amiga_partitions.append(
-                AmigaPartition(
-                    device=f"SDH{i + 1}",
-                    volume=volume,
-                    filesystem=Filesystem.PFS3,
-                    size=size,
-                    bootable=False,
-                ),
+                size=round_to_cylinder(disk_size // 15),
+                bootable=True,
+                priority=0,
             )
-
-    return PartitionConfig(
-        disk_size=disk_size,
-        layout=[
-            MBRPartition(type="fat32", name="EMU68BOOT", size=boot_size),
-            MBRPartition(
-                type="id76",
-                name="AMIGA",
-                size=id76_size,
-                amiga_partitions=amiga_partitions,
-            ),
         ],
     )

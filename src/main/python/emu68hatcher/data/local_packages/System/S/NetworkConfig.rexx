@@ -290,13 +290,14 @@ HatcherApplyTunings:
     return
 
 HatcherSyncTime:
+    if ~exists("C:sntp") then return
     say "Syncing system time..."
     "C:sntp pool.ntp.org >NIL:"
     if rc ~= 0 then do
         say "  (time sync skipped: could not reach pool.ntp.org)"
         return
     end
-    "C:SetDST NOASK NOREQ QUIET >NIL:"
+    if exists("C:SetDST") then "C:SetDST NOASK NOREQ QUIET >NIL:"
     "C:sntp pool.ntp.org >NIL:"
     call HatcherSaveClock
     return

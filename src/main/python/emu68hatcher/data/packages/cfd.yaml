@@ -28,3 +28,5 @@ install:
   to: Devs/DOSDrivers/
 - from: cfd/Storage/DOSDrivers/CF0.info
   to: Devs/DOSDrivers/
+requires:
+- fat95

@@ -14,3 +14,5 @@ download:
 install:
 - from: System/Devs/NetInterfaces/genet
   to: Devs/NetInterfaces/
+requires:
+- ethernet_driver

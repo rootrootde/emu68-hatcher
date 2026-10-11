@@ -14,3 +14,5 @@ download:
 install:
 - from: System/Devs/NetInterfaces/wifipi
   to: Devs/NetInterfaces/
+requires:
+- emu68_wifi

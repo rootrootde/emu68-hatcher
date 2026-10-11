@@ -1,14 +1,14 @@
 name: pfs_additional_tools
 friendly_name: PFS - Additional Tools
-group: System
-description: 'PFS3 tools (setfnsize, pfsdoctor, DOSDrivers)'
+group: Utilities
+description: 'PFS3 maintenance tools: pfsdoctor and setfnsize'
 versions:
 - '3.1'
 - '3.2'
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: aminet
   path: disk/misc/PFS3_53.lha
@@ -21,3 +21,4 @@ install:
   to: C/
 - from: PFS3/classes/*
   to: Classes/
+default: true

@@ -8,35 +8,10 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: github
   repo: michalsc/Emu68-tools
   tag: v1.1
   hash: 505C72151D67988E415B330AA6E19A8C
   filename: Emu68-tools.zip
-install:
-- from: WaitUntilConnected/WaitUntilConnected
-  to: C/
-- from: EmuControl/EmuControl
-  to: C/
-- from: Emu68EDID/Emu68EDID
-  to: C/
-- from: Emu68Info/Emu68Info
-  to: C/
-  rename: EMU68INFO
-- from: EmuControl/EmuControl
-  to: Utilities/
-- from: EmuControl/EmuControl.info
-  to: Utilities/
-- from: VideoCore/VideoCore.card
-  to: Libs/Picasso96/
-- from: Emu68-WiFi/Devs/*
-  to: Devs/
-  recursive: true
-- from: I2C/i2c.library
-  to: Libs/
-- from: I2C/SetClockI2C
-  to: C/
-- from: ListDeviceTree/ListDeviceTree
-  to: C/

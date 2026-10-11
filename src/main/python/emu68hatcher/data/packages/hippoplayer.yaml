@@ -2,7 +2,7 @@ name: hippoplayer
 friendly_name: HippoPlayer
 bundle: hippoplayer
 group: Applications
-description: 'music player'
+description: 'MOD and other tracker module player'
 versions:
 - '3.1'
 - '3.2'

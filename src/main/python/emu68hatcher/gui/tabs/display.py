@@ -1,4 +1,4 @@
-"""Display output, Picasso96, and Framethrower settings."""
+"""Display output, Picasso96, and native-video capture settings."""
 
 from pathlib import Path
 
@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
     QFrame,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -19,7 +20,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from emu68hatcher.config.boot_models import Emu68BootSettings
+from emu68hatcher.config.boot_models import Emu68BootSettings, UnicamDevice
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODES,
     WorkbenchScreenMode,
@@ -33,7 +34,10 @@ from emu68hatcher.data.themes import (
     get_workbench_theme,
     load_workbench_themes,
 )
+from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
+from emu68hatcher.gui.widgets.status_row import StatusRow
+from emu68hatcher.gui.work_areas import scroll_to
 
 
 def _read_picasso96_version(archive: Path) -> str | None:
@@ -107,18 +111,10 @@ class DisplayTab(QWidget):
         scroll.setWidget(content)
         outer.addWidget(scroll)
 
-        layout = QVBoxLayout(content)
+        self.content = content
+        layout = page_layout(content)
 
-        header = QHBoxLayout()
-        header.addWidget(QLabel("Display settings"))
-        header.addStretch()
-        self.advanced_button = QPushButton("Show Advanced")
-        self.advanced_button.setCheckable(True)
-        self.advanced_button.toggled.connect(self._set_advanced_visible)
-        header.addWidget(self.advanced_button)
-        layout.addLayout(header)
-
-        hdmi_group = QGroupBox("HDMI Output Mode (Pi - Monitor)")
+        hdmi_group = QGroupBox("HDMI output")
         hdmi_layout = QVBoxLayout(hdmi_group)
 
         hdmi_h = QHBoxLayout()
@@ -158,8 +154,10 @@ class DisplayTab(QWidget):
         size_row.addStretch()
         custom_outer.addLayout(size_row)
 
-        cvt_row = QHBoxLayout()
-        cvt_row.addWidget(QLabel("Aspect:"))
+        cvt_row = QGridLayout()
+        cvt_row.setColumnStretch(1, 1)
+        cvt_row.setColumnStretch(3, 1)
+        cvt_row.addWidget(QLabel("Aspect:"), 0, 0)
         self.hdmi_aspect_combo = QComboBox()
         for value, label in (
             (3, "16:9"),
@@ -170,31 +168,36 @@ class DisplayTab(QWidget):
             (6, "15:9"),
         ):
             self.hdmi_aspect_combo.addItem(label, value)
-        cvt_row.addWidget(self.hdmi_aspect_combo)
-        cvt_row.addWidget(QLabel("Margins:"))
+        cvt_row.addWidget(self.hdmi_aspect_combo, 0, 1)
+        cvt_row.addWidget(QLabel("Margins:"), 0, 2)
         self.hdmi_margins_combo = QComboBox()
         self.hdmi_margins_combo.addItem("Disabled", False)
         self.hdmi_margins_combo.addItem("Enabled", True)
-        cvt_row.addWidget(self.hdmi_margins_combo)
-        cvt_row.addWidget(QLabel("Scan:"))
+        cvt_row.addWidget(self.hdmi_margins_combo, 0, 3)
+        cvt_row.addWidget(QLabel("Scan:"), 1, 0)
         self.hdmi_interlace_combo = QComboBox()
         self.hdmi_interlace_combo.addItem("Progressive", False)
         self.hdmi_interlace_combo.addItem("Interlace", True)
-        cvt_row.addWidget(self.hdmi_interlace_combo)
-        cvt_row.addWidget(QLabel("Blanking:"))
+        cvt_row.addWidget(self.hdmi_interlace_combo, 1, 1)
+        cvt_row.addWidget(QLabel("Blanking:"), 1, 2)
         self.hdmi_rb_combo = QComboBox()
         self.hdmi_rb_combo.addItem("Normal", False)
         self.hdmi_rb_combo.addItem("Reduced", True)
-        cvt_row.addWidget(self.hdmi_rb_combo)
-        cvt_row.addStretch()
+        cvt_row.addWidget(self.hdmi_rb_combo, 1, 3)
         custom_outer.addLayout(cvt_row)
 
         self.custom_res_widget.setVisible(False)
         hdmi_layout.addWidget(self.custom_res_widget)
+        self.force_hdmi_check = QCheckBox("Force HDMI output without EDID")
+        self.force_hdmi_check.setChecked(True)
+        self.force_hdmi_check.setToolTip(
+            "Forces HDMI output when no display or EDID is detected during boot."
+        )
+        hdmi_layout.addWidget(self.force_hdmi_check)
 
         layout.addWidget(hdmi_group)
 
-        workbench_group = QGroupBox("Workbench Screen Mode")
+        workbench_group = QGroupBox("Workbench screen")
         workbench_layout = QVBoxLayout(workbench_group)
         workbench_row = QHBoxLayout()
         workbench_row.addWidget(QLabel("Display Mode:"))
@@ -208,6 +211,7 @@ class DisplayTab(QWidget):
             "Native mode keeps the ScreenMode setup window on first boot."
         )
         self.workbench_mode_note.setWordWrap(True)
+        self.workbench_mode_note.setProperty("tone", "muted")
         workbench_layout.addWidget(self.workbench_mode_note)
         layout.addWidget(workbench_group)
 
@@ -215,6 +219,8 @@ class DisplayTab(QWidget):
         self.hdmi_height_spin.valueChanged.connect(self._rebuild_workbench_modes)
         self._rebuild_workbench_modes()
 
+        self.appearance_content = QWidget()
+        appearance_layout = page_layout(self.appearance_content)
         theme_group = QGroupBox("Themes")
         theme_layout = QVBoxLayout(theme_group)
         theme_row = QHBoxLayout()
@@ -245,8 +251,9 @@ class DisplayTab(QWidget):
         theme_layout.addWidget(self.theme_packages_note)
         self.workbench_theme_combo.currentIndexChanged.connect(self._on_workbench_theme_changed)
         self._on_workbench_theme_changed()
-        layout.addWidget(theme_group)
+        appearance_layout.addWidget(theme_group)
         theme_group.setVisible(WORKBENCH_THEMES_ENABLED)
+        layout.addWidget(self.appearance_content)
 
         p96_group = QGroupBox("Picasso96 RTG")
         p96_layout = QVBoxLayout(p96_group)
@@ -265,19 +272,17 @@ class DisplayTab(QWidget):
         p96_clear.clicked.connect(self._clear_picasso96_archive)
         p96_row.addWidget(p96_clear)
         p96_layout.addLayout(p96_row)
-        self._picasso96_status_label = QLabel("(Default version)")
-        p96_layout.addWidget(self._picasso96_status_label)
+        self._picasso96_status = StatusRow()
+        p96_layout.addWidget(self._picasso96_status)
+        self._refresh_picasso96_status()
         layout.addWidget(p96_group)
 
         self.framethrower_group = self._create_framethrower_group()
         layout.addWidget(self.framethrower_group)
 
-        self.hdmi_behavior_group = self._create_hdmi_behavior_group()
-        layout.addWidget(self.hdmi_behavior_group)
-
         layout.addStretch()
         self._connect_settings_signals(content)
-        self._set_advanced_visible(False)
+        self._connect_settings_signals(self.appearance_content)
         self._update_framethrower_fields()
 
     @staticmethod
@@ -301,16 +306,26 @@ class DisplayTab(QWidget):
         form.addRow(label, field)
 
     def _create_framethrower_group(self) -> QGroupBox:
-        group = QGroupBox("Framethrower / Unicam")
+        group = QGroupBox("Framethrower / C790 (Unicam)")
         form = self._form_layout(group)
 
-        self.framethrower_check = QCheckBox("Enable Framethrower / Unicam")
+        self.framethrower_check = QCheckBox("Enable native-video capture")
         self.framethrower_check.toggled.connect(self._update_framethrower_fields)
         self._add_form_row(
             form,
             "Configuration:",
             self.framethrower_check,
             "Captures native Amiga video through Unicam for VideoCore output.",
+        )
+
+        self.unicam_device_combo = QComboBox()
+        self.unicam_device_combo.addItem("Framethrower", UnicamDevice.FRAMETHROWER.value)
+        self.unicam_device_combo.addItem("C790 (HDMI to CSI)", UnicamDevice.C790.value)
+        self._add_form_row(
+            form,
+            "Capture device:",
+            self.unicam_device_combo,
+            "Select the connected capture board. C790 requires Emu68 1.1 or later.",
         )
 
         self.framethrower_boot_check = QCheckBox("Start on boot")
@@ -358,24 +373,12 @@ class DisplayTab(QWidget):
         )
 
         self.framethrower_note = QLabel(
-            "Framethrower requires a VideoCore Workbench mode. "
+            "Native-video capture requires a VideoCore Workbench mode. "
+            "C790 requires Emu68 1.1 or later. "
             "For PAL, use a fixed 50 Hz HDMI mode."
         )
         self.framethrower_note.setWordWrap(True)
         form.addRow(self.framethrower_note)
-        return group
-
-    def _create_hdmi_behavior_group(self) -> QGroupBox:
-        group = QGroupBox("Advanced display settings")
-        form = self._form_layout(group)
-        self.force_hdmi_check = QCheckBox("Force HDMI output without EDID")
-        self.force_hdmi_check.setChecked(True)
-        self._add_form_row(
-            form,
-            "HDMI hotplug:",
-            self.force_hdmi_check,
-            "Forces HDMI output when no display or EDID is detected during boot.",
-        )
         return group
 
     def _connect_settings_signals(self, content: QWidget):
@@ -390,9 +393,8 @@ class DisplayTab(QWidget):
     def _emit_settings_changed(self, _value=None):
         self.settings_changed.emit()
 
-    def _set_advanced_visible(self, visible: bool):
-        self.hdmi_behavior_group.setVisible(visible)
-        self.advanced_button.setText("Show Basic" if visible else "Show Advanced")
+    def navigate(self, section):
+        scroll_to(self.appearance_content if section == "appearance" else self.hdmi_mode_combo)
 
     def on_hdmi_mode_changed(self):
         mode_name = self.hdmi_mode_combo.currentData()
@@ -451,17 +453,28 @@ class DisplayTab(QWidget):
             self.framethrower_check.setChecked(False)
         self.framethrower_check.setEnabled(rtg_enabled)
         framethrower = rtg_enabled and self.framethrower_check.isChecked()
+        self.unicam_device_combo.setEnabled(framethrower)
         self.framethrower_boot_check.setEnabled(framethrower)
         self.framethrower_scaling_combo.setEnabled(framethrower)
         smooth = self.framethrower_scaling_combo.currentData() == "smooth"
         self.framethrower_b_spin.setEnabled(framethrower and smooth)
         self.framethrower_c_spin.setEnabled(framethrower and smooth)
+        form = self.framethrower_group.layout()
+        for field in (
+            self.unicam_device_combo,
+            self.framethrower_boot_check,
+            self.framethrower_scaling_combo,
+        ):
+            form.setRowVisible(field, framethrower)
+        for field in (self.framethrower_b_spin, self.framethrower_c_spin):
+            form.setRowVisible(field, framethrower and smooth)
         self.framethrower_note.setVisible(framethrower)
 
     def get_emu68_boot_settings(self) -> dict:
         return {
             "force_hdmi": self.force_hdmi_check.isChecked(),
             "framethrower": self.framethrower_check.isChecked(),
+            "unicam_device": self.unicam_device_combo.currentData(),
             "framethrower_start_on_boot": self.framethrower_boot_check.isChecked(),
             "framethrower_scaling": self.framethrower_scaling_combo.currentData(),
             "framethrower_b": self.framethrower_b_spin.value(),
@@ -471,6 +484,7 @@ class DisplayTab(QWidget):
     def set_emu68_boot_settings(self, settings: Emu68BootSettings):
         config = settings.config_txt
         self.force_hdmi_check.setChecked(config.force_hdmi)
+        select_combo_by_data(self.unicam_device_combo, config.unicam_device.value)
         self.framethrower_check.setChecked(config.framethrower)
         self.framethrower_boot_check.setChecked(config.framethrower_start_on_boot)
         select_combo_by_data(self.framethrower_scaling_combo, config.framethrower_scaling.value)
@@ -499,14 +513,19 @@ class DisplayTab(QWidget):
     def _refresh_picasso96_status(self):
         path = self.picasso96_archive_edit.text().strip()
         if not path:
-            self._picasso96_status_label.setText("(Default version)")
+            self._picasso96_status.set_status(
+                "info",
+                "Free Picasso96 from Aminet",
+                "Add the full version archive to install Picasso96 3.x instead.",
+            )
             return
-        name = Path(path).name
-        version = _read_picasso96_version(Path(path))
-        if version:
-            self._picasso96_status_label.setText(f"(Full version {version}: {name})")
-        else:
-            self._picasso96_status_label.setText(f"(Full version: {name})")
+        archive = Path(path)
+        if not archive.is_file():
+            self._picasso96_status.set_status("warning", "Archive not found", path)
+            return
+        version = _read_picasso96_version(archive)
+        title = f"Picasso96 {version}" if version else "Picasso96 full version"
+        self._picasso96_status.set_status("ok", title, archive.name)
 
     def get_picasso96_archive(self) -> Path | None:
         text = self.picasso96_archive_edit.text().strip()

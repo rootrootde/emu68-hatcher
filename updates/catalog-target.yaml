@@ -1,0 +1,8 @@
+target:
+  id: hatcher-1_1
+  min_hatcher_version: "1.1.0"
+  max_hatcher_version_exclusive: null
+  catalog_schema_version: 1
+close_ranges: {}
+legacy_hash_updates:
+  - amelinium

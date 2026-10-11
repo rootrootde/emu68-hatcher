@@ -37,6 +37,7 @@ def configure_preferences(
     env_archive: Path,
 ) -> None:
     from emu68hatcher.builder.staging.prefs import (
+        configure_picasso96_settings,
         configure_workbench_screen_mode,
         enable_workbench_backdrop,
         install_default_prefs,
@@ -55,8 +56,14 @@ def configure_preferences(
         workflow.logger.info("Enabled Workbench backdrop")
 
     workbench_mode = workflow.config.display.workbench_mode
-    if workbench_mode != WorkbenchScreenMode.NATIVE:
-        mode = WORKBENCH_RTG_MODE_BY_NAME[workbench_mode]
+    mode = (
+        WORKBENCH_RTG_MODE_BY_NAME[workbench_mode]
+        if workbench_mode != WorkbenchScreenMode.NATIVE
+        else None
+    )
+    configure_picasso96_settings(boot_staging, mode)
+    workflow.logger.info("Generated Picasso96Settings (VideoCore legacy BoardType 14)")
+    if mode is not None:
         configure_workbench_screen_mode(prefs_dir, mode)
         for relative in ("WBStartup/FirstBootWB", "WBStartup/FirstBootWB.info"):
             wizard_file = resolve_source_path(boot_staging, relative)
@@ -66,7 +73,9 @@ def configure_preferences(
             f"Configured Workbench for VideoCore {mode.width}x{mode.height}, 32-bit BGRA"
         )
 
-    if workflow.config.wifi:
+    from emu68hatcher.builder.pipeline._selection import get_resolution
+
+    if workflow.config.wifi and "emu68_wifi" in get_resolution(workflow).selected:
         workflow._update_state(progress=80.0)
         workflow._milestone("Configuring WiFi")
         sys_dir = ensure_dir(env_archive / "Sys")

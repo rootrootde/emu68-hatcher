@@ -1,0 +1,21 @@
+name: emu68_driver_libraries
+friendly_name: Emu68 driver libraries
+group: System
+description: Emu68 driver libraries
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+emu68_versions:
+- 1.1.0-alpha.1
+- 1.1.0-beta.1
+mandatory: false
+default: false
+archive_package: emu68_driver_stack
+install:
+- from: LIBS/gic400.library
+  to: Libs/
+- from: LIBS/bcmpcie.library
+  to: Libs/

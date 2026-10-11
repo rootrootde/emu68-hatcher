@@ -17,6 +17,7 @@ from emu68hatcher.builder.state import (
     CreatedImage,
 )
 from emu68hatcher.config.schema import BuildConfig
+from emu68hatcher.data.catalog import CatalogSnapshot, get_catalog_snapshot, use_catalog
 from emu68hatcher.data.package_resolver import Resolution
 from emu68hatcher.utils.logging import get_logger
 
@@ -47,7 +48,9 @@ class BuildWorkflow:
         config: BuildConfig,
         progress_callback: BuildProgressCallback | None = None,
         log_callback: BuildLogCallback | None = None,
+        catalog: CatalogSnapshot | None = None,
     ):
+        self.catalog = catalog or get_catalog_snapshot()
         self.config = config
         self.progress_callback = progress_callback
         self._log_callback = log_callback
@@ -215,6 +218,10 @@ class BuildWorkflow:
         return replace(image, image_path=final, final_output_path=None)
 
     def build(self) -> BuildResult:
+        with use_catalog(self.catalog):
+            return self._build_with_catalog()
+
+    def _build_with_catalog(self) -> BuildResult:
         """run the full pipeline synchronously"""
         from emu68hatcher.builder.stage_registry import PIPELINE_STAGES
 
@@ -229,6 +236,10 @@ class BuildWorkflow:
             buildlog_handler, buildlog_path = self._attach_build_log()
             if buildlog_path:
                 self.logger.info(f"Build log: {buildlog_path}")
+            self.logger.info(
+                f"catalog: {self.catalog.id}, revision {self.catalog.revision}, "
+                f"source {self.catalog.source_commit}"
+            )
             self._log_platform_info()
 
             phase = None

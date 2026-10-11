@@ -1,6 +1,7 @@
 name: whdloadwrapper
 friendly_name: WHDLoadWrapper
-group: System
+group: Games
+bundle: whdload
 description: 'emu68-specific WHDLoad wrapper (for compatibility)'
 versions:
 - '3.1'
@@ -8,7 +9,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: web
   url: https://www.dropbox.com/scl/fi/8l78g3ncw098r781tskvr/WHDLoadWrapper.lha?rlkey=6zr0bxd1rqmga840iykl4tgum&dl=1
@@ -55,3 +56,8 @@ install:
   to: S/WHDLoad-Wrapper/
 - from: WHDLoadWrapper/DB-General/*
   to: S/WHDLoad-Wrapper/
+default: true
+requires:
+- whdload
+- emu68_control
+- screentext

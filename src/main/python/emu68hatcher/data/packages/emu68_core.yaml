@@ -1,0 +1,19 @@
+name: emu68_core
+friendly_name: Emu68 boot and RTG tools
+group: System
+description: Emu68 boot and RTG tools
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: true
+default: false
+archive_package: emu68_tools
+install:
+- from: Emu68Info/Emu68Info
+  to: C/
+  rename: EMU68INFO
+- from: VideoCore/VideoCore.card
+  to: Libs/Picasso96/

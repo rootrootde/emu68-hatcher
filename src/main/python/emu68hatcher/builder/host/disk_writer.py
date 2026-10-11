@@ -1,10 +1,11 @@
-"""flash an image to a physical disk via hst-imager write"""
+"""flash an image, optionally verifying it in a separate pass before remounting"""
 
 from __future__ import annotations
 
 import logging
 import re
 import shlex
+import subprocess
 import time
 from collections import deque
 from collections.abc import Callable
@@ -12,18 +13,21 @@ from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
 from emu68hatcher.builder.host._flash_process import run_local_flash
+from emu68hatcher.builder.host._flash_progress import FlashProgress
 from emu68hatcher.builder.host.elevation import (
     ElevationToken,
     refresh_elevation,
     wrap_for_elevation,
 )
-from emu68hatcher.utils.host_tools import find_hst_imager
+from emu68hatcher.utils.host_tools import find_hst_imager, get_hst_imager_env
 
 logger = logging.getLogger(__name__)
 
 
-# matches hst-imager 1.6.x lines like "[INF] Writing: 1234567 / 9876543 bytes (12.5 %)"
-# plus "Writing: 1234 of 9876" / "Verifying: ..." in case the format drifts
+_PERCENT_PROGRESS_RE = re.compile(
+    r"^\s*(?P<percent>\d{1,3}(?:[.,]\d+)?)%\s+"
+    r"(?P<details>\[[^\]\r\n]+\]\s+\[[^\]\r\n]+\]\s+\[[^\]\r\n]+\])\s*$"
+)
 _PROGRESS_RE = re.compile(
     r"(?P<phase>writing|verifying|reading)\s*[:\-]?\s*"
     r"(?P<done>\d[\d_,.]*)\s*(?:/|of)\s*(?P<total>\d[\d_,.]*)",
@@ -36,8 +40,38 @@ def _handle_progress_line(
     phase_seen: set[str],
     progress_callback: Callable[[float, str], None] | None,
     recent: deque[str],
+    *,
+    statistics: FlashProgress,
+    verify: bool = True,
 ) -> None:
     """emit progress on a hst-imager progress line, else buffer it and debug-log"""
+    if verify and line.endswith("Post-write verification complete"):
+        phase_seen.add("verified")
+        return
+    if verify and line.endswith("Verifying written data"):
+        phase_seen.add("verifying")
+        logger.info("flash: verification pass started")
+        if progress_callback:
+            progress_callback(50.0, "Verifying written data…")
+        return
+    if verify and line.endswith("Flushing written data"):
+        if progress_callback:
+            progress_callback(50.0, "Flushing written data…")
+        return
+    percent_match = _PERCENT_PROGRESS_RE.fullmatch(line)
+    if percent_match:
+        pct = float(percent_match.group("percent").replace(",", "."))
+        if 0.0 <= pct <= 100.0:
+            phase = "Verifying" if "verifying" in phase_seen else "Writing"
+            message = statistics.format(phase, pct, percent_match.group("details"))
+            milestone = f"{phase}:{int(pct) // 10}"
+            if milestone not in phase_seen:
+                phase_seen.add(milestone)
+                logger.info("flash: %.1f%%; %s", pct, message.replace("\n", "; "))
+            if progress_callback:
+                overall = (50.0 if phase == "Verifying" else 0.0) + pct / 2 if verify else pct
+                progress_callback(overall, message)
+            return
     m = _PROGRESS_RE.search(line)
     if not m:
         recent.append(line)
@@ -51,10 +85,13 @@ def _handle_progress_line(
         total = _parse_int(m.group("total"))
         if total > 0:
             pct = max(0.0, min(100.0, 100.0 * _parse_int(m.group("done")) / total))
-            progress_callback(pct, f"{phase.capitalize()}: {pct:.1f}%")
+            overall = (50.0 if phase == "verifying" else 0.0) + pct / 2 if verify else pct
+            progress_callback(overall, f"{phase.capitalize()}: {pct:.1f}%")
 
 
-def _raise_flash_failure(rc: int, duration: float, recent: deque[str]) -> None:
+def _raise_flash_failure(
+    rc: int, duration: float, recent: deque[str], *, verifying: bool = False
+) -> None:
     """log the tail buffer and raise BuildError with the most likely cause line"""
     for ln in recent:
         logger.error(f"hst-imager: {ln}")
@@ -63,7 +100,30 @@ def _raise_flash_failure(rc: int, duration: float, recent: deque[str]) -> None:
         (ln for ln in recent if "Exception" in ln or "Error" in ln or "denied" in ln.lower()),
         recent[-1] if recent else "",
     )
-    raise BuildError(f"hst-imager write failed (rc={rc}) after {duration:.1f}s: {cause}")
+    operation = "verification" if verifying else "flash"
+    raise BuildError(f"hst-imager {operation} failed (rc={rc}) after {duration:.1f}s: {cause}")
+
+
+def check_flash_verification_support() -> None:
+    """reject older tools before a build starts writing to the target"""
+    hst = find_hst_imager()
+    if not hst:
+        raise BuildError("hst-imager binary not found")
+    try:
+        result = subprocess.run(
+            [str(hst), "write", "--help"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=get_hst_imager_env(),
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise BuildError(f"Could not check hst-imager verification support: {error}") from error
+    if result.returncode != 0 or "--verify-after" not in result.stdout:
+        raise BuildError(
+            "This hst-imager does not support verification after writing. "
+            "Install the updated Hatcher build of hst-imager, or uncheck 'Verify after writing'."
+        )
 
 
 def flash_image_to_disk(
@@ -87,13 +147,26 @@ def flash_image_to_disk(
     if not hst:
         raise BuildError("hst-imager binary not found")
 
-    args = [str(hst), "--verbose", "write", str(image_path), str(target_device)]
     if verify:
-        args.append("--verify")
-    if skip_unused_sectors:
-        args.append("--skip-unused-sectors")
-    if force:
-        args.append("--force")
+        check_flash_verification_support()
+    # Explicit values override saved tool settings, including Verify=True.
+    args = [
+        str(hst),
+        "--verbose",
+        "write",
+        str(image_path),
+        str(target_device),
+        "--verify",
+        "false",
+        "--force",
+        str(force).lower(),
+        "--skip-unused-sectors",
+        str(skip_unused_sectors).lower(),
+    ]
+    if verify:
+        args.append("--verify-after")
+
+    statistics = FlashProgress(image_path.stat().st_size)
 
     # helper IPC streams stdout/stderr via on_line so the GUI progress bar moves while writing
     if (
@@ -112,7 +185,9 @@ def flash_image_to_disk(
             ln = line.rstrip()
             if not ln:
                 return
-            _handle_progress_line(ln, phase_seen, progress_callback, recent)
+            _handle_progress_line(
+                ln, phase_seen, progress_callback, recent, statistics=statistics, verify=verify
+            )
 
         result = elevation.helper.run(
             args, timeout=timeout, cancel_check=cancel_predicate, on_line=on_line
@@ -121,10 +196,17 @@ def flash_image_to_disk(
         if result.cancelled:
             raise BuildCancelledError("flash cancelled by user")
         if result.returncode != 0:
-            _raise_flash_failure(result.returncode, duration, recent)
-        logger.info(f"flash: done in {duration:.1f}s")
+            _raise_flash_failure(
+                result.returncode, duration, recent, verifying="verifying" in phase_seen
+            )
+        if verify and "verified" not in phase_seen:
+            raise BuildError("hst-imager did not confirm completion of post-write verification")
+        logger.info(f"flash: done in {duration:.1f}s; verified={verify}")
         if progress_callback:
-            progress_callback(100.0, "Flash complete")
+            progress_callback(
+                100.0,
+                "Flash and verification complete" if verify else "Flash complete (not verified)",
+            )
         return
 
     if not refresh_elevation(elevation):
@@ -142,7 +224,9 @@ def flash_image_to_disk(
     def on_local_line(line: str) -> None:
         line = line.rstrip()
         if line:
-            _handle_progress_line(line, phase_seen, progress_callback, recent)
+            _handle_progress_line(
+                line, phase_seen, progress_callback, recent, statistics=statistics, verify=verify
+            )
 
     try:
         result = run_local_flash(
@@ -163,11 +247,17 @@ def flash_image_to_disk(
         raise BuildError(f"flash timed out after {timeout}s")
 
     if result.returncode != 0:
-        _raise_flash_failure(result.returncode, duration, recent)
+        _raise_flash_failure(
+            result.returncode, duration, recent, verifying="verifying" in phase_seen
+        )
 
-    logger.info(f"flash: done in {duration:.1f}s")
+    if verify and "verified" not in phase_seen:
+        raise BuildError("hst-imager did not confirm completion of post-write verification")
+    logger.info(f"flash: done in {duration:.1f}s; verified={verify}")
     if progress_callback:
-        progress_callback(100.0, "Flash complete")
+        progress_callback(
+            100.0, "Flash and verification complete" if verify else "Flash complete (not verified)"
+        )
 
 
 def _parse_int(s: str) -> int:

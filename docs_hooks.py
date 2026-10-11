@@ -1,9 +1,11 @@
 """mkdocs hook - generates docs/packages.md from the package yaml defs at build time"""
 
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-import yaml
+sys.path.insert(0, str(Path(__file__).parent / "src" / "main" / "python"))
+from emu68hatcher.data.catalog import load_catalog_source  # noqa: E402
 
 _ROOT = Path(__file__).parent
 _PKG_DIR = _ROOT / "src" / "main" / "python" / "emu68hatcher" / "data" / "packages"
@@ -28,6 +30,9 @@ _HEADER = """\
 
 Generated from the package definitions used by the app. **always** is required,
 **preselected** is on by default, and **optional** starts off.
+Dependencies are installed when a selected package needs them. The Software
+tab shows the reason. Minimal keeps the OS, RTG and FirstBoot tools;
+see [Usage](usage.md) for its effect on software and networking.
 
 """
 
@@ -40,7 +45,9 @@ def _tier(pkg: dict) -> tuple[int, str]:
     return 2, "optional"
 
 
-def _source_cell(pkg: dict) -> str:
+def _source_cell(pkg: dict, packages: dict) -> str:
+    if pkg.get("archive_package"):
+        return _source_cell(packages[pkg["archive_package"]], packages)
     dl = pkg.get("download") or {}
     src = dl.get("source")
     if src == "aminet":
@@ -75,8 +82,8 @@ def _description_cell(pkg: dict) -> str:
 
 def _render() -> str:
     by_group: dict[str, list[dict]] = {}
-    for f in sorted(_PKG_DIR.glob("*.yaml")):
-        pkg = yaml.safe_load(f.read_text(encoding="utf-8"))
+    packages = load_catalog_source(_PKG_DIR).model_dump(mode="json", by_alias=True)["packages"]
+    for pkg in packages.values():
         by_group.setdefault(pkg.get("group", "Other"), []).append(pkg)
 
     order = _GROUP_ORDER + sorted(g for g in by_group if g not in _GROUP_ORDER)
@@ -94,7 +101,7 @@ def _render() -> str:
             name = pkg.get("friendly_name") or pkg["name"]
             out.append(
                 f"| **{name}** | {_tier(pkg)[1]} "
-                f"| {_description_cell(pkg)} | {_source_cell(pkg)} |\n"
+                f"| {_description_cell(pkg)} | {_source_cell(pkg, packages)} |\n"
             )
         out.append("\n")
     return "".join(out)

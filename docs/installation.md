@@ -32,7 +32,7 @@
     !!! warning "First run: grant Full Disk Access to hst-imager"
         macOS protects raw disk access, even on removable media like SD cards, so an app needs explicit permission from you to write to one. Emu68 Hatcher uses **hst-imager** to write the card, so it's hst-imager that needs Full Disk Access - not the app itself.
 
-        Open the app, click **Download Missing Tools** on the Start tab. After hst-imager downloads, a dialog asks to register it with macOS - click **Set Up Now**, enter password, then enable **hst-imager** in the settings pane that opens.
+        Open the app, click **Download Missing Tools** under **Overview → Required tools**. After hst-imager downloads, a dialog asks to register it with macOS - click **Set Up Now**, enter password, then enable **hst-imager** in the settings pane that opens.
 
     ### Install from source
 

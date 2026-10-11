@@ -34,6 +34,7 @@ def stage_install_packages(
     installer = PackageInstaller(
         staging_dir=workspace.staging_dir,
         extracted_packages_dir=workspace.extracted_dir,
+        extracted_paths=extracted.extracted_paths,
         local_packages_dir=local_packages_dir if local_packages_dir.exists() else None,
         boot_device=workflow.config.boot_device,
     )

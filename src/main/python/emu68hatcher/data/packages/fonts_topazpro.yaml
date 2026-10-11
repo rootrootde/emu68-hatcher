@@ -11,7 +11,3 @@ download:
 install:
 - from: dS!-tpro/TopazPro*
   to: Fonts/
-- from: dS-tpro.nfo
-  to: Emu68-Hatcher/Fonts/TopazPro/
-- from: FILE_ID.DIZ
-  to: Emu68-Hatcher/Fonts/TopazPro/

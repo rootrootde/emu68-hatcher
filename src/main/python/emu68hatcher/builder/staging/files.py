@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from emu68hatcher.data.catalog import validate_relative_path
 from emu68hatcher.utils.paths import ensure_dir
 
 logger = logging.getLogger(__name__)
@@ -154,15 +155,24 @@ def ci_match_child(parent: Path, name: str) -> str | None:
 
 def resolve_staging_path(base: Path, rel_path: str) -> Path:
     """case-insensitively resolve rel_path under base; missing components are appended as-is"""
+    validate_relative_path(rel_path)
     result = base
     for part in Path(rel_path).parts:
         matched = ci_match_child(result, part) if result.is_dir() else None
         result = result / (matched if matched else part)
+    require_contained_path(base, result)
     return result
+
+
+def require_contained_path(base: Path, path: Path) -> Path:
+    if not path.resolve().is_relative_to(base.resolve()):
+        raise ValueError(f"path leaves its source or staging directory: {path}")
+    return path
 
 
 def resolve_source_path(base: Path, rel_path: str) -> Path | None:
     """Resolve every component case-insensitively, returning None on a miss."""
+    validate_relative_path(rel_path)
     current = base
     for part in rel_path.split("/"):
         if not part:
@@ -171,6 +181,7 @@ def resolve_source_path(base: Path, rel_path: str) -> Path | None:
         if matched is None:
             return None
         current /= matched
+        require_contained_path(base, current)
     return current
 
 

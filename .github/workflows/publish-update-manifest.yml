@@ -36,42 +36,68 @@ jobs:
           mkdir -p "$RUNNER_TEMP/release-assets"
           gh release download "$tag" --dir "$RUNNER_TEMP/release-assets" --pattern 'emu68hatcher-*'
 
-      - name: Build and sign manifest
+      - name: Read previous publication
+        run: |
+          if git ls-remote --exit-code origin refs/heads/updates >/dev/null 2>&1; then
+            git fetch origin updates:refs/remotes/origin/updates
+            git show origin/updates:manifest.json > "$RUNNER_TEMP/previous-v1.json"
+            if git cat-file -e origin/updates:manifest-v2.json; then
+              git show origin/updates:manifest-v2.json > "$RUNNER_TEMP/previous-v2.json"
+            fi
+            git worktree add -b publish-updates "$RUNNER_TEMP/published" origin/updates
+          else
+            git worktree add --detach "$RUNNER_TEMP/published"
+            git -C "$RUNNER_TEMP/published" switch --orphan publish-updates
+            git -C "$RUNNER_TEMP/published" rm -rf --ignore-unmatch .
+          fi
+
+      - name: Build and sign manifests
         env:
           UPDATE_MANIFEST_PRIVATE_KEY: ${{ secrets.UPDATE_MANIFEST_PRIVATE_KEY }}
+        shell: bash
         run: |
+          set -euo pipefail
           if [ -z "$UPDATE_MANIFEST_PRIVATE_KEY" ]; then
             echo "::error::UPDATE_MANIFEST_PRIVATE_KEY is not configured"
             exit 1
           fi
           key="$RUNNER_TEMP/update-manifest-key.pem"
+          trap 'rm -f "$key"' EXIT
           install -m 600 /dev/null "$key"
           printf '%s' "$UPDATE_MANIFEST_PRIVATE_KEY" > "$key"
-          python scripts/build-update-manifest.py \
-            updates/manifest-source.json "$RUNNER_TEMP/manifest-source.json" \
+          previous=()
+          for version in v1 v2; do
+            path="$RUNNER_TEMP/previous-$version.json"
+            if [ -f "$path" ]; then
+              previous+=("--previous-$version" "$path")
+            fi
+          done
+          python scripts/build-update-manifest.py "$RUNNER_TEMP/payload-v2.json" \
+            --legacy-output "$RUNNER_TEMP/payload-v1.json" \
             --release-json "$RUNNER_TEMP/release.json" \
-            --asset-dir "$RUNNER_TEMP/release-assets"
+            --asset-dir "$RUNNER_TEMP/release-assets" "${previous[@]}"
           python scripts/sign-update-manifest.py \
-            "$RUNNER_TEMP/manifest-source.json" "$RUNNER_TEMP/manifest.json" \
-            --key "$key"
-          python -c "from pathlib import Path; from emu68hatcher.data.update_manifest import verify_manifest_bytes; verify_manifest_bytes(Path('$RUNNER_TEMP/manifest.json').read_bytes())"
+            "$RUNNER_TEMP/payload-v1.json" "$RUNNER_TEMP/manifest.json" --key "$key"
+          python scripts/sign-update-manifest.py \
+            "$RUNNER_TEMP/payload-v2.json" "$RUNNER_TEMP/manifest-v2.json" --key "$key"
+          python scripts/verify-update-publication.py "$RUNNER_TEMP" --source-commit "$GITHUB_SHA"
 
       - name: Publish updates branch
         run: |
-          if git ls-remote --exit-code origin refs/heads/updates >/dev/null 2>&1; then
-            git fetch origin updates:refs/remotes/origin/updates
-            git worktree add "$RUNNER_TEMP/published" origin/updates
-            git -C "$RUNNER_TEMP/published" switch -C updates
-          else
-            git worktree add --detach "$RUNNER_TEMP/published"
-            git -C "$RUNNER_TEMP/published" switch --orphan updates
-            git -C "$RUNNER_TEMP/published" rm -rf . || true
-          fi
           cp "$RUNNER_TEMP/manifest.json" "$RUNNER_TEMP/published/manifest.json"
+          cp "$RUNNER_TEMP/manifest-v2.json" "$RUNNER_TEMP/published/manifest-v2.json"
           git -C "$RUNNER_TEMP/published" config user.name github-actions
           git -C "$RUNNER_TEMP/published" config user.email github-actions@github.com
-          git -C "$RUNNER_TEMP/published" add manifest.json
-          if ! git -C "$RUNNER_TEMP/published" diff --cached --quiet; then
-            git -C "$RUNNER_TEMP/published" commit -m "update manifest"
-            git -C "$RUNNER_TEMP/published" push origin updates
-          fi
+          git -C "$RUNNER_TEMP/published" add manifest.json manifest-v2.json
+          git -C "$RUNNER_TEMP/published" commit -m "update manifests"
+          git -C "$RUNNER_TEMP/published" push origin HEAD:updates
+
+      - name: Verify published definitions
+        run: |
+          git fetch origin updates:refs/remotes/origin/updates
+          mkdir -p "$RUNNER_TEMP/verified"
+          git show origin/updates:manifest.json > "$RUNNER_TEMP/verified/manifest.json"
+          git show origin/updates:manifest-v2.json > "$RUNNER_TEMP/verified/manifest-v2.json"
+          cmp "$RUNNER_TEMP/manifest.json" "$RUNNER_TEMP/verified/manifest.json"
+          cmp "$RUNNER_TEMP/manifest-v2.json" "$RUNNER_TEMP/verified/manifest-v2.json"
+          python scripts/verify-update-publication.py "$RUNNER_TEMP/verified" --source-commit "$GITHUB_SHA"

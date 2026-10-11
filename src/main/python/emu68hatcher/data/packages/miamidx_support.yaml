@@ -37,3 +37,7 @@ install:
 - from: System/Utilities/Network Config.info
   to: Utilities/
   rename: Disconnect.info
+requires:
+- rexxreqtools
+- ethernet_driver
+- emu68_wifi

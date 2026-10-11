@@ -1,6 +1,6 @@
 name: smbfs
 friendly_name: SMBFS
-group: System
+group: Network
 description: 'SMB/CIFS filesystem handler'
 versions:
 - '3.1'
@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: aminet
   path: disk/misc/smb2fs.m68k-amigaos.lha
@@ -18,3 +18,7 @@ install:
 - from: smb2fs/L/smb2-handler.020
   to: L/
   rename: smb2-handler
+default: true
+requires:
+- filesysbox
+- smb0_device

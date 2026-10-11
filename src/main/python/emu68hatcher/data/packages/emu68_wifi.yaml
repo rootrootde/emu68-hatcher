@@ -1,0 +1,21 @@
+name: emu68_wifi
+friendly_name: Pi WiFi
+group: Drivers
+description: Pi WiFi
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+default: true
+archive_package: emu68_tools
+requires:
+- prism2
+install:
+- from: WaitUntilConnected/WaitUntilConnected
+  to: C/
+- from: Emu68-WiFi/Devs/*
+  to: Devs/
+  recursive: true

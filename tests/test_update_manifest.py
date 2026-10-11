@@ -8,11 +8,12 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from emu68hatcher.builder.host.download_catalog import get_package_downloads
+from emu68hatcher.data.catalog import load_catalog_source
 from emu68hatcher.data.package_loader import clear_package_caches
 from emu68hatcher.data.update_manifest import (
     HatcherArtifact,
     ManifestSelection,
-    PackageDownloadOverride,
+    UpdateManifestV2,
     activate_manifest,
     artifact_platform_key,
     canonical_payload,
@@ -26,23 +27,25 @@ from emu68hatcher.utils.platform import Architecture, OperatingSystem, PlatformI
 
 
 def _payload(revision=1):
+    data = load_catalog_source().model_dump(mode="json", by_alias=True)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "revision": revision,
         "hatcher": {
             "version": "0.9.0",
             "release_url": "https://github.com/rootrootde/emu68hatcher/releases",
             "artifacts": {},
         },
-        "packages": {
-            "magicmenu": {
-                "source": "github",
-                "repo": "AmiKit/MagicMenu",
-                "tag": "v3.1",
-                "hash": "4539081FCE7789F11374B07F99915AE1",
-                "filename": "MagicMenu_3.1.lha",
+        "catalogs": [
+            {
+                "id": "test",
+                "revision": revision,
+                "source_commit": "1" * 40,
+                "min_hatcher_version": "0",
+                "catalog_schema_version": 1,
+                **data,
             }
-        },
+        ],
     }
 
 
@@ -66,7 +69,7 @@ def _signed(payload, private):
             "payload": payload,
             "signature": {
                 "algorithm": "ed25519",
-                "key_id": "test-key",
+                "key_id": "updates-2026",
                 "value": signature,
             },
         }
@@ -93,7 +96,9 @@ def test_manifest_signature_and_schema(signing_key):
         verify_manifest_bytes(json.dumps(changed).encode(), public_path)
 
     unsafe = _payload()
-    unsafe["packages"]["magicmenu"]["install"] = [{"from": "x", "to": "y"}]
+    unsafe["catalogs"][0]["packages"]["magicmenu"]["install"] = [
+        {"from": "x", "to": "y", "unknown_rule": True}
+    ]
     with pytest.raises(ValueError, match="Extra inputs are not permitted"):
         verify_manifest_bytes(_signed(unsafe, private), public_path)
 
@@ -104,7 +109,7 @@ def test_invalid_cache_falls_back_to_bundled(tmp_path, signing_key):
     bundled.write_bytes(_signed(_payload(1), private))
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
-    (cache_dir / "manifest.json").write_bytes(b"not a manifest")
+    (cache_dir / "manifest-v2.json").write_bytes(b"not a manifest")
 
     selection = initialize_manifest(
         bundled_path=bundled,
@@ -114,7 +119,7 @@ def test_invalid_cache_falls_back_to_bundled(tmp_path, signing_key):
     assert selection.source == "bundled"
     assert selection.manifest.revision == 1
 
-    (cache_dir / "manifest.json").write_bytes(_signed(_payload(2), private))
+    (cache_dir / "manifest-v2.json").write_bytes(_signed(_payload(2), private))
     selection = initialize_manifest(
         bundled_path=bundled,
         public_key_path=public_path,
@@ -170,7 +175,7 @@ def test_remote_manifest_is_validated_and_cached(tmp_path, signing_key, monkeypa
     assert selection.source == "remote"
     assert selection.changed
     assert selection.manifest.revision == 2
-    assert (cache_dir / "manifest.json").read_bytes() == remote
+    assert (cache_dir / "manifest-v2.json").read_bytes() == remote
 
 
 def test_remote_failure_keeps_active_manifest(tmp_path, signing_key, monkeypatch):
@@ -196,7 +201,7 @@ def test_remote_failure_keeps_active_manifest(tmp_path, signing_key, monkeypatch
     assert selection.source == "bundled"
     assert selection.manifest.revision == 1
     assert "offline" in selection.error
-    assert not (cache_dir / "manifest.json").exists()
+    assert not (cache_dir / "manifest-v2.json").exists()
 
 
 def test_not_modified_uses_cached_manifest(tmp_path, signing_key, monkeypatch):
@@ -206,8 +211,17 @@ def test_not_modified_uses_cached_manifest(tmp_path, signing_key, monkeypatch):
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
     cached = _signed(_payload(2), private)
-    (cache_dir / "manifest.json").write_bytes(cached)
-    (cache_dir / "manifest-meta.json").write_text(json.dumps({"etag": '"two"'}), encoding="utf-8")
+    (cache_dir / "manifest-v2.json").write_bytes(cached)
+    (cache_dir / "manifest-v2-meta.json").write_text(
+        json.dumps(
+            {
+                "etag": '"two"',
+                "sha256": hashlib.sha256(cached).hexdigest(),
+                "url": "https://example.test/manifest.json",
+            }
+        ),
+        encoding="utf-8",
+    )
     initialize_manifest(
         bundled_path=bundled,
         public_key_path=public_path,
@@ -253,7 +267,7 @@ def test_bad_remote_signature_does_not_replace_cache(tmp_path, signing_key, monk
     )
     assert selection.source == "bundled"
     assert "signature is invalid" in selection.error
-    assert not (cache_dir / "manifest.json").exists()
+    assert not (cache_dir / "manifest-v2.json").exists()
 
 
 def test_same_revision_cannot_change_content(tmp_path, signing_key, monkeypatch):
@@ -295,19 +309,17 @@ def test_version_and_platform_selection():
     assert artifact_platform_key(unknown) is None
 
 
-def test_package_override_reaches_download_catalog(tmp_path):
+def test_full_package_reaches_download_catalog(tmp_path):
     selection = initialize_manifest(cache_dir=tmp_path / "cache")
-    override = PackageDownloadOverride.model_validate(
-        {
-            "source": "web",
-            "url": "https://downloads.example.test/MagicMenu.lha",
-            "hash": "0123456789abcdef0123456789abcdef",
-            "filename": "MagicMenu-fixed.lha",
-        }
-    )
-    manifest = selection.manifest.model_copy(
-        update={"revision": 2, "packages": {"magicmenu": override}}
-    )
+    payload = _payload(selection.manifest.revision + 1)
+    payload["catalogs"][0]["packages"]["magicmenu"]["download"] = {
+        "source": "web",
+        "url": "https://downloads.example.test/MagicMenu.lha",
+        "hash": "0123456789abcdef0123456789abcdef",
+        "filename": "MagicMenu-fixed.lha",
+    }
+    payload["catalogs"][0]["packages"]["magicmenu"]["install"] = [{"from": "new/Menu", "to": "C"}]
+    manifest = UpdateManifestV2.model_validate(payload)
     activate_manifest(ManifestSelection(manifest, "remote", changed=True, checked=True))
     clear_package_caches()
 
@@ -315,6 +327,9 @@ def test_package_override_reaches_download_catalog(tmp_path):
     assert item.url == "https://downloads.example.test/MagicMenu.lha"
     assert item.filename == "MagicMenu-fixed.lha"
     assert item.expected_hash == "0123456789abcdef0123456789abcdef"
+    from emu68hatcher.data.package_loader import get_package_by_name
+
+    assert get_package_by_name("magicmenu").install[0].source == "new/Menu"
 
 
 def test_application_download_is_atomic_and_verified(tmp_path, monkeypatch):
@@ -337,3 +352,134 @@ def test_application_download_is_atomic_and_verified(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="checksum"):
         download_hatcher_artifact(broken, tmp_path)
     assert not (tmp_path / "installer-1.dmg.tmp").exists()
+
+
+def test_package_paths_cannot_leave_staging_through_links(tmp_path):
+    from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
+
+    root = tmp_path / "staging"
+    outside = tmp_path / "outside"
+    root.mkdir()
+    outside.mkdir()
+    (outside / "file").write_bytes(b"keep")
+    (root / "linked").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="leaves"):
+        resolve_source_path(root, "linked/file")
+    with pytest.raises(ValueError, match="leaves"):
+        resolve_staging_path(root, "linked/file")
+    with pytest.raises(ValueError, match="unsafe"):
+        resolve_staging_path(root, "../outside/file")
+    assert (outside / "file").read_bytes() == b"keep"
+
+
+def test_invalid_cache_does_not_send_conditional_headers(tmp_path, signing_key, monkeypatch):
+    private, public_path = signing_key
+    bundled = tmp_path / "bundled.json"
+    bundled.write_bytes(_signed(_payload(1), private))
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    (cache_dir / "manifest-v2.json").write_bytes(b"broken cache")
+    (cache_dir / "manifest-v2-meta.json").write_text(
+        json.dumps({"etag": '"old"', "url": "https://example.test/manifest.json"}),
+        encoding="utf-8",
+    )
+    initialize_manifest(bundled_path=bundled, public_key_path=public_path, cache_dir=cache_dir)
+
+    def response(request, **_kwargs):
+        assert request.get_header("If-none-match") is None
+        return _Response(_signed(_payload(2), private))
+
+    monkeypatch.setattr("urllib.request.urlopen", response)
+    result = check_remote_manifest(
+        url="https://example.test/manifest.json", public_key_path=public_path, cache_dir=cache_dir
+    )
+    assert result.error is None
+    assert result.manifest.revision == 2
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_package_status_uses_publication_date(monkeypatch, changed):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    from emu68hatcher.gui.tabs import start
+
+    payload = _payload(1790179098)
+    payload["catalogs"][0]["revision"] = 2
+    manifest = UpdateManifestV2.model_validate(payload)
+    selection = ManifestSelection(
+        manifest, "remote", changed=changed, checked=True, catalog=manifest.catalogs[0].snapshot()
+    )
+    tab = SimpleNamespace(
+        _update_selection=selection,
+        hatcher_update_icon=Mock(),
+        hatcher_update_label=Mock(),
+        manifest_update_icon=Mock(),
+        manifest_update_label=Mock(),
+        open_release_btn=Mock(),
+        download_update_btn=Mock(),
+    )
+    monkeypatch.setattr(start, "_set_status_icon", Mock())
+    start.StartTab.refresh_update_status(tab)
+    prefix = "Package list updated from server" if changed else "Package list is up to date"
+    tab.manifest_update_label.setText.assert_called_once_with(
+        f"{prefix}: 2026-09-23 (revision 1790179098)"
+    )
+
+
+def test_reset_app_data_refreshes_catalog_consumers(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    from emu68hatcher.data.package_loader import load_all_packages
+    from emu68hatcher.gui.tabs import start
+
+    payload = _payload(100)
+    packages = payload["catalogs"][0]["packages"]
+    del packages["amelinium"]
+    for name, group in (("update_only", "Utilities"), ("update_locale", "Locale")):
+        packages[name] = {"name": name, "friendly_name": name, "description": "", "group": group}
+    activate_manifest(ManifestSelection(UpdateManifestV2.model_validate(payload), "remote"))
+
+    displayed = {}
+
+    def refresh_consumers():
+        current = load_all_packages()
+        displayed["software"] = {p.name for p in current if p.group != "Locale"}
+        displayed["locales"] = {p.name for p in current if p.group == "Locale"}
+
+    refresh_consumers()
+    assert "update_only" in displayed["software"]
+    assert "update_locale" in displayed["locales"]
+    assert "amelinium" not in displayed["software"]
+
+    box = Mock()
+    delete_button = object()
+    box.addButton.side_effect = [delete_button, object()]
+    box.clickedButton.return_value = delete_button
+    monkeypatch.setattr(start, "QMessageBox", Mock(return_value=box))
+    monkeypatch.setattr(start, "QApplication", Mock())
+    reset_runtime = Mock(return_value=[])
+    monkeypatch.setattr("emu68hatcher.utils.paths.reset_runtime_data", reset_runtime)
+    monkeypatch.setattr(
+        "emu68hatcher.data.update_manifest.initialize_manifest",
+        lambda: initialize_manifest(cache_dir=tmp_path / "reset-cache"),
+    )
+    tab = SimpleNamespace(
+        _worker=None,
+        _update_worker=None,
+        _app_download_worker=None,
+        progress_group=Mock(),
+        catalog_changed=Mock(),
+        refresh_status=Mock(),
+        refresh_update_status=Mock(),
+    )
+    tab.catalog_changed.emit.side_effect = refresh_consumers
+    start.StartTab.reset_app_data(tab)
+
+    reset_runtime.assert_called_once_with()
+    tab.catalog_changed.emit.assert_called_once_with()
+    assert tab._update_selection.source == "bundled"
+    assert "amelinium" in displayed["software"]
+    assert "update_only" not in displayed["software"]
+    assert "update_locale" not in displayed["locales"]

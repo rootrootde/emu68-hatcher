@@ -11,7 +11,7 @@ versions:
 emu68_versions:
 - 1.1.0-alpha.1
 - 1.1.0-beta.1
-mandatory: true
+mandatory: false
 download:
   source: github
   repo: rondoval/emu68-driver-stack
@@ -21,26 +21,3 @@ download:
   hash: 83B581A6197B79E8202CF07D346545F3
 # selectable Amiga stacks need the SANA-II genet and Poseidon 4.x xhci variants in Storage/
 # bundled lwIP libraries and commands would overwrite the selected TCP/IP stack
-install:
-- from: LIBS/gic400.library
-  to: Libs/
-- from: LIBS/bcmpcie.library
-  to: Libs/
-- from: LIBS/openpci.library
-  to: Libs/
-- from: Storage/DEVS/Networks/genet.device
-  to: Devs/Networks/
-- from: Storage/DEVS/USBHardware/xhci.device
-  to: Devs/USBHardware/
-- from: DEVS/nvme.device
-  to: Devs/
-- from: Storage/C/genet-stats
-  to: C/
-- from: C/lspci
-  to: C/
-- from: C/nvmeinfo
-  to: C/
-- from: C/nvmeadm
-  to: C/
-- from: C/emu68check
-  to: C/

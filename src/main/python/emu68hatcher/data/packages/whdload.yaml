@@ -1,6 +1,7 @@
 name: whdload
 friendly_name: WHDLoad
-group: System
+group: Games
+bundle: whdload
 description: 'runs amiga games+demos from HD'
 versions:
 - '3.1'
@@ -8,13 +9,15 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: web
   url: http://whdload.de/whdload/WHDLoad_usr.lha
   hash: E76EC3049BFD7DE6E9CFC17D7F52EC0C
   filename: Whdload_usr.lha
 install:
+- from: WHDLoad/C/WHDLoad
+  to: C/
 - from: WHDLoad/C/WHDLoad
   to: C/
   rename: WHDLoad.ori
@@ -28,3 +31,7 @@ install:
   to: C/
 - from: WHDLoad/S/*
   to: S/
+default: true
+requires:
+- rtb_files_skick
+- rtb_file_7_cities_of_gold

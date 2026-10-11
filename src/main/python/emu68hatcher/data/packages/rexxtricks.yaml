@@ -1,6 +1,6 @@
 name: rexxtricks
 friendly_name: RexxTricks
-group: System
+group: Libraries
 description: 'ARexx extension library'
 versions:
 - '3.1'
@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: aminet
   path: util/rexx/RexxTricks_386.lha
@@ -16,3 +16,4 @@ download:
 install:
 - from: RexxTricks/Libs/rexxtricks.library
   to: Libs/
+default: true

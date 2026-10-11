@@ -1,6 +1,6 @@
 name: mcc_toolbar
 friendly_name: MCC Toolbar
-group: System
+group: Libraries
 description: 'MUI Toolbar class'
 versions:
 - '3.1'
@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 requires:
 - mui
 download:
@@ -21,3 +21,4 @@ install:
   to: Programs/MUI/Libs/mui/
 - from: Toolbar.mcp
   to: Programs/MUI/Libs/mui/
+default: true

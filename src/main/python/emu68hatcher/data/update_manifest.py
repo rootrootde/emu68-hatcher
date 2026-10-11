@@ -21,12 +21,19 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from packaging.version import InvalidVersion, Version
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from emu68hatcher import __version__
+from emu68hatcher.data.catalog import CatalogSnapshot, bundled_catalog
+from emu68hatcher.data.catalog_manifest import (
+    CatalogRelease,
+    validate_client_catalog,
+    validate_ranges,
+)
 from emu68hatcher.data.package_schema import DownloadInfo, SourceType
 from emu68hatcher.utils.paths import get_cache_dir
 from emu68hatcher.utils.platform import OperatingSystem, PlatformInfo, get_platform_info
 
 DEFAULT_MANIFEST_URL = (
-    "https://raw.githubusercontent.com/rootrootde/emu68-hatcher/updates/manifest.json"
+    "https://raw.githubusercontent.com/rootrootde/emu68-hatcher/updates/manifest-v2.json"
 )
 _REFERENCE_DIR = Path(__file__).parent / "reference"
 _BUNDLED_MANIFEST_PATH = _REFERENCE_DIR / "update_manifest.json"
@@ -148,6 +155,34 @@ class UpdateManifest(BaseModel):
         return value
 
 
+UpdateManifestV1 = UpdateManifest
+
+
+class UpdateManifestV2(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal[2]
+    revision: int = Field(ge=1)
+    hatcher: HatcherRelease
+    catalogs: list[CatalogRelease] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_catalogs(self):
+        validate_ranges(self.catalogs)
+        return self
+
+    def select_catalog(self, version: str = __version__) -> CatalogRelease | None:
+        return next(
+            (c for c in self.catalogs if c.matches(version) and c.catalog_schema_version == 1), None
+        )
+
+
+def parse_manifest_payload(payload: dict) -> UpdateManifestV1 | UpdateManifestV2:
+    if payload.get("schema_version") == 2:
+        return UpdateManifestV2.model_validate(payload)
+    return UpdateManifestV1.model_validate(payload)
+
+
 class ManifestSignature(BaseModel):
     """Detached signature stored beside the payload."""
 
@@ -169,11 +204,13 @@ class SignedManifest(BaseModel):
 
 @dataclass(frozen=True)
 class ManifestSelection:
-    manifest: UpdateManifest
+    manifest: UpdateManifestV1 | UpdateManifestV2
     source: Literal["bundled", "cache", "remote"]
     changed: bool = False
     error: str | None = None
     checked: bool = False
+    catalog: CatalogSnapshot | None = None
+    catalog_notice: str | None = None
 
 
 _active_lock = threading.RLock()
@@ -193,15 +230,24 @@ def _load_public_key(path: Path = _PUBLIC_KEY_PATH) -> Ed25519PublicKey:
     return key
 
 
+def _unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate manifest key: {key}")
+        result[key] = value
+    return result
+
+
 def verify_manifest_bytes(
     content: bytes,
     public_key_path: Path = _PUBLIC_KEY_PATH,
-) -> UpdateManifest:
+) -> UpdateManifestV1 | UpdateManifestV2:
     if len(content) > _MAX_MANIFEST_BYTES:
         raise ValueError("manifest is too large")
     try:
-        raw = json.loads(content)
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raw = json.loads(content, object_pairs_hook=_unique_json_object)
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as error:
         raise ValueError(f"invalid manifest JSON: {error}") from error
     envelope = SignedManifest.model_validate(raw)
     try:
@@ -212,15 +258,17 @@ def verify_manifest_bytes(
         _load_public_key(public_key_path).verify(signature, canonical_payload(envelope.payload))
     except InvalidSignature as error:
         raise ValueError("manifest signature is invalid") from error
-    return UpdateManifest.model_validate(envelope.payload)
+    if envelope.signature.key_id != "updates-2026":
+        raise ValueError("unknown manifest signing key id")
+    return parse_manifest_payload(envelope.payload)
 
 
 def _cache_paths(cache_dir: Path | None = None) -> tuple[Path, Path]:
     root = cache_dir or get_cache_dir() / "updates"
-    return root / "manifest.json", root / "manifest-meta.json"
+    return root / "manifest-v2.json", root / "manifest-v2-meta.json"
 
 
-def _read_verified(path: Path, public_key_path: Path) -> UpdateManifest:
+def _read_verified(path: Path, public_key_path: Path) -> UpdateManifestV1 | UpdateManifestV2:
     return verify_manifest_bytes(path.read_bytes(), public_key_path)
 
 
@@ -233,18 +281,77 @@ def initialize_manifest(
     global _active_selection
 
     bundled = _read_verified(bundled_path, public_key_path)
-    selection = ManifestSelection(bundled, "bundled")
+    # release metadata is signed; the complete offline catalog ships as YAML.
+    baseline = UpdateManifestV2(
+        schema_version=2,
+        revision=1,
+        hatcher=bundled.hatcher,
+        catalogs=[
+            CatalogRelease(
+                id="bundled",
+                revision=1,
+                source_commit="0" * 40,
+                min_hatcher_version="0",
+                catalog_schema_version=1,
+                **bundled_catalog().data().model_dump(mode="json", by_alias=True),
+            )
+        ],
+    )
+    selection = ManifestSelection(baseline, "bundled", catalog=bundled_catalog())
+    if isinstance(bundled, UpdateManifestV2):
+        selection = _candidate_selection(bundled, "bundled", selection)
     cache_path, _ = _cache_paths(cache_dir)
     if cache_path.is_file():
         try:
             cached = _read_verified(cache_path, public_key_path)
-            if cached.revision >= bundled.revision:
-                selection = ManifestSelection(cached, "cache")
+            _validate_revision(cached, selection.manifest)
+            candidate = _candidate_selection(cached, "cache", selection)
+            if not candidate.catalog_notice:
+                selection = candidate
         except (OSError, ValueError):
             pass
     with _active_lock:
         _active_selection = selection
     return selection
+
+
+def _validate_revision(manifest, previous):
+    if manifest.schema_version != 2:
+        raise ValueError("this client requires manifest schema 2")
+    if manifest.revision < previous.revision:
+        raise ValueError("server manifest is older than the active revision")
+    if manifest.revision == previous.revision and manifest != previous:
+        raise ValueError("server manifest changed without a revision increase")
+    if isinstance(previous, UpdateManifestV2):
+        old = {c.id: c for c in previous.catalogs}
+        for catalog in manifest.catalogs:
+            prior = old.get(catalog.id)
+            if prior and (
+                catalog.revision < prior.revision
+                or (catalog.revision == prior.revision and catalog != prior)
+            ):
+                raise ValueError(f"catalog revision did not increase: {catalog.id}")
+
+
+def _candidate_selection(manifest, source, current, *, checked=False):
+    if not isinstance(manifest, UpdateManifestV2):
+        raise ValueError("this client requires manifest schema 2")
+    release = manifest.select_catalog()
+    snapshot = current.catalog
+    notice = None
+    if release is None:
+        notice = "This package list requires another Hatcher version; previous list remains active."
+    else:
+        snapshot = release.snapshot()
+        validate_client_catalog(snapshot)
+    return ManifestSelection(
+        manifest,
+        source,
+        manifest.revision > current.manifest.revision,
+        checked=checked,
+        catalog=snapshot,
+        catalog_notice=notice,
+    )
 
 
 def get_active_selection() -> ManifestSelection:
@@ -259,16 +366,13 @@ def activate_manifest(selection: ManifestSelection) -> ManifestSelection:
     global _active_selection
 
     with _active_lock:
-        current = _active_selection
-        if current is not None and selection.manifest.revision < current.manifest.revision:
-            raise ValueError("manifest revision is older than the active revision")
-        _active_selection = selection
-    return selection
-
-
-def get_package_download_override(name: str) -> DownloadInfo | None:
-    override = get_active_selection().manifest.packages.get(name.lower())
-    return override.as_download_info() if override else None
+        current = get_active_selection()
+        _validate_revision(selection.manifest, current.manifest)
+        candidate = _candidate_selection(
+            selection.manifest, selection.source, current, checked=selection.checked
+        )
+        _active_selection = candidate
+    return candidate
 
 
 def is_newer_version(current: str, available: str) -> bool:
@@ -291,7 +395,7 @@ def artifact_platform_key(platform: PlatformInfo | None = None) -> str | None:
 
 
 def get_current_artifact(
-    manifest: UpdateManifest | None = None,
+    manifest: UpdateManifestV1 | UpdateManifestV2 | None = None,
     platform: PlatformInfo | None = None,
 ) -> HatcherArtifact | None:
     key = artifact_platform_key(platform)
@@ -318,10 +422,17 @@ def _write_atomic(path: Path, content: bytes) -> None:
     tmp.replace(path)
 
 
-def _read_cache_headers(meta_path: Path) -> dict[str, str]:
+def _read_cache_headers(meta_path: Path, cache_path: Path, url: str) -> dict[str, str]:
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(meta, dict):
+        return {}
+    if (
+        meta.get("url") != url
+        or meta.get("sha256") != hashlib.sha256(cache_path.read_bytes()).hexdigest()
+    ):
         return {}
     headers = {}
     if isinstance(meta.get("etag"), str):
@@ -331,8 +442,10 @@ def _read_cache_headers(meta_path: Path) -> dict[str, str]:
     return headers
 
 
-def _write_cache_headers(meta_path: Path, response) -> None:
+def _write_cache_headers(meta_path: Path, response, cache_path: Path, url: str) -> None:
     meta = {
+        "url": url,
+        "sha256": hashlib.sha256(cache_path.read_bytes()).hexdigest(),
         "etag": response.headers.get("ETag"),
         "last_modified": response.headers.get("Last-Modified"),
     }
@@ -348,7 +461,21 @@ def check_remote_manifest(
 ) -> ManifestSelection:
     current = get_active_selection()
     cache_path, meta_path = _cache_paths(cache_dir)
-    headers = {"User-Agent": "Emu68 Hatcher/1.0", **_read_cache_headers(meta_path)}
+    cached_selection = None
+    cache_headers = {}
+    try:
+        cached = _read_verified(cache_path, public_key_path)
+        _validate_revision(cached, current.manifest)
+        cached_selection = _candidate_selection(cached, "cache", current, checked=True)
+        if not cached_selection.catalog_notice:
+            cache_headers = _read_cache_headers(
+                meta_path,
+                cache_path,
+                url or os.environ.get("HATCHER_UPDATE_MANIFEST_URL", DEFAULT_MANIFEST_URL),
+            )
+    except (OSError, ValueError):
+        pass
+    headers = {"User-Agent": "Emu68 Hatcher/1.1", **cache_headers}
     request = urllib.request.Request(
         url or os.environ.get("HATCHER_UPDATE_MANIFEST_URL", DEFAULT_MANIFEST_URL),
         headers=headers,
@@ -357,22 +484,20 @@ def check_remote_manifest(
         with urllib.request.urlopen(request, timeout=timeout) as response:
             content = _read_response(response)
             manifest = verify_manifest_bytes(content, public_key_path)
-            if manifest.revision < current.manifest.revision:
-                raise ValueError("server manifest is older than the active revision")
-            if manifest.revision == current.manifest.revision and manifest != current.manifest:
-                raise ValueError("server manifest changed without a revision increase")
-            _write_atomic(cache_path, content)
-            _write_cache_headers(meta_path, response)
+            _validate_revision(manifest, current.manifest)
+            if cached_selection:
+                _validate_revision(manifest, cached_selection.manifest)
+            candidate = _candidate_selection(manifest, "remote", current, checked=True)
+            if not candidate.catalog_notice:
+                _write_atomic(cache_path, content)
+                _write_cache_headers(meta_path, response, cache_path, request.full_url)
     except urllib.error.HTTPError as error:
-        if error.code == 304:
-            return ManifestSelection(
-                current.manifest,
-                current.source,
-                checked=True,
-            )
+        if error.code == 304 and cache_headers and cached_selection:
+            return cached_selection
         return ManifestSelection(
             current.manifest,
             current.source,
+            catalog=current.catalog,
             error=f"HTTP {error.code} {error.reason}",
             checked=True,
         )
@@ -380,15 +505,11 @@ def check_remote_manifest(
         return ManifestSelection(
             current.manifest,
             current.source,
+            catalog=current.catalog,
             error=str(error) or type(error).__name__,
             checked=True,
         )
-    return ManifestSelection(
-        manifest,
-        "remote",
-        changed=manifest.revision > current.manifest.revision,
-        checked=True,
-    )
+    return candidate
 
 
 def verify_sha256(path: Path, expected: str) -> bool:

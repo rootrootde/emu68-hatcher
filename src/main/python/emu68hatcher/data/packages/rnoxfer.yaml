@@ -15,6 +15,7 @@ requires:
 - codesets
 - guigfx
 - render
+- amissl
 download:
   source: aminet
   path: comm/tcp/RNOXfer_68k.lha

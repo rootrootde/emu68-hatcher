@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.pipeline.adf_mapping import build_adf_name_map, resolve_adf_path
+from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.state import Workspace
 
 if TYPE_CHECKING:
@@ -82,10 +83,14 @@ def _run_rules(
             errors.append(f"{rule.adf}: copy from network path failed: {e}")
             continue
 
-        dest_dir = workspace.workbench_dir / rule.dest.rstrip("/")
+        dest_dir = resolve_staging_path(workspace.workbench_dir, rule.dest.rstrip("/"))
         dest_dir.mkdir(parents=True, exist_ok=True)
         source_path = f"{adf_path.as_posix()}/{rule.source}" if rule.source else adf_path.as_posix()
-        dest_path = str(dest_dir / rule.rename) if rule.rename else dest_dir.as_posix() + "/"
+        dest_path = (
+            str(resolve_staging_path(dest_dir, rule.rename))
+            if rule.rename
+            else dest_dir.as_posix() + "/"
+        )
         try:
             result = run_hst_extract(
                 hst_imager,

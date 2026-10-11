@@ -1,34 +1,29 @@
 """partition bar - horizontal disk-layout viz with drag-resize"""
 
 from PySide6.QtCore import QPoint, QRect, Qt, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen, QPolygon
+from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPalette, QPen, QPolygon
 from PySide6.QtWidgets import QToolTip, QWidget
 
-from emu68hatcher.config.defaults import MIN_AMIGA_PARTITION_SIZE
+from emu68hatcher.config.constants import (
+    CYLINDER_SIZE,
+    MIN_AMIGA_PARTITION_SIZE,
+    PFS3_MAX_PARTITION_SIZE,
+)
 from emu68hatcher.config.partition_helpers import round_to_cylinder
+from emu68hatcher.config.partition_models import Filesystem
 
-BOOT_COLOR = QColor("#546E7A")  # blue-gray
+BOOT_COLOR = QColor("#65758c")
 AMIGA_COLORS = [
-    QColor("#009688"),  # teal
-    QColor("#FF9800"),  # orange
-    QColor("#4CAF50"),  # green
-    QColor("#9C27B0"),  # purple
-    QColor("#F44336"),  # red
-    QColor("#3F51B5"),  # indigo
+    QColor(color) for color in ("#365fbe", "#287b79", "#8056a6", "#98722b", "#a54e61", "#4a6b93")
 ]
-FREE_COLOR = QColor("#424242")  # dark gray
-SELECTED_BORDER = QColor("#FFEB3B")  # yellow highlight
-FRAME_COLOR = QColor("#90A4AE")  # container chrome - frames, captions, strip text; never a fill
-BAND_BG = QColor("#37474F")
-RDB_BADGE = QColor("#263238")
-RDB_BADGE_BORDER = QColor("#607D8B")
-FREE_HATCH = QColor("#616161")  # diagonal hatch marks absence, solid fills mean data
+FREE_COLOR = QColor("#e8edf5")
+SELECTED_BORDER = QColor("#cfdeff")
 
 
 def _format_size(size_bytes: int) -> str:
     if size_bytes >= 1024**3:
-        return f"{size_bytes / (1024**3):.1f} GB"
-    return f"{size_bytes // (1024**2)} MB"
+        return f"{size_bytes / (1024**3):.1f} GiB"
+    return f"{size_bytes // (1024**2)} MiB"
 
 
 def _tooltip(label: str, size: int, sublabel: str) -> str:
@@ -43,8 +38,9 @@ class PartitionBar(QWidget):
     BAND_H = 24  # container caption band inside the frame
     partition_clicked = Signal(int)  # amiga partition index
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, interactive=True):
         super().__init__(parent)
+        self._interactive = interactive
         self.setMinimumHeight(128)
         self.setMaximumHeight(144)
         self.setMouseTracking(True)
@@ -59,6 +55,7 @@ class PartitionBar(QWidget):
         self._bytes_per_pixel = 1.0
         self._amiga_partitions = []
         self._free_space = 0
+        self._shortfall = 0
         self._children_rect: QRect | None = None
         self._name_font = QFont()
         self._name_font.setPointSize(11)
@@ -68,13 +65,16 @@ class PartitionBar(QWidget):
 
     def set_data(self, boot_size: int, amiga_partitions, free_space: int, selected: int = -1):
         self._amiga_partitions = list(amiga_partitions)
-        self._free_space = free_space
+        self._free_space = max(0, free_space)
+        self._shortfall = max(0, -free_space)
         self._segments = []
         self._segments.append(("EMU68BOOT", boot_size, "FAT32", BOOT_COLOR, False))
         for i, p in enumerate(amiga_partitions):
             color = AMIGA_COLORS[i % len(AMIGA_COLORS)]
             star = " *" if p.bootable else ""
             sublabel = f"{p.filesystem.value}{star}"
+            if p.ags_reservation:
+                sublabel += "; from AGS image · fixed size"
             self._segments.append((p.volume, p.size, sublabel, color, i == selected))
         if free_space > 0:
             self._segments.append(("free", free_space, "", FREE_COLOR, False))
@@ -98,7 +98,11 @@ class PartitionBar(QWidget):
         name_w = painter.fontMetrics().horizontalAdvance(label)
         painter.setFont(self._sub_font)
         sub_w = painter.fontMetrics().horizontalAdvance(sub_text)
-        painter.setPen(QColor("#FFFFFF"))
+        painter.setPen(
+            self.palette().color(QPalette.ColorRole.WindowText)
+            if label == "Unallocated"
+            else QColor("#FFFFFF")
+        )
         text_rect = rect.adjusted(6, 4, -6, -4)
         if seg_w > max(name_w, sub_w) + 14:
             painter.setFont(self._name_font)
@@ -143,9 +147,7 @@ class PartitionBar(QWidget):
         )
         self._draw_rdb_children(painter, children, container_bytes)
         self._rects.append((badge, "RDB header\n~1 MB\nnot to scale"))
-        self._rects.append(
-            (band, _tooltip("0x76 container", container_bytes, "Amiga RDB partition table"))
-        )
+        self._rects.append((band, self._capacity_caption(container_bytes)))
         self._draw_handles(painter, children)
         painter.end()
 
@@ -155,19 +157,19 @@ class PartitionBar(QWidget):
         boot_rect = QRect(1, bar_top, boot_width, bar_height)
         self._rects.append((boot_rect, _tooltip(boot_label, boot_size, boot_sub)))
         painter.fillRect(boot_rect, QBrush(boot_color))
-        painter.setPen(QPen(QColor("#222222"), 1))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(boot_rect)
         if not self._draw_segment_label(
             painter, boot_rect, boot_width, boot_label, boot_size, boot_sub
         ):
             painter.setFont(self._sub_font)
-            painter.setPen(FRAME_COLOR)
+            painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
             painter.drawText(
                 QRect(1, 0, width, self.STRIP_H - 4),
                 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                 f"{boot_label} · {boot_sub} · {_format_size(boot_size)}",
             )
-            painter.setPen(QPen(FRAME_COLOR, 2))
+            painter.setPen(QPen(BOOT_COLOR, 2))
             tick_x = 1 + boot_width // 2
             painter.drawLine(tick_x, self.STRIP_H - 4, tick_x, bar_top)
         return boot_width
@@ -184,7 +186,7 @@ class PartitionBar(QWidget):
         boot_size = self._segments[0][1]
         container_rect = QRect(1 + boot_width, bar_top, width - boot_width, bar_height)
         container_bytes = total - boot_size
-        painter.setPen(QPen(FRAME_COLOR, 2))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(container_rect.adjusted(1, 1, -1, -1))
         band = QRect(
             container_rect.left() + 2,
@@ -192,15 +194,14 @@ class PartitionBar(QWidget):
             container_rect.width() - 4,
             self.BAND_H,
         )
-        painter.fillRect(band, QBrush(BAND_BG))
+        painter.fillRect(band, self.palette().color(QPalette.ColorRole.Window))
         badge = QRect(band.left() + 6, band.top() + 7, 10, 10)
-        painter.fillRect(badge, QBrush(RDB_BADGE))
-        painter.setPen(QPen(RDB_BADGE_BORDER, 1))
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
         painter.drawRect(badge)
         painter.setFont(self._sub_font)
-        painter.setPen(QColor("#ECEFF1"))
+        painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
         caption = painter.fontMetrics().elidedText(
-            f"0x76 · Amiga RDB · {_format_size(container_bytes)}",
+            self._capacity_caption(container_bytes),
             Qt.TextElideMode.ElideRight,
             band.width() - 28,
         )
@@ -220,6 +221,14 @@ class PartitionBar(QWidget):
         self._bytes_per_pixel = container_bytes / children.width() if children.width() > 0 else 1.0
         return container_bytes, badge, band, children
 
+    def _capacity_caption(self, planned: int) -> str:
+        if self._shortfall:
+            return (
+                f"Amiga partitions · {_format_size(planned)} planned / "
+                f"{_format_size(max(0, planned - self._shortfall))} available"
+            )
+        return f"Amiga partitions · {_format_size(planned)}"
+
     def _draw_rdb_children(self, painter, children: QRect, container_bytes: int) -> None:
         x = children.left()
         for seg_idx in range(1, len(self._segments)):
@@ -235,17 +244,23 @@ class PartitionBar(QWidget):
             rect = QRect(x, children.top(), seg_w, children.height())
             self._rects.append((rect, _tooltip(label, size, sublabel)))
 
-            painter.fillRect(rect, QBrush(color))
             if is_free:
-                painter.fillRect(rect, QBrush(FREE_HATCH, Qt.BrushStyle.BDiagPattern))
+                color = (
+                    QColor("#343d4c")
+                    if self.palette().color(QPalette.ColorRole.Window).lightness() < 128
+                    else FREE_COLOR
+                )
+            painter.fillRect(rect, color)
 
             if selected:
                 painter.setPen(QPen(SELECTED_BORDER, 3))
                 painter.drawRect(rect.adjusted(1, 1, -2, -2))
 
-            painter.setPen(QPen(QColor("#222222"), 1))
+            painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid), 1))
             painter.drawRect(rect)
-            drew = self._draw_segment_label(painter, rect, seg_w, label, size, sublabel)
+            drew = self._draw_segment_label(
+                painter, rect, seg_w, "Unallocated" if is_free else label, size, sublabel
+            )
             if not drew and not is_free and seg_w > 18:
                 painter.setFont(self._name_font)
                 painter.setPen(QColor("#FFFFFF"))
@@ -260,6 +275,8 @@ class PartitionBar(QWidget):
             )
 
     def _draw_handles(self, painter, children: QRect) -> None:
+        if not self._interactive:
+            return
         arrow = 6
         gap = 3
         mid_y = children.center().y()
@@ -292,6 +309,8 @@ class PartitionBar(QWidget):
 
     def _border_hit(self, pos) -> int:
         """border index near pos, children row only - strip and band never grab"""
+        if not self._interactive:
+            return -1
         rc = self._children_rect
         if not rc or not (rc.top() <= pos.y() <= rc.bottom()):
             return -1
@@ -329,13 +348,36 @@ class PartitionBar(QWidget):
         )
         new_left = left_size + delta_bytes
         new_right = right_size - delta_bytes
-        minimum = round_to_cylinder(MIN_AMIGA_PARTITION_SIZE)
-        right_minimum = 0 if right_is_free else minimum
-        if new_left < minimum or new_right < right_minimum:
+        left_part = self._amiga_partitions[left_amiga]
+        if left_part.ags_reservation:
             return
-        self._amiga_partitions[left_amiga].size = new_left
+        left_minimum = (
+            left_part.ags_reservation.minimum_size
+            if left_part.ags_reservation
+            else MIN_AMIGA_PARTITION_SIZE
+        )
+        left_minimum = ((left_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
+        right_minimum = 0
         if right_is_amiga:
-            self._amiga_partitions[right_amiga].size = new_right
+            right_part = self._amiga_partitions[right_amiga]
+            if right_part.ags_reservation:
+                return
+            right_minimum = (
+                right_part.ags_reservation.minimum_size
+                if right_part.ags_reservation
+                else MIN_AMIGA_PARTITION_SIZE
+            )
+            right_minimum = ((right_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
+        if new_left < left_minimum or new_right < right_minimum:
+            return
+        if left_part.filesystem == Filesystem.PFS3 and new_left > PFS3_MAX_PARTITION_SIZE:
+            return
+        if (
+            right_is_amiga
+            and right_part.filesystem == Filesystem.PFS3
+            and new_right > PFS3_MAX_PARTITION_SIZE
+        ):
+            return
         self._drag_start_x = pos.x()
         if self._on_resize_callback:
             self._on_resize_callback(

@@ -12,6 +12,11 @@ from emu68hatcher.config.schema import OutputType
 if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
 
+_WRITE_PROTECTED = (
+    "{device} is write-protected. Slide the lock switch on the side of the SD card away "
+    "from LOCK, reinsert it and try again."
+)
+
 
 def validate_output_target(workflow: BuildWorkflow) -> None:
     from emu68hatcher.builder.host.disk_enum import find_disk
@@ -35,6 +40,10 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
         if not out_path.parent.exists():
             raise BuildError(f"Output directory not found: {out_path.parent}")
         if output.flash_target:
+            if output.verify_after_flash:
+                from emu68hatcher.builder.host.disk_writer import check_flash_verification_support
+
+                check_flash_verification_support()
             info = find_disk(output.flash_target)
             if info is None:
                 raise BuildError(
@@ -60,6 +69,8 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
 def _validate_target_disk(info, required_size: int) -> None:
     if info.is_system_disk:
         raise BuildError(f"refusing to use system disk {info.device}")
+    if info.is_read_only:
+        raise BuildError(_WRITE_PROTECTED.format(device=info.device))
     if info.size_bytes < required_size:
         raise BuildError(
             f"target {info.device} is {info.size_bytes:,} bytes "

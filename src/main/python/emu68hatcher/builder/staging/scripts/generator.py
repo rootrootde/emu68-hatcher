@@ -12,6 +12,7 @@ from emu68hatcher.config.boot_models import (
     FloppySwap,
     FramethrowerScaling,
     ReleaseToggle,
+    UnicamDevice,
 )
 from emu68hatcher.data.data_manager import load_yaml_data
 from emu68hatcher.utils.paths import ensure_dir
@@ -123,6 +124,11 @@ def _config_overlays(
     include_diagnostics: bool,
 ) -> list[str]:
     if not _is_emu68_11(emu68_version):
+        if (
+            settings.config_txt.framethrower
+            and settings.config_txt.unicam_device == UnicamDevice.C790
+        ):
+            raise ValueError("C790 requires Emu68 1.1 or later")
         return []
 
     cmdline = settings.cmdline_txt
@@ -150,6 +156,8 @@ def _config_overlays(
             params.extend(("smooth", f"b={config.framethrower_b}", f"c={config.framethrower_c}"))
         elif config.framethrower_scaling == FramethrowerScaling.INTEGER:
             params.append("integer")
+        if config.unicam_device == UnicamDevice.C790:
+            params.append("type=c790")
         suffix = "," + ",".join(params) if params else ""
         overlays.append("dtoverlay=unicam" + suffix)
 

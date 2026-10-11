@@ -1,0 +1,18 @@
+name: emu68_diagnostics
+friendly_name: Emu68 diagnostics
+group: Utilities
+description: Emu68 diagnostics
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+default: true
+archive_package: emu68_tools
+install:
+- from: Emu68EDID/Emu68EDID
+  to: C/
+- from: ListDeviceTree/ListDeviceTree
+  to: C/

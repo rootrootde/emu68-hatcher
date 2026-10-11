@@ -4,10 +4,7 @@ Build ready-to-run SD cards with pre-configured Workbench installation (+batteri
 
 Runs on macOS, Linux and Windows.
 
-<a href="docs/assets/screenshot_macos.png"><img src="docs/assets/screenshot_macos.png" alt="Emu68 Hatcher Start tab on macOS" width="900"></a>
-
-> [!NOTE]
-> **Still in an early stage** - see [known issues](https://rootrootde.github.io/emu68hatcher/#known-issues-limitations). Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68-hatcher/issues) - even just "it worked" is useful.
+<a href="docs/assets/screenshots/overview.png"><img src="docs/assets/screenshots/overview.png" alt="Emu68 Hatcher configuration overview (offscreen Qt)" width="900"></a>
 
 **Features**
 
@@ -54,6 +51,41 @@ emu68hatcher                    # windows: python -m emu68hatcher
 
 For usage see → [docs](https://rootrootde.github.io/emu68hatcher/).
 
+### Picasso96 settings
+
+**src/main/python/emu68hatcher/data/reference/picasso96.json** defines the
+57 bundled resolutions, their display IDs and per-depth timings. The configure
+stage generates **DEVS:Picasso96Settings** from it. Workbench mode IDs come from
+the same data; reordering resolution blocks does not renumber them.
+
+The default output is byte-identical to the previous bundled file, including
+disabled depths and the original annotation and name bytes. BoardType remains
+14, paired with **VC4_LEGACY_ID** on VideoCore. UAE uses the same settings file.
+Switching to PiStorm BoardType 39 would also require separate UAE settings and
+changes to monitor tooltypes; it is not selected by Emu68 version.
+
+The format reference was [Emu68P96Settings](https://github.com/flype44/Emu68P96Settings)
+and the VideoCore [P96 headers](https://github.com/michalsc/VideoCore.card/blob/main/src/settings.h).
+The reader and writer here are implemented locally; no upstream scripts are bundled.
+
+With the development environment activated, inspect an existing file or
+regenerate the bundled copy:
+
+```bash
+python -m emu68hatcher.data.picasso96 inspect \
+  src/main/python/emu68hatcher/data/local_packages/System/Devs/Picasso96Settings \
+  /tmp/picasso96-inspected.json
+python -m emu68hatcher.data.picasso96 generate \
+  src/main/python/emu68hatcher/data/reference/picasso96.json \
+  src/main/python/emu68hatcher/data/local_packages/System/Devs/Picasso96Settings
+```
+
+Keep the bundled copy in sync when editing the JSON: cached package catalogues
+still install it before configuration. The JSON stores ordered IFF chunks;
+**defaults** supplies shared fields, and each chunk can override them.
+Inspection preserves unknown chunks as hex and retains padding bytes.
+New resolutions or timing changes need PiStorm hardware verification.
+
 ## Credits
 
 Thanks to:
@@ -61,6 +93,7 @@ Thanks to:
 - [mja65](https://github.com/mja65)'s fantastic work on the [Emu68 Imager](https://github.com/mja65/Emu68-Imager-Software) project
 - [Emu68](https://github.com/michalsc/Emu68) and [Emu68-tools](https://github.com/michalsc/Emu68-tools) by Michal Schulz (MPL-2.0) - m68k emulation and the on-Amiga companion tools (EmuControl, VideoCore.card, WiFiPi.device, ...)
 - [hst-imager](https://github.com/henrikstengaard/hst-imager) and [hst-amiga](https://github.com/henrikstengaard/hst-amiga) by Henrik Stengaard (MIT) - disk image + RDB tooling
+- [Emu68P96Settings](https://github.com/flype44/Emu68P96Settings) by flype44 - format reference for reading and generating Picasso96 settings
 
 Bundled / downloaded at build time:
 
@@ -77,4 +110,4 @@ Bundled / downloaded at build time:
 
 Documentation is published by the **Deploy documentation** workflow in
 [rootrootde.github.io](https://github.com/rootrootde/rootrootde.github.io/actions/workflows/pages.yml).
-It builds this repository's main branch and keeps the existing **/emu68hatcher/** URLs.
+It builds the main branch of **emu68-hatcher** and keeps the existing **/emu68hatcher/** URLs.

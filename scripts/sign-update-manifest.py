@@ -8,7 +8,11 @@ from pathlib import Path
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from emu68hatcher.data.update_manifest import UpdateManifest, canonical_payload
+from emu68hatcher.data.update_manifest import (
+    _MAX_MANIFEST_BYTES,
+    canonical_payload,
+    parse_manifest_payload,
+)
 from pydantic import ValidationError
 
 
@@ -22,7 +26,7 @@ def main() -> int:
 
     try:
         payload = json.loads(args.source.read_text(encoding="utf-8"))
-        UpdateManifest.model_validate(payload)
+        parse_manifest_payload(payload)
     except (OSError, json.JSONDecodeError, ValidationError) as error:
         parser.error(str(error))
 
@@ -40,6 +44,10 @@ def main() -> int:
         },
     }
     content = json.dumps(envelope, indent=2, ensure_ascii=False) + "\n"
+    if args.key_id != "updates-2026":
+        parser.error("unknown signing key id")
+    if len(content.encode("utf-8")) > _MAX_MANIFEST_BYTES:
+        parser.error("signed manifest exceeds client size limit")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.output.with_suffix(args.output.suffix + ".tmp")
     tmp.write_text(content, encoding="utf-8", newline="\n")

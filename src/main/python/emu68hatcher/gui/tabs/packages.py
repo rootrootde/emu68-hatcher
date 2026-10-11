@@ -1,14 +1,17 @@
-"""package selection tab - loads packages from YAML defs"""
+"""Software requests and their resolved dependencies."""
 
-from PySide6.QtCore import Qt
+import sys
+
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
+    QLabel,
     QPushButton,
+    QStyleFactory,
     QTreeWidget,
     QTreeWidgetItem,
-    QVBoxLayout,
     QWidget,
 )
 
@@ -17,68 +20,62 @@ from emu68hatcher.data.package_loader import (
     get_bundle_members,
     get_bundles_for_version,
     get_packages_for_version,
+    load_all_packages,
 )
-from emu68hatcher.data.package_schema import Bundle, Package
+from emu68hatcher.data.package_selection import resolve_choices, software_defaults
+from emu68hatcher.gui.design import page_layout
 
-# packages controlled by the network stack radio (Network tab), hidden from the tree
 _NETWORK_STACK_PACKAGES = {stack.value.lower() for stack in NetworkStack}
-
-# groups not shown in the tree: System is mandatory infra (mui handled specially);
-# Locale is the language grid on the Amiga Files tab
-_HIDDEN_GROUPS = {"System", "Locale"}
 
 
 class PackagesTab(QWidget):
-    """package selection tab that loads packages from YAML definitions"""
+    selection_changed = Signal()
 
-    def __init__(self, parent=None, kickstart_version="3.2.3", emu68_version: str | None = None):
+    def __init__(self, parent=None, kickstart_version="3.2.3", emu68_version=None):
         super().__init__(parent)
-        self.checkboxes: dict[str, QTreeWidgetItem] = {}
         self.kickstart_version = kickstart_version
-        # None = show everything; the resolver filters on this too, so seed the real
-        # value or the tree offers packages that silently vanish at build time
         self.emu68_version = emu68_version
-        self._selectables: list[tuple[str, Bundle | Package]] = []
+        self.network_stack = None
+        self.theme_name = "default"
+        self._requests = software_defaults()
+        self._updating = False
+        self.checkboxes: dict[str, QTreeWidgetItem] = {}
         self._key_to_packages: dict[str, list[str]] = {}
-        self._bundle_member_states: dict[str, dict[str, bool]] = {}
-        self._updating = False  # reentrancy guard for the mui mutual-exclusion handler
-        self.setup_ui()
-
-    def setup_ui(self):
-        """set up the UI layout"""
-        layout = QVBoxLayout(self)
-
-        # quick action buttons
-        btn_layout = QHBoxLayout()
-        select_all = QPushButton("Select All")
-        select_all.clicked.connect(self.select_all)
-        select_none = QPushButton("Select None")
-        select_none.clicked.connect(self.select_none)
-        defaults = QPushButton("Defaults")
-        defaults.clicked.connect(self.select_defaults)
-        btn_layout.addWidget(select_all)
-        btn_layout.addWidget(select_none)
-        btn_layout.addWidget(defaults)
-        btn_layout.addStretch()
-        layout.addLayout(btn_layout)
-
-        # package tree
+        layout = page_layout(self)
+        actions = QHBoxLayout()
+        for label, callback in (
+            ("Select All", self.select_all),
+            ("Select None", self.select_none),
+            ("Defaults", self.select_defaults),
+        ):
+            button = QPushButton(label)
+            button.clicked.connect(callback)
+            actions.addWidget(button)
+        actions.addStretch()
+        layout.addLayout(actions)
         self.tree = QTreeWidget()
         self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(["Package", "Description"])
+        self.tree.setHeaderLabels(["Package", "Description / dependency"])
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.tree.setRootIsDecorated(True)
         self.tree.setAlternatingRowColors(True)
+        if sys.platform == "darwin":
+            # the macOS style draws no item check boxes on macOS 27
+            self._tree_style = QStyleFactory.create("Fusion")
+            self.tree.setStyle(self._tree_style)
         self.tree.itemChanged.connect(self._on_item_changed)
         layout.addWidget(self.tree, 1)
-
-        # load packages
+        self.catalog_notice = QLabel()
+        self.catalog_notice.setWordWrap(True)
+        self.catalog_notice.setProperty("tone", "warning")
+        layout.addWidget(self.catalog_notice)
+        self.status = QLabel()
+        self.status.setWordWrap(True)
+        self.status.setProperty("tone", "muted")
+        layout.addWidget(self.status)
         self.refresh_packages()
 
     def refresh_packages(self):
-        """reload selectable items (bundles + standalone packages) for current Kickstart version"""
-        # silence the mui handler while the tree is rebuilt (setCheckState fires itemChanged)
         self._updating = True
         try:
             self._refresh_packages()
@@ -86,197 +83,200 @@ class PackagesTab(QWidget):
             self._updating = False
 
     def _refresh_packages(self):
-        self.checkboxes.clear()
+        expanded = {
+            self.tree.topLevelItem(i).text(0): self.tree.topLevelItem(i).isExpanded()
+            for i in range(self.tree.topLevelItemCount())
+        }
         self.tree.clear()
+        self.checkboxes.clear()
+        self._key_to_packages.clear()
+        packages = get_packages_for_version(self.kickstart_version, self.emu68_version)
+        by_name = {p.name: p for p in packages}
+        self.resolution = resolve_choices(
+            self._requests,
+            self.kickstart_version,
+            self.emu68_version,
+            self.network_stack,
+            self.theme_name,
+        )
+        selected = self.resolution.selected
+        groups = {}
+        bold = QFont()
+        bold.setBold(True)
 
-        # tree row keys: bundle.id for bundles, package.name for standalones
-        self._selectables: list[tuple[str, Bundle | Package]] = []
-        self._key_to_packages: dict[str, list[str]] = {}
-        self._bundle_member_states = {}
+        def group(label):
+            if label not in groups:
+                item = QTreeWidgetItem(self.tree, [label, ""])
+                item.setFont(0, bold)
+                item.setExpanded(
+                    expanded.get(label, label not in {"Libraries", "Required packages"})
+                )
+                groups[label] = item
+            return groups[label]
 
-        # standalone packages (not in a bundle, not mandatory, not a network stack)
-        for p in get_packages_for_version(self.kickstart_version, self.emu68_version):
-            if not p.group or p.group in _HIDDEN_GROUPS:
+        def add_row(key, label, category, description, names):
+            enabled = [name in selected for name in names]
+            reasons = set()
+            for name in names:
+                reasons.update(self.resolution.required_by.get(name, []))
+            reasons.difference_update(names)
+            auto = any(name in selected and not self._requests.get(name, False) for name in names)
+            forced = {
+                self.resolution.selection_reasons[n]
+                for n in names
+                if n in self.resolution.selection_reasons
+            }
+            recommendations = {
+                n for name in names for n in self.resolution.recommended_by.get(name, [])
+            }
+            if reasons:
+                consumers = ", ".join(by_name[n].friendly_name for n in sorted(reasons))
+                description += f" (Required by {consumers})"
+            elif forced:
+                description += f" (Required by {', '.join(sorted(forced))})"
+            elif recommendations and auto:
+                description += (
+                    " (Recommended by "
+                    + ", ".join(by_name[n].friendly_name for n in sorted(recommendations))
+                    + ")"
+                )
+            elif auto:
+                description += " (Selected by network, theme or recommendation)"
+            if auto and key not in {"mui38", "mui5"}:
+                category = "Required packages"
+            item = QTreeWidgetItem(group(category), [label, description])
+            item.setToolTip(1, description)
+            item.setData(0, Qt.ItemDataRole.UserRole, key)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            # mui alternatives stay clickable while an application needs mui
+            if (reasons or forced) and key not in {"mui38", "mui5"}:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+            state = Qt.CheckState.Checked if all(enabled) else Qt.CheckState.Unchecked
+            if any(enabled) and not all(enabled):
+                state = Qt.CheckState.PartiallyChecked
+            item.setCheckState(0, state)
+            self.checkboxes[key] = item
+            self._key_to_packages[key] = names
+
+        for bundle in get_bundles_for_version(self.kickstart_version, self.emu68_version):
+            members = get_bundle_members(bundle.id, self.kickstart_version, self.emu68_version)
+            add_row(
+                "bundle:" + bundle.id,
+                bundle.display_name,
+                bundle.group,
+                bundle.description or "",
+                [p.name for p in members],
+            )
+        for pkg in packages:
+            if pkg.mandatory or pkg.bundle or pkg.name in _NETWORK_STACK_PACKAGES:
                 continue
-            if p.mandatory:
-                continue  # installed unconditionally by the build pipeline
-            if p.bundle:
-                continue  # surfaced via its bundle
-            if p.name in _NETWORK_STACK_PACKAGES:
-                continue  # surfaced via the radio buttons
-            self._selectables.append((p.name, p))
-            self._key_to_packages[p.name] = [p.name]
+            if pkg.name in {"mui38", "mui5"}:
+                category = "MUI Toolkit"
+            elif pkg.group in {"System", "Locale"}:
+                continue
+            else:
+                category = pkg.group
+            add_row(pkg.name, pkg.friendly_name, category, pkg.description, [pkg.name])
 
-        # bundles
-        for b in get_bundles_for_version(self.kickstart_version, self.emu68_version):
-            members = get_bundle_members(b.id, self.kickstart_version, self.emu68_version)
-            if not members or all(m.mandatory for m in members):
-                continue  # no members, or all mandatory (installed unconditionally) - not a choice
-            # bundle id may clash with a package name; prefix on collision
-            key = b.id if b.id not in self._key_to_packages else f"bundle:{b.id}"
-            self._selectables.append((key, b))
-            self._key_to_packages[key] = [m.name for m in members]
-            self._bundle_member_states[key] = {m.name: b.default for m in members}
-
-        # build UI
-        groups: dict[str, list[tuple[str, Bundle | Package]]] = {}
-        for key, item in self._selectables:
-            groups.setdefault(item.group, []).append((key, item))
-
-        bold_font = QFont()
-        bold_font.setBold(True)
-
-        for group_name in sorted(groups.keys()):
-            group_item = QTreeWidgetItem(self.tree, [group_name, ""])
-            group_item.setFont(0, bold_font)
-            group_item.setFlags(group_item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
-            group_item.setExpanded(True)
-
-            def _label(item: Bundle | Package) -> str:
-                return (
-                    item.display_name
-                    if isinstance(item, Bundle)
-                    else (item.friendly_name or item.name)
-                )
-
-            for key, item in sorted(groups[group_name], key=lambda e: _label(e[1]).lower()):
-                child = QTreeWidgetItem(group_item, [_label(item), item.description or ""])
-                child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                child.setCheckState(
-                    0, Qt.CheckState.Checked if item.default else Qt.CheckState.Unchecked
-                )
-                self.checkboxes[key] = child
-
-        self._add_mui_group(bold_font)
-
-    def _add_mui_group(self, bold_font: QFont):
-        """mui38/mui5 as two mutually-exclusive rows (they're group:System, so not in the tree)"""
-        from emu68hatcher.data.package_loader import get_package_by_name
-
-        group_item = QTreeWidgetItem(self.tree, ["MUI Toolkit", "pick one MUI version"])
-        group_item.setFont(0, bold_font)
-        group_item.setFlags(group_item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
-        group_item.setExpanded(True)
-        for name, label in (("mui38", "MUI 3.8"), ("mui5", "MUI 5.0")):
-            pkg = get_package_by_name(name)
-            child = QTreeWidgetItem(group_item, [label, pkg.description if pkg else ""])
-            child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            # mui38 default-checked; exactly one is always on (the radio's old invariant)
-            on = name == "mui38"
-            child.setCheckState(0, Qt.CheckState.Checked if on else Qt.CheckState.Unchecked)
-            self.checkboxes[name] = child
-            self._key_to_packages[name] = [name]
+        shown = {name for names in self._key_to_packages.values() for name in names}
+        for name in sorted(selected - shown):
+            pkg = by_name[name]
+            if not (pkg.install or pkg.relocate or pkg.scripts or pkg.mandatory):
+                continue
+            reasons = self.resolution.required_by.get(name, [])
+            description = "Required by " + ", ".join(by_name[n].friendly_name for n in reasons)
+            if pkg.mandatory:
+                description = "Required for the Hatcher base system"
+            elif not reasons:
+                description = "Selected by network, theme or locale"
+            QTreeWidgetItem(group("Required packages"), [pkg.friendly_name, description])
+        problems = [
+            f"{token}: needed by {', '.join(names)}"
+            for token, names in self.resolution.unsatisfiable.items()
+        ]
+        self.catalog_notice.setVisible(bool(self.catalog_notice.text()))
+        self.status.setText(
+            "Missing requirements: " + "; ".join(problems)
+            if problems
+            else f"{len(selected)} packages selected"
+        )
 
     def _on_item_changed(self, item, column):
-        """keep exactly one of mui38/mui5 checked (a radio built from two checkboxes)"""
         if self._updating or column != 0:
             return
-        key = next((key for key, widget in self.checkboxes.items() if widget is item), None)
-        if key in self._bundle_member_states:
-            state = item.checkState(0)
-            if state != Qt.CheckState.PartiallyChecked:
-                enabled = state == Qt.CheckState.Checked
-                self._bundle_member_states[key] = dict.fromkeys(self._key_to_packages[key], enabled)
+        key = item.data(0, Qt.ItemDataRole.UserRole)
+        if key not in self._key_to_packages:
             return
-        mui38 = self.checkboxes.get("mui38")
-        mui5 = self.checkboxes.get("mui5")
-        if item is not mui38 and item is not mui5:
-            return
-        self._updating = True
-        try:
-            if item.checkState(0) == Qt.CheckState.Checked:
-                other = mui5 if item is mui38 else mui38
-                other.setCheckState(0, Qt.CheckState.Unchecked)
-            else:
-                # can't leave zero selected - re-check the one the user just unticked
-                item.setCheckState(0, Qt.CheckState.Checked)
-        finally:
-            self._updating = False
+        enabled = item.checkState(0) == Qt.CheckState.Checked
+        for name in self._key_to_packages[key]:
+            self._requests[name] = enabled
+        if enabled and key in {"mui38", "mui5"}:
+            self._requests["mui5" if key == "mui38" else "mui38"] = False
+        self.refresh_packages()
+        self.selection_changed.emit()
 
-    def set_kickstart_version(self, version: str):
-        """reload the package tree when the Kickstart version changes"""
+    def set_context(self, network_stack, theme_name):
+        self.network_stack = network_stack
+        self.theme_name = theme_name
+        self.refresh_packages()
+
+    def set_kickstart_version(self, version):
         if version != self.kickstart_version:
             self.kickstart_version = version
             self.refresh_packages()
 
-    def set_emu68_version(self, version: str):
-        """reload the package tree when the Emu68 release changes"""
+    def set_emu68_version(self, version):
         if version != self.emu68_version:
             self.emu68_version = version
             self.refresh_packages()
 
     def select_all(self):
-        """select all packages"""
-        for item in self.checkboxes.values():
-            item.setCheckState(0, Qt.CheckState.Checked)
+        for names in self._key_to_packages.values():
+            for name in names:
+                self._requests[name] = True
+        self._requests["mui38"] = False
+        self._requests["mui5"] = True
+        self.refresh_packages()
+        self.selection_changed.emit()
 
     def select_none(self):
-        """deselect all packages"""
-        for item in self.checkboxes.values():
-            item.setCheckState(0, Qt.CheckState.Unchecked)
+        self._requests = dict.fromkeys(software_defaults(), False)
+        self.refresh_packages()
+        self.selection_changed.emit()
 
     def select_defaults(self):
-        """reset to default selections"""
-        for key, item in self._selectables:
-            if key in self.checkboxes:
-                self.checkboxes[key].setCheckState(
-                    0, Qt.CheckState.Checked if item.default else Qt.CheckState.Unchecked
-                )
+        self._requests = software_defaults()
+        self.refresh_packages()
+        self.selection_changed.emit()
 
-    def get_config(self) -> list:
-        """tree selections; bundles expand to member names so persisted config stays flat"""
-        result = []
-        for key, widget in self.checkboxes.items():
-            if (
-                key in self._bundle_member_states
-                and widget.checkState(0) == Qt.CheckState.PartiallyChecked
-            ):
-                for pkg_name, enabled in self._bundle_member_states[key].items():
-                    result.append({"name": pkg_name, "enabled": enabled})
-                continue
-            enabled = widget.checkState(0) == Qt.CheckState.Checked
-            for pkg_name in self._key_to_packages.get(key, [key]):
-                result.append({"name": pkg_name, "enabled": enabled})
-        return result
+    def get_config(self) -> list[dict]:
+        return [{"name": name, "enabled": enabled} for name, enabled in self._requests.items()]
+
+    def refresh_catalog(self):
+        defaults = software_defaults()
+        known = {p.name for p in load_all_packages()}
+        removed = sorted(
+            name for name, enabled in self._requests.items() if enabled and name not in known
+        )
+        self._requests = {
+            name: self._requests.get(name, enabled) for name, enabled in defaults.items()
+        }
+        self.catalog_notice.setText(
+            "Previously selected packages are no longer available: " + ", ".join(removed)
+            if removed
+            else ""
+        )
+        self.refresh_packages()
+        self.selection_changed.emit()
 
     def set_config(self, packages: list[PackageConfig]):
-        """Populate the tree while retaining per-member bundle state."""
-        pkg_enabled = {p.name: p.enabled for p in packages}
-
-        # guard so applying the saved mui state doesn't trip the mutual-exclusion handler
-        self._updating = True
-        try:
-            for key, widget in self.checkboxes.items():
-                names = self._key_to_packages.get(key, [key])
-                states = {name: pkg_enabled[name] for name in names if name in pkg_enabled}
-                if not states:
-                    continue
-                if key in self._bundle_member_states:
-                    retained = self._bundle_member_states[key]
-                    retained.update(states)
-                    values = set(retained.values())
-                    if len(values) > 1:
-                        widget.setCheckState(0, Qt.CheckState.PartiallyChecked)
-                    else:
-                        widget.setCheckState(
-                            0,
-                            Qt.CheckState.Checked if values.pop() else Qt.CheckState.Unchecked,
-                        )
-                else:
-                    widget.setCheckState(
-                        0,
-                        Qt.CheckState.Checked
-                        if next(iter(states.values()))
-                        else Qt.CheckState.Unchecked,
-                    )
-            # a config with neither mui recorded (or both off) falls back to mui38
-            mui38 = self.checkboxes.get("mui38")
-            mui5 = self.checkboxes.get("mui5")
-            if mui38 is not None and mui5 is not None:
-                m38 = mui38.checkState(0) == Qt.CheckState.Checked
-                m5 = mui5.checkState(0) == Qt.CheckState.Checked
-                if m38 == m5:  # both on or both off -> normalise to mui38
-                    mui38.setCheckState(0, Qt.CheckState.Checked)
-                    mui5.setCheckState(0, Qt.CheckState.Unchecked)
-        finally:
-            self._updating = False
+        self._requests = software_defaults()
+        known = {p.name for p in load_all_packages()}
+        unknown = sorted(p.name for p in packages if p.enabled and p.name not in known)
+        self.catalog_notice.setText(
+            "Saved packages are no longer available: " + ", ".join(unknown) if unknown else ""
+        )
+        self._requests.update({p.name: p.enabled for p in packages if p.name in self._requests})
+        if self._requests.get("mui5"):
+            self._requests["mui38"] = False
+        self.refresh_packages()

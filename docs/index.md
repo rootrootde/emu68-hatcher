@@ -4,7 +4,7 @@ Build ready-to-run SD cards with pre-configured Workbench installation (+batteri
 
 Runs on macOS, Linux and Windows.
 
-<a href="assets/screenshot_macos.png" target="_blank"><img src="assets/screenshot_macos.png" alt="Emu68 Hatcher Start tab on macOS" width="900"></a>
+<a href="assets/screenshots/overview.png" target="_blank"><img src="assets/screenshots/overview.png" alt="Emu68 Hatcher configuration overview (offscreen Qt)" width="900"></a>
 
 - Bootable Emu68 install for pistorm32-lite, pistorm and pistorm16
 - Workbench install from stock ADFs (3.1 / 3.2 / 3.2.2.1 / 3.2.3), identified by hash
@@ -18,8 +18,6 @@ Runs on macOS, Linux and Windows.
 - Application and signed package-list update checks
 
 ## Known issues / limitations
-
-**Still in an early stage** - Only actively tested on my A1200 + pistorm32-lite + CM4 / on macOS. If you run it on different hardware or OS, let me know on the [Discord](https://discord.com/invite/ApTbasXJPE) or open a [GitHub issue](https://github.com/rootrootde/emu68-hatcher/issues) - even just "it worked" is useful.
 
 - **mostly tested on 3.2(.3)** - expect more potential issues with 3.1
 - Automatic ROM selection prefers A1200 ROMs; this also works on A600. No manual selection yet.
@@ -45,6 +43,7 @@ Thanks to:
 - [mja65](https://github.com/mja65)'s fantastic work on the [Emu68 Imager](https://github.com/mja65/Emu68-Imager-Software) project
 - [Emu68](https://github.com/michalsc/Emu68) and [Emu68-tools](https://github.com/michalsc/Emu68-tools) by Michal Schulz (MPL-2.0) - m68k emulation and the on-Amiga companion tools (EmuControl, VideoCore.card, WiFiPi.device, ...)
 - [hst-imager](https://github.com/henrikstengaard/hst-imager) and [hst-amiga](https://github.com/henrikstengaard/hst-amiga) by Henrik Stengaard (MIT) - disk image + RDB tooling
+- [Emu68P96Settings](https://github.com/flype44/Emu68P96Settings) by flype44 - format reference for reading and generating Picasso96 settings
 
 Bundled / downloaded at build time:
 

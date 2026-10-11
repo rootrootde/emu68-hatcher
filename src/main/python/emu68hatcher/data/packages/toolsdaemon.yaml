@@ -1,16 +1,19 @@
 name: toolsdaemon
 friendly_name: ToolsDaemon 2.2
-group: System
-description: 'Workbench menus and preferences editor'
+group: Commodities
+description: 'Custom Workbench menus and preferences editor'
 versions:
 - '3.1'
 - '3.2'
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 requires:
+- additem
 - reqtools
+- toolsdaemon_patch
+- wbrun
 download:
   source: aminet
   path: util/boot/ToolsDaemon21a.lha
@@ -27,3 +30,5 @@ install:
   to: Prefs/
 - from: ToolsDaemon/ToolsPrefs.info
   to: Prefs/
+bundle: toolsdaemon
+default: true

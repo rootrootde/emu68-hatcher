@@ -6,6 +6,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from emu68hatcher.config.ags_models import (
+    AGSComponents,
+    AGSImportConfig,
+    AGSPartitionReservation,
+    AGSRole,
+)
 from emu68hatcher.config.boot_models import (
     AntennaMode,
     BusTestMode,
@@ -15,6 +21,7 @@ from emu68hatcher.config.boot_models import (
     FloppySwap,
     FramethrowerScaling,
     ReleaseToggle,
+    UnicamDevice,
     Unit0Mode,
 )
 from emu68hatcher.config.display_models import (
@@ -37,6 +44,10 @@ from emu68hatcher.config.partition_models import (
 )
 
 __all__ = [
+    "AGSImportConfig",
+    "AGSComponents",
+    "AGSPartitionReservation",
+    "AGSRole",
     "AmigaPartition",
     "AntennaMode",
     "BuildConfig",
@@ -63,12 +74,13 @@ __all__ = [
     "PackageConfig",
     "PartitionConfig",
     "ReleaseToggle",
+    "UnicamDevice",
     "Unit0Mode",
     "WifiConfig",
     "WorkbenchScreenMode",
 ]
 
-CURRENT_CONFIG_VERSION = "1.1.0"
+CURRENT_CONFIG_VERSION = "1.3.0"
 
 
 class _ConfigModel(BaseModel):
@@ -196,6 +208,11 @@ class OutputConfig(_ConfigModel):
         description="If set (IMG mode only), flash the built .img to this physical disk",
     )
 
+    verify_after_flash: bool = Field(
+        default=True,
+        description="Verify written blocks in a separate pass after flashing (IMG + flash only)",
+    )
+
     @field_validator("path", mode="before")
     @classmethod
     def convert_path(cls, v):
@@ -234,7 +251,7 @@ class OutputConfig(_ConfigModel):
 class BuildConfig(_ConfigModel):
     """full build config - JSON-serializable; drives the pipeline"""
 
-    version: Literal["1.1.0"] = Field(
+    version: Literal["1.3.0"] = Field(
         default=CURRENT_CONFIG_VERSION,
         description="Config schema version",
     )
@@ -252,6 +269,7 @@ class BuildConfig(_ConfigModel):
     # package selection
     packages: list[PackageConfig] = Field(default_factory=list)
     icon_set: str = "Default"
+    ags_import: AGSImportConfig | None = None
 
     # partition layout
     partitions: PartitionConfig | None = None
@@ -326,9 +344,29 @@ class BuildConfig(_ConfigModel):
     def _check_framethrower_screen_mode(self):
         if (
             self.emu68_boot.config_txt.framethrower
+            and self.emu68_boot.config_txt.unicam_device == UnicamDevice.C790
+            and self.emu68_version == Emu68Version.V1_0_7
+        ):
+            raise ValueError("C790 requires Emu68 1.1 or later")
+        if (
+            self.emu68_boot.config_txt.framethrower
             and self.display.workbench_mode == WorkbenchScreenMode.NATIVE
         ):
-            raise ValueError("Framethrower requires a VideoCore Workbench screen mode")
+            raise ValueError("Native-video capture requires a VideoCore Workbench screen mode")
+        return self
+
+    @model_validator(mode="after")
+    def _check_ags_reservations(self):
+        from emu68hatcher.config.ags_layout import validate_ags_layout
+
+        if self.ags_import is None or not self.ags_import.enabled:
+            errors = validate_ags_layout(self)
+        elif self.ags_import.allocation_state == "ready":
+            errors = validate_ags_layout(self)
+        else:
+            errors = ()
+        if errors:
+            raise ValueError("; ".join(errors))
         return self
 
     model_config = ConfigDict(
@@ -368,13 +406,6 @@ class BuildConfig(_ConfigModel):
                                     "size": 506000000,
                                     "bootable": True,
                                     "priority": 0,
-                                },
-                                {
-                                    "device": "SDH1",
-                                    "volume": "Work",
-                                    "filesystem": "PFS3",
-                                    "size": 6586000000,
-                                    "bootable": False,
                                 },
                             ],
                         },

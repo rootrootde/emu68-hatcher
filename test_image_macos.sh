@@ -2,20 +2,33 @@
 set -eu
 
 usage() {
-    echo "usage: $0 [--reuse] /path/to/emu68hatcher.img"
+    echo "usage: $0 [--reuse] [--native] [--offline] /path/to/emu68hatcher.img"
 }
 
 reuse=false
-case "${1:-}" in
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    --reuse)
-        reuse=true
-        shift
-        ;;
-esac
+rtg_size=128
+bsdsocket=true
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --reuse)
+            reuse=true
+            shift
+            ;;
+        --native)
+            rtg_size=0
+            shift
+            ;;
+        --offline)
+            bsdsocket=false
+            shift
+            ;;
+        *) break ;;
+    esac
+done
 
 if [ "$#" -ne 1 ]; then
     usage
@@ -62,6 +75,10 @@ if [ ! -x "$hst" ]; then
 fi
 
 amiberry=${EMU68HATCHER_AMIBERRY:-}
+if [ -n "$amiberry" ] && [ ! -x "$amiberry" ]; then
+    echo "EMU68HATCHER_AMIBERRY not found: $amiberry; falling back to /Applications" >&2
+    amiberry=
+fi
 if [ -z "$amiberry" ]; then
     for candidate in \
         /Applications/Amiberry.app/Contents/MacOS/Amiberry \
@@ -136,10 +153,32 @@ else
     echo "Preparing sparse emulator disk"
     "$hst" transfer "$image_path/mbr/2" "$hdf_tmp"
 
+    # AGS on a Hatcher card uses a VideoCore screen mode, which UAE does not have.
+    # The emulator copy gets the native PAL mode that Themes_RTGtoAGA would set.
+    ags_dir=
+    mkdir -p "$work_dir/ags/Themes"
+    for index in 1 2 3 4 5 6 7 8 9 10; do
+        if "$hst" fs copy "$hdf_tmp/rdb/$index/AGS2/AGS2.conf" "$work_dir/ags" \
+            --force TRUE >/dev/null 2>&1 && [ -f "$work_dir/ags/AGS2.conf" ]; then
+            ags_dir="$hdf_tmp/rdb/$index/AGS2"
+            break
+        fi
+    done
+    if [ -n "$ags_dir" ]; then
+        echo "Switching the emulator copy of AGS to the native PAL screen mode"
+        "$hst" fs copy "$ags_dir/Themes/*.conf" "$work_dir/ags/Themes" --force TRUE >/dev/null
+        perl -pi -e 's/^(\s*mode\s*=\s*)\$[0-9A-Fa-f]+/${1}\$29000/' \
+            "$work_dir/ags/AGS2.conf" "$work_dir/ags/Themes/"*.conf
+        "$hst" fs copy "$work_dir/ags/AGS2.conf" "$ags_dir" --force TRUE >/dev/null
+        "$hst" fs copy "$work_dir/ags/Themes/*.conf" "$ags_dir/Themes" --force TRUE >/dev/null
+    fi
+
     echo "Using the image's Startup-Sequence unchanged"
     mv -f "$hdf_tmp" "$hdf_path"
 fi
 
+echo "Amiberry executable: $amiberry"
+echo "Emulator networking: $bsdsocket"
 echo "Starting Amiberry with $hdf_path"
 echo "The original image is not modified. Emulator writes stay in the cached HDF."
 echo "Boot log: $amiberry_home/Amiberry.log"
@@ -157,7 +196,8 @@ exec "$amiberry" \
     -s cpu_speed=max \
     -s cpu_compatible=false \
     -s cpu_24bit_addressing=false \
+    -s "bsdsocket_emu=$bsdsocket" \
     -s z3mem_size=256 \
     -s gfxcard_type=ZorroIII \
-    -s gfxcard_size=128 \
+    -s "gfxcard_size=$rtg_size" \
     -G

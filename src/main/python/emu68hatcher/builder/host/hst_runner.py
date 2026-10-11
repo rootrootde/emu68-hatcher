@@ -108,6 +108,7 @@ class HSTRunner:
         command: HSTCommandLine,
         timeout: float | None = None,
         elevation: ElevationToken | None = None,
+        on_line: Callable[[str, str], None] | None = None,
     ) -> CommandResult:
         """run one hst-imager command synchronously"""
         if self.dry_run:
@@ -130,7 +131,11 @@ class HSTRunner:
             _logger.info(f"hst-imager: $ {shlex.join(['hst-imager', *command.to_args()])}")
 
             result = run_elevated(
-                args, elevation, timeout=cmd_timeout, cancel_check=self._cancel_check
+                args,
+                elevation,
+                timeout=cmd_timeout,
+                cancel_check=self._cancel_check,
+                on_line=on_line,
             )
 
             duration = time.time() - start_time

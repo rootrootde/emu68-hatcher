@@ -1,7 +1,7 @@
 name: clicktofront
 friendly_name: ClickToFront
 group: Commodities
-description: 'click to bring windows to front)'
+description: 'click to bring windows to front'
 versions:
 - '3.1'
 - '3.2'

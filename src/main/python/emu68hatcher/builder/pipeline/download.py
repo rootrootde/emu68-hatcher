@@ -291,6 +291,15 @@ def _required_selection_packages(
 ) -> set[str]:
     theme = get_workbench_theme(workflow.config.display.workbench_theme)
     required = {name.lower() for name in theme.required_packages} if theme else set()
+    from emu68hatcher.data.package_loader import get_mandatory_packages
+
+    required.update(
+        p.name
+        for p in get_mandatory_packages(
+            workflow.config.kickstart.version.value, workflow.config.emu68_version.value
+        )
+    )
+    required.update(resolution.required_by)
     if workflow.config.network_stack is not None:
         required.add(workflow.config.network_stack.value.lower())
     if not required:
@@ -313,7 +322,10 @@ def _required_selection_packages(
         package = get_package_by_name(name)
         if package is None:
             continue
-        for requirement in package.requires:
+        requirements = package.requires + (
+            [package.archive_package] if package.archive_package else []
+        )
+        for requirement in requirements:
             provider = providers.get(requirement.lower())
             if provider is not None and provider not in required:
                 required.add(provider)

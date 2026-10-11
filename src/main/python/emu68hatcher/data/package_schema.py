@@ -16,7 +16,11 @@ class SourceType(str, Enum):
     LOCAL = "local"
 
 
-class DownloadInfo(BaseModel):
+class CatalogModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+class DownloadInfo(CatalogModel):
     """download configuration for a package"""
 
     source: SourceType
@@ -48,7 +52,7 @@ class DownloadInfo(BaseModel):
         return self
 
 
-class InstallRule(BaseModel):
+class InstallRule(CatalogModel):
     """rule for installing files from an extracted package"""
 
     # source pattern (glob) within extracted archive
@@ -66,7 +70,7 @@ class InstallRule(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-class RelocateRule(BaseModel):
+class RelocateRule(CatalogModel):
     """move a file already on SYS: (placed by the OS install) into another SYS: dir"""
 
     source: str = Field(alias="from")  # SYS:-relative path, e.g. "Tools/Commodities/ClickToFront"
@@ -75,7 +79,7 @@ class RelocateRule(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-class MenuEntry(BaseModel):
+class MenuEntry(CatalogModel):
     """workbench menu launcher for an installed app."""
 
     title: str  # label shown in the Workbench menu
@@ -85,7 +89,7 @@ class MenuEntry(BaseModel):
     selected_icons: bool = False  # pass selected Workbench icons to the launcher
 
 
-class ScriptModification(BaseModel):
+class ScriptModification(CatalogModel):
     """script block appended (marker-wrapped) to an amiga script when the package is installed"""
 
     target: str = "S/User-Startup"  # script path relative to SYS:
@@ -95,7 +99,7 @@ class ScriptModification(BaseModel):
     when_user_archive: bool | None = None
 
 
-class Package(BaseModel):
+class Package(CatalogModel):
     """complete package definition"""
 
     # identity
@@ -127,6 +131,8 @@ class Package(BaseModel):
 
     # download configuration (None for local-only packages)
     download: DownloadInfo | None = None
+
+    archive_package: str | None = Field(default=None, pattern=_IDENTIFIER_PATTERN)
 
     # installation rules
     install: list[InstallRule] = Field(default_factory=list)
@@ -169,7 +175,7 @@ class Package(BaseModel):
         return emu68_version in self.emu68_versions
 
 
-class Bundle(BaseModel):
+class Bundle(CatalogModel):
     """a group of packages presented as one GUI checkbox"""
 
     id: str  # stable identifier used by Package.bundle
@@ -209,7 +215,7 @@ def _group_rank(pkg: Package) -> int:
 ########################
 
 
-class ADFRule(BaseModel):
+class ADFRule(CatalogModel):
     """rule for extracting files from an ADF disk image"""
 
     # source ADF identifier (e.g., "Workbench3_1", "Storage3_2")

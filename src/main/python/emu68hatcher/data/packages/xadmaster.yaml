@@ -1,6 +1,6 @@
 name: xadmaster
 friendly_name: XADMaster
-group: System
+group: Archivers
 description: 'archive handler framework'
 versions:
 - '3.1'
@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-mandatory: true
+mandatory: false
 download:
   source: aminet
   path: util/arc/xadmaster020.lha
@@ -21,3 +21,4 @@ install:
   to: Libs/xad/
 - from: xad/Libs/xadmast*
   to: Libs/
+default: true

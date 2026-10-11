@@ -71,3 +71,6 @@ menu_entry:
   title: IBrowse
   path: Programs/IBrowse/IBrowse
   menu: Network
+requires:
+- mui
+- amissl
