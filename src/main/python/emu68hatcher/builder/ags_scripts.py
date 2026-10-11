@@ -111,10 +111,18 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
         ("AGS assigns", "\n".join(setup)),
         (
             "AGS hardware default",
+            # AGS scripts branch on HW and PiStorm but never detect the host. Set per
+            # boot, not saved: PiStorm is always Real, an emulator keeps a menu choice.
             'If "$SYSTEM" EQ "PiStorm"\n'
+            " SetEnv PiStorm 1\n"
+            ' SetEnv HW "Real"\n'
+            "Else\n"
+            " SetEnv PiStorm 0\n"
             " If NOT EXISTS ENV:HW\n"
-            '  SetEnv HW "Real"\n'
-            "  Copy >NIL: ENV:HW ENVARC:HW\n"
+            '  SetEnv HW "Amiberry"\n'
+            " EndIf\n"
+            ' If "$HW" EQ "Real"\n'
+            '  SetEnv HW "Amiberry"\n'
             " EndIf\n"
             "EndIf",
         ),

@@ -27,7 +27,7 @@ Storage shows import controls and one layout bar on the same scrolling page. If 
 
 Original game starters and menus remain on the copied partition. The AGS block in **S:User-Startup** supplies **AGS:**, **Scripts:**, **AGSOS:**, **WHD_Games:** and **WHD_Demos:**. Work supplies **Emulators:** and Games supplies **Premium:**. Media supplies **ST-00:**. No new script assumes fixed SDH device numbers.
 
-AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. On a detected PiStorm, Hatcher defaults AGS to **Real Hardware** (`HW=Real`) and saves it in **ENVARC:HW** if no hardware choice exists. This avoids AGS's emulator commands on the Amiga. Existing choices are retained, and emulators still use AGS's hardware menu. The **Set HW** menu remains available to change the selection. Save-directory setup uses the original AGS behavior.
+AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its Boot and Disk options itself. AGS does not detect the host itself. At every boot Hatcher sets **PiStorm** to 1 and **HW** to **Real** on a detected PiStorm, so AGS never runs its emulator commands on the Amiga. In an emulator it sets **PiStorm** to 0 and defaults **HW** to **Amiberry**; an emulator chosen in AGS's **Set HW** menu is kept. Nothing is written to **ENVARC:**, so a card tested in an emulator still boots as real hardware. Save-directory setup uses the original AGS behavior.
 
 In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
 
