@@ -153,6 +153,26 @@ else
     echo "Preparing sparse emulator disk"
     "$hst" transfer "$image_path/mbr/2" "$hdf_tmp"
 
+    # AGS on a Hatcher card uses a VideoCore screen mode, which UAE does not have.
+    # The emulator copy gets the native PAL mode that Themes_RTGtoAGA would set.
+    ags_dir=
+    mkdir -p "$work_dir/ags/Themes"
+    for index in 1 2 3 4 5 6 7 8 9 10; do
+        if "$hst" fs copy "$hdf_tmp/rdb/$index/AGS2/AGS2.conf" "$work_dir/ags" \
+            --force TRUE >/dev/null 2>&1 && [ -f "$work_dir/ags/AGS2.conf" ]; then
+            ags_dir="$hdf_tmp/rdb/$index/AGS2"
+            break
+        fi
+    done
+    if [ -n "$ags_dir" ]; then
+        echo "Switching the emulator copy of AGS to the native PAL screen mode"
+        "$hst" fs copy "$ags_dir/Themes/*.conf" "$work_dir/ags/Themes" --force TRUE >/dev/null
+        perl -pi -e 's/^(\s*mode\s*=\s*)\$[0-9A-Fa-f]+/${1}\$29000/' \
+            "$work_dir/ags/AGS2.conf" "$work_dir/ags/Themes/"*.conf
+        "$hst" fs copy "$work_dir/ags/AGS2.conf" "$ags_dir" --force TRUE >/dev/null
+        "$hst" fs copy "$work_dir/ags/Themes/*.conf" "$ags_dir/Themes" --force TRUE >/dev/null
+    fi
+
     echo "Using the image's Startup-Sequence unchanged"
     mv -f "$hdf_tmp" "$hdf_path"
 fi
