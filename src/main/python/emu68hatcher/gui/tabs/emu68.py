@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.rgb2rtg_models import RGB2RTGConfig
 from emu68hatcher.config.schema import Emu68Version
+from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
 
 
@@ -45,39 +46,30 @@ class Emu68Tab(QWidget):
     ):
         super().__init__(parent)
         self.emu68_version = emu68_version
-        self._splitter_initialised = False
         self.setup_ui()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.splitter.setChildrenCollapsible(False)
-
         settings_pane = QWidget()
-        settings_pane.setMinimumWidth(460)
         settings_layout = QVBoxLayout(settings_pane)
         settings_layout.setContentsMargins(0, 0, 0, 0)
         settings_layout.setSpacing(6)
 
         settings_header = QHBoxLayout()
-        settings_header.setContentsMargins(12, 8, 12, 0)
-        settings_header.addWidget(QLabel("Emu68 settings"))
-        settings_header.addStretch()
-        self.advanced_button = QPushButton("Show Advanced")
+        settings_header.setContentsMargins(0, 0, 0, 0)
+        self.advanced_button = QPushButton("Show advanced settings")
         self.advanced_button.setCheckable(True)
         self.advanced_button.toggled.connect(self._set_advanced_visible)
         settings_header.addWidget(self.advanced_button)
-        settings_layout.addLayout(settings_header)
+        settings_header.addStretch()
 
         self.settings_scroll = QScrollArea()
         self.settings_scroll.setWidgetResizable(True)
         self.settings_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.content = QWidget()
-        self.content_layout = QVBoxLayout(self.content)
-        self.content_layout.setContentsMargins(12, 12, 12, 12)
-        self.content_layout.setSpacing(10)
+        self.content_layout = page_layout(self.content)
         self.settings_scroll.setWidget(self.content)
         settings_layout.addWidget(self.settings_scroll)
 
@@ -88,14 +80,17 @@ class Emu68Tab(QWidget):
         self.content_layout.addWidget(self.release_group)
 
         self.settings_warning = QLabel(
-            "Warning: These settings are experimental and may prevent Emu68 from booting."
+            "⚠ These settings are experimental and may prevent Emu68 from booting."
         )
         self.settings_warning.setWordWrap(True)
-        self.content_layout.addWidget(self.settings_warning)
+        self.settings_warning.setProperty("alert", True)
+        self.settings_warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.hardware_group = self._create_hardware_group()
         self.content_layout.addWidget(self.hardware_group)
         self.content_layout.addWidget(self._create_rgb2rtg_group())
+        self.content_layout.addLayout(settings_header)
+        self.content_layout.addWidget(self.settings_warning)
 
         self.boot_group = self._create_boot_group()
         self.storage_group = self._create_storage_group()
@@ -114,9 +109,9 @@ class Emu68Tab(QWidget):
             self.content_layout.addWidget(widget)
         self.content_layout.addStretch()
 
-        preview_pane = QWidget()
-        preview_pane.setMinimumWidth(280)
-        preview_layout = QVBoxLayout(preview_pane)
+        self.preview_pane = QWidget()
+        self.preview_pane.hide()
+        preview_layout = QVBoxLayout(self.preview_pane)
         preview_layout.setContentsMargins(8, 8, 8, 8)
         preview_layout.setSpacing(6)
         preview_layout.addWidget(QLabel("Generated boot files"))
@@ -130,12 +125,7 @@ class Emu68Tab(QWidget):
         self._preview_filenames: tuple[str, ...] = ()
         self.set_preview_error("Preview is not available yet.")
 
-        self.splitter.addWidget(settings_pane)
-        self.splitter.addWidget(preview_pane)
-        self.splitter.setStretchFactor(0, 1)
-        self.splitter.setStretchFactor(1, 1)
-        self.splitter.setSizes([1, 1])
-        layout.addWidget(self.splitter)
+        layout.addWidget(settings_pane)
 
         self._settings_change_timer = QTimer(self)
         self._settings_change_timer.setSingleShot(True)
@@ -147,18 +137,6 @@ class Emu68Tab(QWidget):
         self._sync_storage_timing_from_details()
         self.set_emu68_version(self.emu68_version)
         self._update_custom_fields()
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        if self._splitter_initialised:
-            return
-        self._splitter_initialised = True
-        QTimer.singleShot(0, self._set_initial_splitter_sizes)
-
-    def _set_initial_splitter_sizes(self):
-        width = max(0, self.splitter.width() - self.splitter.handleWidth())
-        left = width // 2
-        self.splitter.setSizes([left, width - left])
 
     def _form_layout(self, parent: QWidget, label_group: str | None = None) -> QFormLayout:
         form = QFormLayout(parent)
@@ -221,7 +199,9 @@ class Emu68Tab(QWidget):
     def _set_advanced_visible(self, visible: bool):
         for widget in self._advanced_widgets:
             widget.setVisible(visible)
-        self.advanced_button.setText("Show Basic" if visible else "Show Advanced")
+        self.advanced_button.setText(
+            "Hide advanced settings" if visible else "Show advanced settings"
+        )
 
     def _connect_settings_signals(self):
         for combo in self.content.findChildren(QComboBox):
@@ -382,8 +362,10 @@ class Emu68Tab(QWidget):
         self.rgb2rtg_video.addItem("NTSC: 1080p60 (recommended)", "ntsc")
         form.addRow("Amiga / HDMI:", self.rgb2rtg_video)
         note = QLabel(
-            "Installs a matched alternative kernel and VideoCore driver, requires VideoCore Workbench and ToolsDaemon. Pi 3 is not tested."
+            "Installs a matched alternative kernel and VideoCore driver, requires VideoCore "
+            "Workbench and ToolsDaemon. Pi 3 is not tested."
         )
+        note.setProperty("tone", "muted")
         note.setWordWrap(True)
         form.addRow(note)
         return group
@@ -833,7 +815,8 @@ class Emu68Tab(QWidget):
             "1.1 overlays: emu68 (args, ICNT, CCRD, IRNG, SC, SCS, FP0, BW, DBF), "
             "diagnostic (buptest, bupiter, bupsize, membench, membase, memsize), "
             "unicam (boot, smooth, integer, full_width, full_height, width, height, bpp, "
-            "mode, x, y, b, c, scaler, phase, lanes, aspect, order, type, ftmode). "
+            "mode, x, y, b, c, scaler, phase, lanes, aspect, order, type, ftmode; "
+            "beta.1 spells them int, w, h, asp, ph and adds sc, scl). "
             "Turn off native-video capture in Display before adding a complete unicam overlay."
         )
         self.extra_config_edit.setMaximumHeight(100)

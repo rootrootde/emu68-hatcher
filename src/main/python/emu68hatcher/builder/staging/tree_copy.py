@@ -41,6 +41,7 @@ class TreeUsage:
 
 
 TargetResolver = Callable[[Path, str], Path]
+FileCopied = Callable[[Path], None]
 CancelCheck = Callable[[], bool]
 
 _FILESYSTEM_BLOCK_SIZE = 512
@@ -100,6 +101,7 @@ def copy_contained_tree(
     dest: Path,
     *,
     resolve_target: TargetResolver | None = None,
+    on_file: FileCopied | None = None,
 ) -> TreeCopyResult:
     """Merge a tree while containing links and repeated directory identities."""
     source_root = source.resolve(strict=True)
@@ -141,6 +143,8 @@ def copy_contained_tree(
             elif item.is_file():
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(item, target)
+                if on_file:
+                    on_file(target)
                 result += TreeCopyResult(files_copied=1)
         return result
 

@@ -2,6 +2,7 @@ name: fonts_vera
 friendly_name: Bitstream Vera
 group: Fonts
 description: 'Vera Sans, Serif and Sans Mono, including supplied styles'
+upstream_version: '1.10'
 bundle: fonts_scalable
 requires:
 - ttflib

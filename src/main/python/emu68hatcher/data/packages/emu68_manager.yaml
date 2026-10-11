@@ -1,0 +1,35 @@
+name: emu68_manager
+friendly_name: Emu68 Manager
+group: Utilities
+description: 'native Emu68 release switcher and recovery (development build, not hardware-verified)'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+# archive synced from the emu68-manager repo by scripts/sync-native-tools.py
+download:
+  source: local
+  path: Emu68-Manager.lha
+  hash: BBBF6DA28EF1C170216FE0B7F7F03ED5
+  filename: Emu68-Manager.lha
+install:
+- from: Emu68-Manager
+  to: Emu68-Hatcher/Tools/
+  recursive: true
+menu_entry:
+  title: Emu68 Manager
+  path: Emu68-Hatcher/Tools/Emu68-Manager/Emu68-Manager
+  menu: System
+  wb_launch: true
+# AmiSSL is needed even offline: --releases, --switch-offline and --confirm-switch
+# check plan signatures with it. xadmaster extracts archive artifacts.
+# Transaction-Recovery needs none of these.
+requires:
+- mui
+- amissl
+- xadmaster
+native:
+  eligibility: protected
+  reason: 'Hatcher tool; updated from its own release archive, not by Hatcher Packages'

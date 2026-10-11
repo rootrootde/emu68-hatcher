@@ -34,23 +34,25 @@ class _MenuLauncher:
     command: str
     wb_launch: bool = False
     selected_icons: bool = False
+    stack: int = 8192
 
 
-def _menu_cmd(script: str) -> str:
-    """Build an rx invocation whose diagnostic window stays open."""
-    return f"SYS:Rexxc/rx >CON:0/20/680/400/{script}/AUTO/WAIT s:{script}.rexx"
+# Hatcher-Prefs handles every stack; connect/disconnect need typed consent in its
+# window, so one entry replaces the old one-click ARexx launchers. Same form as
+# hatcher-prefs' own launcher migration writes onto older cards.
+_HATCHER_PREFS = "SYS:C/Hatcher-Prefs"
+_HATCHER_PREFS_STACK = 65536
 
-
-def _connect_cmd(con_title: str, iface: str) -> str:
-    """one-click connect - AUTO/CLOSE self-dismisses on success (con title must stay space-free)"""
-    return (
-        f"SYS:Rexxc/rx >CON:0/20/680/400/{con_title}/AUTO/CLOSE s:NetworkConfig.rexx ONLINE {iface}"
-    )
-
-
-def _miamidx_cmd(con_title: str, action: str, *, close: bool) -> str:
-    window = "CLOSE" if close else "WAIT"
-    return f"SYS:Rexxc/rx >CON:0/20/680/400/{con_title}/AUTO/{window} S:MiamiNetwork.rexx {action}"
+# AGS scripts that copy one gameslist.csv into the iGame drawer before starting it
+_IGAME_LISTS = (
+    ("All games and demos", "IGame_All"),
+    ("Games", "IGame_Games"),
+    ("Games (English)", "IGame_Games_English"),
+    ("AGA games", "IGame_AGA"),
+    ("ECS games", "IGame_ECS"),
+    ("OCS games", "IGame_OCS"),
+    ("Demos", "IGame_Demos"),
+)
 
 
 # System->Prefs submenu launchers.
@@ -182,41 +184,9 @@ def _collect_app_entries(all_packages: list[str]) -> list[_MenuLauncher]:
 
 
 def _network_entries(network_stack: NetworkStack | None) -> list[_MenuLauncher]:
-    entries: list[_MenuLauncher] = []
-    if network_stack in (NetworkStack.ROADSHOW, NetworkStack.AMITCP_NG):
-        entries.extend(
-            (
-                _MenuLauncher("Network", "Config", _menu_cmd("NetworkConfig")),
-                _MenuLauncher("Network", "Connect WiFi", _connect_cmd("Connect-WiFi", "WIFI")),
-                _MenuLauncher(
-                    "Network",
-                    "Connect Ethernet",
-                    _connect_cmd("Connect-Ethernet", "ETHERNET"),
-                ),
-            )
-        )
-    elif network_stack == NetworkStack.MIAMIDX:
-        entries.extend(
-            (
-                _MenuLauncher("Network", "MiamiDX", _miamidx_cmd("MiamiDX", "CONFIG", close=False)),
-                _MenuLauncher(
-                    "Network",
-                    "Connect WiFi",
-                    _miamidx_cmd("Connect-WiFi", "ONLINE WIFIPI", close=True),
-                ),
-                _MenuLauncher(
-                    "Network",
-                    "Connect Ethernet",
-                    _miamidx_cmd("Connect-Ethernet", "ONLINE GENET", close=True),
-                ),
-                _MenuLauncher(
-                    "Network",
-                    "Disconnect",
-                    _miamidx_cmd("Disconnect", "OFFLINE", close=True),
-                ),
-            )
-        )
-    return entries
+    if network_stack is None:
+        return []
+    return [_MenuLauncher("Network", "Network Config", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)]
 
 
 def _prefs_entries(all_packages: list[str], p96_modern: bool) -> list[_MenuLauncher]:
@@ -247,7 +217,7 @@ def _append_launcher(lines: list[str], entry: _MenuLauncher, keyword: str = "ITE
     if entry.wb_launch:
         lines.append(f"{_MENU_INDENT}(WB) {entry.command}{selected}")
     else:
-        lines.append(f"{_MENU_INDENT}(CLI) 8192 {entry.command}{selected}")
+        lines.append(f"{_MENU_INDENT}(CLI) {entry.stack} {entry.command}{selected}")
 
 
 def _build_toolsdaemon_menu(
@@ -256,6 +226,7 @@ def _build_toolsdaemon_menu(
     p96_modern: bool = False,
     kickstart_version: str | None = None,
     rgb2rtg: bool = False,
+    ags: bool = False,
 ) -> list[str]:
     """Build the complete ToolsDaemon.menu file."""
     network_actions = _network_entries(network_stack)
@@ -282,6 +253,30 @@ def _build_toolsdaemon_menu(
         lines.append("TITLE Apps")
         for entry in apps:
             _append_launcher(lines, entry)
+
+    games = package_menus.pop("Games", [])
+    if ags or games:
+        lines.append("TITLE Games")
+    if ags:
+        # AGS_Drive: and Scripts: come from S:User-Startup. WBRun opens the AGS project
+        # through its IconX icon; the AGS list scripts confirm, copy a gameslist.csv
+        # into the iGame drawer and start iGame from there.
+        _append_launcher(lines, _MenuLauncher("Games", "AGS", "C:WBRun AGS_Drive:AGS"))
+        lines.append(f"{_MENU_INDENT}ITEM iGame")
+        _append_launcher(
+            lines,
+            _MenuLauncher("Games", "Last list", "C:WBRun AGS_Drive:IGame/iGame"),
+            keyword="SUB",
+        )
+        lines.append(f"{_MENU_INDENT}SUBBAR")
+        for title, script in _IGAME_LISTS:
+            _append_launcher(
+                lines,
+                _MenuLauncher("Games", title, f"C:Execute Scripts:{script}"),
+                keyword="SUB",
+            )
+    for entry in games:
+        _append_launcher(lines, entry)
 
     system_apps = package_menus.pop("System", [])
     lines.append("TITLE System")
@@ -407,12 +402,14 @@ def _configure_toolsdaemon(
     )
 
     p96_modern = workflow.config.display.picasso96_archive is not None
+    ags = bool(workflow.config.ags_import and workflow.config.ags_import.enabled)
     lines = _build_toolsdaemon_menu(
         workflow.config.network_stack,
         all_packages,
         p96_modern,
         workflow.config.kickstart.version.value,
         workflow.config.rgb2rtg.enabled,
+        ags,
     )
     if workflow.config.rgb2rtg.enabled:
         recovery_lines = _build_toolsdaemon_menu(
@@ -420,6 +417,7 @@ def _configure_toolsdaemon(
             all_packages,
             p96_modern,
             workflow.config.kickstart.version.value,
+            ags=ags,
         )
         write_amiga_script(s_dir / "ToolsDaemon.menu.pre-rgb2rtg", recovery_lines)
     write_amiga_script(s_dir / "ToolsDaemon.menu", lines)

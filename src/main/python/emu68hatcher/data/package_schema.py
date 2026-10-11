@@ -1,6 +1,7 @@
 """pydantic models for package YAML defs"""
 
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -99,6 +100,33 @@ class ScriptModification(CatalogModel):
     when_user_archive: bool | None = None
 
 
+class NativeEligibility(str, Enum):
+    """whether the Amiga-side package tool may install or update a package"""
+
+    SUPPORTED = "supported"  # reviewed recipe with a pinned artifact
+    PROTECTED = "protected"  # system, boot, driver or updater content; image builds own it
+    USER_ARCHIVE = "user-archive-required"  # licensed archive the user supplies
+    UNSUPPORTED = "unsupported"  # not reviewed for live installation
+
+
+class NativePolicy(CatalogModel):
+    """live-install policy for the Amiga package tool. catalog schema 2 only."""
+
+    eligibility: NativeEligibility
+    reason: str | None = None  # shown on the Amiga; required unless supported
+    # SYS:-relative files kept when the user changed them (configs, icons); '*' globs a leaf
+    preserve: list[str] = Field(default_factory=list)
+    reboot: Literal["none", "cold"] = "none"
+
+    @model_validator(mode="after")
+    def _reason_for_unavailable(self):
+        if self.eligibility != NativeEligibility.SUPPORTED and not self.reason:
+            raise ValueError(f"native eligibility {self.eligibility.value} needs a reason")
+        if self.reason is not None and (not self.reason.strip() or "\n" in self.reason):
+            raise ValueError("native reason must be one non-empty line")
+        return self
+
+
 class Package(CatalogModel):
     """complete package definition"""
 
@@ -110,6 +138,13 @@ class Package(CatalogModel):
 
     # links (optional, surfaced in the GUI where relevant)
     purchase_url: str | None = None
+
+    # upstream release label for display only; never used to order updates.
+    # catalog schema 2 only, like native below.
+    upstream_version: str | None = Field(default=None, min_length=1, max_length=63)
+
+    # live-install policy for the Amiga package tool; None derives one from the recipe
+    native: NativePolicy | None = None
 
     # compatibility
     versions: list[str] = Field(default_factory=list)  # kickstart versions

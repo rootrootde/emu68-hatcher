@@ -2,6 +2,7 @@ name: iconlib
 friendly_name: IconLib
 group: System
 description: 'icon.library replacement'
+upstream_version: '46.4'
 versions:
 - '3.1'
 - '3.2'

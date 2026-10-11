@@ -1,4 +1,4 @@
-"""start tab - welcome screen and required-tool setup"""
+"""Tools and update controls shown directly on Overview."""
 
 import sys
 from datetime import datetime, timezone
@@ -9,17 +9,17 @@ from PySide6.QtGui import QDesktopServices, QIcon, QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QApplication,
-    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QMessageBox,
     QProgressBar,
     QPushButton,
-    QStyle,
     QVBoxLayout,
     QWidget,
 )
+
+from emu68hatcher.gui.design import set_status_icon
 
 
 def _render_icon(path: Path, size: int) -> QPixmap:
@@ -64,21 +64,9 @@ _TOOL_ROWS = [
     ("7z", "Archive extraction (p7zip)"),
 ]
 
-_STATUS_ICON_SIZE = QSize(20, 20)
-_STATUS_LABEL_SIZE = QSize(24, 24)
 
-
-def _set_status_icon(
-    label: QLabel,
-    icon: QStyle.StandardPixmap,
-    accessible_name: str,
-) -> None:
-    screen = label.screen() or QApplication.primaryScreen()
-    pixel_ratio = screen.devicePixelRatio() if screen is not None else 1.0
-    label.setPixmap(label.style().standardIcon(icon).pixmap(_STATUS_ICON_SIZE, pixel_ratio))
-    label.setFixedSize(_STATUS_LABEL_SIZE)
-    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    label.setAccessibleName(accessible_name)
+def _set_status_icon(label: QLabel, state: str, accessible_name: str) -> None:
+    set_status_icon(label, state, accessible_name)
 
 
 def _installer_action(path: Path) -> tuple[str, bool] | None:
@@ -110,9 +98,10 @@ def _format_manifest_revision(revision: int) -> str:
 
 
 class StartTab(QWidget):
-    """welcome screen with tool-status table and download button"""
+    """Tool downloads and update status, without a separate welcome page."""
 
     catalog_changed = Signal()
+    status_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -133,56 +122,11 @@ class StartTab(QWidget):
     # --- UI ---
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(16)
-        layout.addStretch()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(20)
 
-        # welcome header: app icon + title/subtitle stacked to its right
-        header = QHBoxLayout()
-        header.setSpacing(16)
-
-        icon_path = _find_app_icon()
-        if icon_path is not None:
-            icon_label = QLabel()
-            icon_label.setPixmap(_render_icon(icon_path, 128))
-            icon_label.setFixedSize(128, 128)
-            icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            header.addWidget(icon_label)
-
-        text_col = QVBoxLayout()
-        text_col.setSpacing(4)
-
-        title = QLabel("Welcome to Emu68 Hatcher")
-        title_font = title.font()
-        title_font.setPointSize(20)
-        title_font.setBold(True)
-        title.setFont(title_font)
-        text_col.addWidget(title)
-
-        subtitle = QLabel(
-            "Create bootable SD card images for PiStorm/Emu68 Amiga systems.<br>"
-            "Configure your build using the tabs above and click "
-            "<b>Build Image</b> when ready."
-        )
-        subtitle.setWordWrap(True)
-        subtitle.setTextFormat(Qt.TextFormat.RichText)
-        subtitle.setStyleSheet("color: #aaa;")
-        text_col.addWidget(subtitle)
-        text_col.addStretch()
-
-        header.addLayout(text_col, 1)
-        layout.addLayout(header)
-
-        # horizontal divider between welcome area and tool status
-        divider = QFrame()
-        divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setFrameShadow(QFrame.Shadow.Sunken)
-        layout.addWidget(divider)
-        layout.addSpacing(8)
-
-        # tool status group
-        tools_group = QGroupBox("Required Tools")
-        tools_layout = QVBoxLayout(tools_group)
+        self.updates_group = QGroupBox("Updates and tools")
+        tools_layout = QVBoxLayout(self.updates_group)
         tools_layout.setSpacing(12)
 
         from emu68hatcher.builder.host.tools import TOOL_LABELS
@@ -194,19 +138,20 @@ class StartTab(QWidget):
             status_label = QLabel()
             _set_status_icon(
                 status_label,
-                QStyle.StandardPixmap.SP_BrowserReload,
+                "pending",
                 "Checking",
             )
 
             text_col = QVBoxLayout()
             text_col.setSpacing(2)
 
-            name_label = QLabel(f"<b>{TOOL_LABELS[name]}</b> - {description}")
+            name_label = QLabel(f"<b>{TOOL_LABELS[name]}</b>")
+            name_label.setToolTip(description)
             name_label.setTextFormat(Qt.TextFormat.RichText)
             name_label.setWordWrap(True)
 
             path_label = QLabel("")
-            path_label.setStyleSheet("color: #888; font-size: 11px;")
+            path_label.setProperty("tone", "muted")
             path_label.setWordWrap(True)
             path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
@@ -233,66 +178,68 @@ class StartTab(QWidget):
         btn_row.addWidget(self.refresh_btn)
 
         self.download_btn = QPushButton("Download Missing Tools…")
-        self.download_btn.setStyleSheet(
-            "background-color: #4CAF50; color: white; font-weight: bold;"
-        )
+        self.download_btn.setProperty("primary", True)
         self.download_btn.clicked.connect(self.start_download)
         btn_row.addWidget(self.download_btn)
 
         tools_layout.addLayout(btn_row)
-        layout.addWidget(tools_group)
-
-        updates_group = QGroupBox("Updates")
-        updates_layout = QVBoxLayout(updates_group)
-        updates_layout.setSpacing(12)
+        layout.addWidget(self.updates_group)
 
         self.hatcher_update_icon = QLabel()
         _set_status_icon(
             self.hatcher_update_icon,
-            QStyle.StandardPixmap.SP_BrowserReload,
+            "pending",
             "Checking",
         )
         self.hatcher_update_label = QLabel("")
         self.hatcher_update_label.setWordWrap(True)
+        self.hatcher_update_label.setProperty("tone", "muted")
+        hatcher_text = QVBoxLayout()
+        hatcher_text.setSpacing(2)
+        hatcher_text.addWidget(QLabel("<b>Emu68 Hatcher</b>"))
+        hatcher_text.addWidget(self.hatcher_update_label)
         hatcher_row = QHBoxLayout()
+        hatcher_row.setSpacing(10)
         hatcher_row.addWidget(self.hatcher_update_icon)
-        hatcher_row.addWidget(self.hatcher_update_label, 1)
-        updates_layout.addLayout(hatcher_row)
+        hatcher_row.addLayout(hatcher_text, 1)
+        tools_layout.insertLayout(0, hatcher_row)
 
         self.manifest_update_icon = QLabel()
         _set_status_icon(
             self.manifest_update_icon,
-            QStyle.StandardPixmap.SP_BrowserReload,
+            "pending",
             "Checking",
         )
         self.manifest_update_label = QLabel("")
         self.manifest_update_label.setWordWrap(True)
+        self.manifest_update_label.setProperty("tone", "muted")
+        manifest_text = QVBoxLayout()
+        manifest_text.setSpacing(2)
+        manifest_text.addWidget(QLabel("<b>Package list</b>"))
+        manifest_text.addWidget(self.manifest_update_label)
         manifest_row = QHBoxLayout()
+        manifest_row.setSpacing(10)
         manifest_row.addWidget(self.manifest_update_icon)
-        manifest_row.addWidget(self.manifest_update_label, 1)
-        updates_layout.addLayout(manifest_row)
+        manifest_row.addLayout(manifest_text, 1)
+        tools_layout.insertLayout(1, manifest_row)
 
-        update_buttons = QHBoxLayout()
-        update_buttons.addStretch()
-        self.check_updates_btn = QPushButton("Check for Updates")
+        self.check_updates_btn = QPushButton("Check now")
         self.check_updates_btn.clicked.connect(self.check_for_updates)
-        update_buttons.addWidget(self.check_updates_btn)
-        self.open_release_btn = QPushButton("Open Download Page")
+        manifest_row.addWidget(self.check_updates_btn)
+        self.open_release_btn = QPushButton("Release page")
         self.open_release_btn.clicked.connect(self.open_release_page)
-        update_buttons.addWidget(self.open_release_btn)
+        hatcher_row.addWidget(self.open_release_btn)
         self.download_update_btn = QPushButton("Download Update…")
         self.download_update_btn.clicked.connect(self.download_application_update)
-        update_buttons.addWidget(self.download_update_btn)
-        updates_layout.addLayout(update_buttons)
+        hatcher_row.addWidget(self.download_update_btn)
 
         self.update_download_status = QLabel("")
         self.update_download_status.setVisible(False)
-        updates_layout.addWidget(self.update_download_status)
+        tools_layout.addWidget(self.update_download_status)
         self.update_download_bar = QProgressBar()
         self.update_download_bar.setRange(0, 100)
         self.update_download_bar.setVisible(False)
-        updates_layout.addWidget(self.update_download_bar)
-        layout.addWidget(updates_group)
+        tools_layout.addWidget(self.update_download_bar)
 
         # download progress group (hidden until a download starts)
         self.progress_group = QGroupBox("Download Progress")
@@ -308,8 +255,6 @@ class StartTab(QWidget):
 
         layout.addWidget(self.progress_group)
         self.progress_group.setVisible(False)
-
-        layout.addStretch()
 
     # --- tool status ---
     @Slot()
@@ -331,26 +276,29 @@ class StartTab(QWidget):
             if not path:
                 _set_status_icon(
                     status_label,
-                    QStyle.StandardPixmap.SP_DialogCancelButton,
+                    "error",
                     "Missing",
                 )
-                path_label.setText("not installed")
+                path_label.setText("Not installed")
+                path_label.setToolTip("")
                 any_missing = True
             elif tool_needs_download(name):
                 _set_status_icon(
                     status_label,
-                    QStyle.StandardPixmap.SP_MessageBoxWarning,
+                    "warning",
                     "Update available",
                 )
-                path_label.setText(f"{path} (update available)")
+                path_label.setText("Update available")
+                path_label.setToolTip(str(path))
                 any_stale = True
             else:
                 _set_status_icon(
                     status_label,
-                    QStyle.StandardPixmap.SP_DialogApplyButton,
+                    "ok",
                     "Installed",
                 )
-                path_label.setText(str(path))
+                path_label.setText("Installed")
+                path_label.setToolTip(str(path))
 
         self.download_btn.setEnabled(any_missing or any_stale)
         if any_missing:
@@ -359,6 +307,7 @@ class StartTab(QWidget):
             self.download_btn.setText("Update Tools…")
         else:
             self.download_btn.setText("All Tools Installed")
+        self.status_changed.emit()
 
     def refresh_update_status(self):
         from emu68hatcher import __version__
@@ -375,19 +324,19 @@ class StartTab(QWidget):
         if newer:
             _set_status_icon(
                 self.hatcher_update_icon,
-                QStyle.StandardPixmap.SP_MessageBoxWarning,
+                "warning",
                 "Update available",
             )
             self.hatcher_update_label.setText(
-                f"Emu68 Hatcher {release.version} is available (installed: {__version__})"
+                f"{release.version} available · installed: {__version__}"
             )
         else:
             _set_status_icon(
                 self.hatcher_update_icon,
-                QStyle.StandardPixmap.SP_DialogApplyButton,
+                "ok",
                 "Current",
             )
-            self.hatcher_update_label.setText(f"Emu68 Hatcher {__version__} is up to date")
+            self.hatcher_update_label.setText(f"Up to date · {__version__}")
 
         source_label = {
             "bundled": "bundled",
@@ -398,7 +347,7 @@ class StartTab(QWidget):
         if selection.error:
             _set_status_icon(
                 self.manifest_update_icon,
-                QStyle.StandardPixmap.SP_MessageBoxWarning,
+                "warning",
                 "Check failed",
             )
             self.manifest_update_label.setText(
@@ -410,13 +359,13 @@ class StartTab(QWidget):
             self.manifest_update_label.setToolTip("")
             _set_status_icon(
                 self.manifest_update_icon,
-                QStyle.StandardPixmap.SP_MessageBoxInformation,
+                "info",
                 "Previous list active",
             )
         elif selection.source == "remote" and selection.changed:
             _set_status_icon(
                 self.manifest_update_icon,
-                QStyle.StandardPixmap.SP_DialogApplyButton,
+                "ok",
                 "Updated",
             )
             self.manifest_update_label.setText(
@@ -426,7 +375,7 @@ class StartTab(QWidget):
         elif selection.checked:
             _set_status_icon(
                 self.manifest_update_icon,
-                QStyle.StandardPixmap.SP_DialogApplyButton,
+                "ok",
                 "Current",
             )
             self.manifest_update_label.setText(f"Package list is up to date: {revision_label}")
@@ -434,7 +383,7 @@ class StartTab(QWidget):
         else:
             _set_status_icon(
                 self.manifest_update_icon,
-                QStyle.StandardPixmap.SP_DialogApplyButton,
+                "ok",
                 "Available",
             )
             self.manifest_update_label.setText(
@@ -468,7 +417,7 @@ class StartTab(QWidget):
         self.check_updates_btn.setEnabled(False)
         _set_status_icon(
             self.manifest_update_icon,
-            QStyle.StandardPixmap.SP_BrowserReload,
+            "pending",
             "Checking",
         )
         self.manifest_update_label.setText("Checking package list and application version…")
@@ -525,6 +474,7 @@ class StartTab(QWidget):
 
     def _update_worker_finished(self):
         self._update_worker = None
+        self.status_changed.emit()
 
     @Slot()
     def open_release_page(self):

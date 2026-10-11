@@ -1,8 +1,10 @@
 target:
-  id: hatcher-1_1
-  min_hatcher_version: "1.1.0"
+  id: hatcher-1_2
+  min_hatcher_version: "1.2.0"
   max_hatcher_version_exclusive: null
-  catalog_schema_version: 1
-close_ranges: {}
+  catalog_schema_version: 2
+# 1.1 clients parse packages strictly and stay on their last schema 1 catalog
+close_ranges:
+  hatcher-1_1: "1.2.0"
 legacy_hash_updates:
   - amelinium

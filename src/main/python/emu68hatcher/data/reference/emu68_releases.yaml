@@ -1,0 +1,99 @@
+# Emu68 releases the builder knows about. Single source for the desktop download
+# table (builder/host/download_catalog.py) and the kernel names written into
+# config.txt (builder/staging/scripts/generator.py); scripts/export-emu68-releases.py
+# turns it into emu68-releases-v1.json for the native tools.
+#
+# assets:
+#   role      download state key, also the cache subdirectory name
+#   kind      zip = boot archive extracted onto the FAT partition
+#             raw = single file copied as-is (VideoCore.card)
+#   url/size/sha256  exact GitHub release asset. All values below were computed
+#             from downloaded bytes on 2026-10-09 and match the sha256 digest
+#             GitHub reports for the asset. Use null for anything not checked
+#             that way - never fill in a guess.
+# kernels: file names config.txt boots per board family. modern = PiStorm32-lite
+#   and PiStorm16 builds, classic = original PiStorm. The pistorm16 mapping is
+#   inherited from the builder and is not hardware-verified.
+#
+# The bare Raspberry Pi archive (Emu68-raspi.zip) is not listed on purpose: it
+# does not boot an Amiga.
+
+schema_version: 1
+repository: michalsc/Emu68
+
+releases:
+  - version: "1.0.7"
+    tag: v1.0.7
+    channel: stable
+    assets:
+      - role: emu68_boot
+        kind: zip
+        filename: Emu68-pistorm32lite.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.0.7/Emu68-pistorm32lite.zip
+        size: 3868437
+        sha256: 34d4c3a0c4f39afa5846c933c1074bf712b18fe4e9e9b36e16de63bd574f9a12
+      - role: emu68_boot_pistorm
+        kind: zip
+        filename: Emu68-pistorm.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.0.7/Emu68-pistorm.zip
+        size: 3819117
+        sha256: 12f1b961e0063f3fe8ebd3e10a837f50f547225962f38fb9918fe96bdd7b1fa4
+    kernels:
+      modern: Emu68-pistorm32lite
+      classic: Emu68-pistorm
+      pistorm16: Emu68-pistorm
+
+  - version: "1.1.0-alpha.1"
+    tag: v1.1.0-alpha.1
+    channel: alpha
+    assets:
+      - role: emu68_boot
+        kind: zip
+        filename: Emu68-pistorm.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/Emu68-pistorm.zip
+        size: 4053639
+        sha256: cb0b20b875f42dbba80b271fd90182027d5e9213e1f1010e766c7ba721be2983
+      - role: emu68_boot_classic
+        kind: zip
+        filename: Emu68-pistorm-classic.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/Emu68-pistorm-classic.zip
+        size: 3982328
+        sha256: a6e8971bcf9247f25cb1594c12444dd319751de16ff2a7c2b09d838fa08aeb4c
+      # 1.1 ships a newer VideoCore.card that overrides the Emu68-tools one
+      - role: emu68_videocore
+        kind: raw
+        filename: VideoCore.card
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/VideoCore.card
+        size: 25864
+        sha256: a2a5f43c5a378fbabc17b258eac83518d43474580644cfd435ea1181666d3a48
+    kernels:
+      modern: Emu68-pistorm.gz
+      classic: Emu68-pistorm-classic.gz
+      pistorm16: Emu68-pistorm.gz
+
+  - version: "1.1.0-beta.1"
+    tag: v1.1.0-beta.1
+    channel: beta
+    assets:
+      - role: emu68_boot
+        kind: zip
+        filename: Emu68-pistorm.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/Emu68-pistorm.zip
+        size: 4080430
+        sha256: 3f6921fe9179a834f2d1cacbdcf7229fa602b13c144965ff170bdfae7bbd1bd6
+      - role: emu68_boot_classic
+        kind: zip
+        filename: Emu68-pistorm-classic.zip
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/Emu68-pistorm-classic.zip
+        size: 4004630
+        sha256: 601e6af4cc2dfb1a1ac53d1b6b1974d80e51f27d2e2fc6d96d088ab8fcb49f0c
+      - role: emu68_videocore
+        kind: raw
+        filename: VideoCore.card
+        url: https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/VideoCore.card
+        size: 25864
+        sha256: a2a5f43c5a378fbabc17b258eac83518d43474580644cfd435ea1181666d3a48
+    kernels:
+      modern: Emu68-pistorm.gz
+      classic: Emu68-pistorm-classic.gz
+      pistorm16: Emu68-pistorm.gz

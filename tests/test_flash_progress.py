@@ -17,9 +17,9 @@ def test_hst_percent_progress_formats_sizes_and_time(verify):
         line, set(), callback, recent, statistics=FlashProgress(1024**3), verify=verify
     )
 
-    phase = "Writing and verifying" if verify else "Writing"
     callback.assert_called_once_with(
-        97.9, f"{phase}: 0.98 / 1.00 GiB\nCalculating speed | Elapsed 0:01"
+        48.95 if verify else 97.9,
+        "Writing: 0.98 / 1.00 GiB\nCalculating speed | Elapsed 0:01",
     )
     assert not recent
 
@@ -36,7 +36,7 @@ def test_progress_logs_milestones_but_reports_every_update(caplog):
                 deque(maxlen=30),
                 statistics=FlashProgress(2 * 1024**3),
             )
-    assert [call.args[0] for call in callback.call_args_list] == [1.0, 2.0, 10.0, 11.0, 100.0]
+    assert [call.args[0] for call in callback.call_args_list] == [0.5, 1.0, 5.0, 5.5, 50.0]
     assert len(caplog.records) == 3
 
 
@@ -68,7 +68,7 @@ def test_byte_counter_progress_still_works():
         statistics=FlashProgress(4096),
     )
 
-    callback.assert_called_once_with(25.0, "Writing: 25.0%")
+    callback.assert_called_once_with(12.5, "Writing: 25.0%")
 
 
 def test_startup_spike_leaves_recent_speed_and_eta():
@@ -109,7 +109,10 @@ def test_no_eta_when_processing_stalls():
 
 
 @pytest.mark.parametrize("helper", [True, False])
-def test_flash_reuses_recent_speed_tracker_for_both_process_paths(monkeypatch, tmp_path, helper):
+@pytest.mark.parametrize("verify", [True, False])
+def test_flash_reuses_recent_speed_tracker_for_both_process_paths(
+    monkeypatch, tmp_path, helper, verify
+):
     from types import SimpleNamespace
 
     from emu68hatcher.builder.host import disk_writer
@@ -119,15 +122,24 @@ def test_flash_reuses_recent_speed_tracker_for_both_process_paths(monkeypatch, t
         output.truncate(60 * 1024**3)
     callback = Mock()
     monkeypatch.setattr(disk_writer, "find_hst_imager", lambda: "hst-imager")
+    monkeypatch.setattr(disk_writer, "check_flash_verification_support", lambda: None)
     monkeypatch.setattr(disk_writer, "refresh_elevation", lambda token: True)
     monkeypatch.setattr(disk_writer, "wrap_for_elevation", lambda args, token: args)
 
     def run(args, **kwargs):
+        assert args[args.index("--verify") + 1] == "false"
+        assert ("--verify-after" in args) is verify
+        assert args[args.index("--force") + 1] == "false"
         for line in (
             "1.7% [1 GB/s] [1 GB / 59.5 GB] [0h:00m:00s / 0h:00m:58s]",
             "10.0% [196.1 MB/s] [5.9 GB / 59.5 GB] [0h:00m:30s / 0h:05m:09s]",
             "20.0% [63.2 MB/s] [11.9 GB / 59.5 GB] [0h:03m:12s / 0h:16m:04s]",
+            "[INF] Verifying written data",
+            "100.0% [63.2 MB/s] [59.5 GB / 59.5 GB] [0h:10m:00s / 0h:10m:00s]",
+            "[INF] Post-write verification complete",
         ):
+            if not verify and ("Verifying" in line or "verification" in line):
+                continue
             if helper:
                 kwargs["on_line"]("stdout", line)
             else:
@@ -139,9 +151,10 @@ def test_flash_reuses_recent_speed_tracker_for_both_process_paths(monkeypatch, t
         SimpleNamespace(method="test-helper", helper=SimpleNamespace(run=run)) if helper else None
     )
     disk_writer.flash_image_to_disk(
-        image, "test-device", elevation=elevation, progress_callback=callback
+        image, "test-device", verify=verify, elevation=elevation, progress_callback=callback
     )
     reports = [call.args for call in callback.call_args_list]
     assert "Calculating speed" in reports[1][1]
     assert "Processing 37.9 MiB/s | Elapsed 3:12 | ~21:36 left" in reports[3][1]
-    assert reports[-1] == (100.0, "Flash complete")
+    completion = "Flash and verification complete" if verify else "Flash complete (not verified)"
+    assert reports[-1] == (100.0, completion)

@@ -5,6 +5,7 @@ import re
 import urllib.request
 
 from emu68hatcher.builder.host.downloads import DownloadItem
+from emu68hatcher.data.emu68_releases import download_table as emu68_download_table
 from emu68hatcher.data.package_loader import (
     get_mandatory_packages as get_mandatory_package_objs,
 )
@@ -213,32 +214,7 @@ def downloadable_mandatory_names(
 
 
 # per-version asset map: each entry is (state-key, github-release-asset-name)
-EMU68_RELEASES: dict[str, dict] = {
-    "1.0.7": {
-        "tag": "v1.0.7",
-        "zips": [
-            ("emu68_boot", "Emu68-pistorm32lite.zip"),
-            ("emu68_boot_pistorm", "Emu68-pistorm.zip"),
-        ],
-    },
-    "1.1.0-alpha.1": {
-        "tag": "v1.1.0-alpha.1",
-        "zips": [
-            ("emu68_boot", "Emu68-pistorm.zip"),
-            ("emu68_boot_classic", "Emu68-pistorm-classic.zip"),
-        ],
-        # 1.1 ships a newer VideoCore.card that overrides the Emu68-tools one
-        "extras": [("emu68_videocore", "VideoCore.card")],
-    },
-    "1.1.0-beta.1": {
-        "tag": "v1.1.0-beta.1",
-        "zips": [
-            ("emu68_boot", "Emu68-pistorm.zip"),
-            ("emu68_boot_classic", "Emu68-pistorm-classic.zip"),
-        ],
-        "extras": [("emu68_videocore", "VideoCore.card")],
-    },
-}
+EMU68_RELEASES: dict[str, dict] = emu68_download_table()
 
 
 def get_emu68_boot_files(version: str) -> list[DownloadItem]:

@@ -34,6 +34,10 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
         raise BuildError(f"target {output.flash_target} is no longer present or not removable")
     if info.is_system_disk:
         raise BuildError(f"refusing to flash to system disk {output.flash_target}")
+    if info.is_read_only:
+        from emu68hatcher.builder.pipeline.validate_output import _WRITE_PROTECTED
+
+        raise BuildError(_WRITE_PROTECTED.format(device=output.flash_target))
 
     from emu68hatcher.builder.host.disk_enum import unmount_disk
 
@@ -56,7 +60,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     flash_image_to_disk(
         image_path,
         output.flash_target,
-        verify=True,
+        verify=output.verify_after_flash,
         skip_unused_sectors=True,  # huge saving on sparse images
         elevation=workflow.state.elevation,
         progress_callback=progress_cb,
@@ -65,5 +69,6 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     )
 
     workflow._update_state(progress=100.0)
-    workflow._milestone(f"Flashed to {output.flash_target}")
+    verification = "verified written blocks" if output.verify_after_flash else "not verified"
+    workflow._milestone(f"Flashed to {output.flash_target} ({verification})")
     return image

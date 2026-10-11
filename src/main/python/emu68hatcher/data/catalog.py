@@ -52,6 +52,11 @@ class CatalogData(BaseModel):
                 validate_relative_path(rule.dest)
                 if getattr(rule, "rename", None):
                     validate_relative_path(rule.rename)
+            if package.native:
+                for pattern in package.native.preserve:
+                    validate_relative_path(pattern)
+            if package.upstream_version and any(ord(c) < 32 for c in package.upstream_version):
+                raise ValueError(f"{key}: upstream_version must be one line")
             for script in package.scripts:
                 validate_relative_path(script.target)
                 script.content.encode("iso-8859-1")

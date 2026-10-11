@@ -82,8 +82,11 @@ def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> Create
         dest = image.workspace.staging_dir / part.device
         dest.mkdir(parents=True, exist_ok=True)
 
-        # user content wins on collision (intentional - "put my files in the image")
-        result = copy_contained_tree(src, dest)
+        # user content wins on collision (intentional - "put my files in the image");
+        # the receipts mark package files replaced here as locally modified
+        log = workflow.write_log
+        on_file = log.extra_wrote if log and part.device == workflow.config.boot_device else None
+        result = copy_contained_tree(src, dest, on_file=on_file)
         staged_usage = measure_contained_tree(dest)
         _check_partition_space(part, staged_usage, "the staged files")
         total_files += result.files_copied

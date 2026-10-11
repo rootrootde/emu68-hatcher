@@ -11,8 +11,10 @@ from pathlib import Path
 
 from emu68hatcher.data.catalog import DATA_DIR, load_catalog_source, read_catalog_yaml
 from emu68hatcher.data.catalog_manifest import (
+    SUPPORTED_CATALOG_SCHEMAS,
     CatalogRelease,
     CatalogTarget,
+    schema_2_packages,
     validate_client_catalog,
 )
 from emu68hatcher.data.update_manifest import (
@@ -21,6 +23,7 @@ from emu68hatcher.data.update_manifest import (
     UpdateManifestV2,
     verify_manifest_bytes,
 )
+from packaging.version import Version
 from pydantic import BaseModel, ConfigDict, Field
 
 _ARTIFACT_RE = re.compile(
@@ -113,8 +116,10 @@ def build_catalog_manifest(
     reference_dir=None,
 ):
     config = PublishTarget.model_validate(target_config)
-    if config.target.catalog_schema_version != 1:
-        raise ValueError("generator supports catalog schema 1 only")
+    if config.target.catalog_schema_version not in SUPPORTED_CATALOG_SCHEMAS:
+        raise ValueError(
+            f"generator supports catalog schemas {sorted(SUPPORTED_CATALOG_SCHEMAS)} only"
+        )
     catalogs = []
     previous_revision = previous.revision if previous else 0
     if revision <= previous_revision:
@@ -134,6 +139,16 @@ def build_catalog_manifest(
             old = CatalogRelease.model_validate(fields)
         catalogs.append(old)
     data = load_catalog_source(packages_dir, reference_dir)
+    if config.target.catalog_schema_version >= 2 and Version(
+        config.target.min_hatcher_version
+    ) < Version("1.2.0"):
+        raise ValueError("catalog schema 2 needs min_hatcher_version 1.2.0 or later")
+    newer = schema_2_packages(data)
+    if config.target.catalog_schema_version == 1 and newer:
+        raise ValueError(
+            "packages use catalog schema 2 fields; publish them under a schema 2 target "
+            f"with a new id: {', '.join(newer)}"
+        )
     old = previous_catalogs.get(config.target.id)
     if old and old.min_hatcher_version != config.target.min_hatcher_version:
         raise ValueError("a new lower version bound needs a new catalog id")

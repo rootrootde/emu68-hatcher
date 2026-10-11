@@ -209,6 +209,11 @@ class OutputConfig(_ConfigModel):
         description="If set (IMG mode only), flash the built .img to this physical disk",
     )
 
+    verify_after_flash: bool = Field(
+        default=True,
+        description="Verify written blocks in a separate pass after flashing (IMG + flash only)",
+    )
+
     @field_validator("path", mode="before")
     @classmethod
     def convert_path(cls, v):

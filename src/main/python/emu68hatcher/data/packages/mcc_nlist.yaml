@@ -2,6 +2,7 @@ name: mcc_nlist
 friendly_name: MCC NList
 group: Libraries
 description: 'MUI NList classes'
+upstream_version: '0.128'
 versions:
 - '3.1'
 - '3.2'

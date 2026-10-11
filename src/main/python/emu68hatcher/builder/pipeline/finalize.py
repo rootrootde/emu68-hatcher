@@ -26,6 +26,11 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
 
         verify_ags_staging(workflow, image)
 
+    # after install_extras, before the copy: the receipts describe the image's bytes
+    from emu68hatcher.builder.pipeline.build_records import write_build_records
+
+    write_build_records(workflow, image)
+
     output = workflow.config.output
     assert output is not None
     # windows physical-drive paths lie in exists() once the disk is offline; in DEVICE mode

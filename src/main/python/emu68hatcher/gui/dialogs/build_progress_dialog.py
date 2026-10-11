@@ -1,9 +1,10 @@
 """build progress dialog - live pipeline progress, log toggle, eject flow"""
 
 from PySide6.QtCore import Qt, QThread, Signal, Slot
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFontDatabase, QPalette
 from PySide6.QtWidgets import (
     QDialog,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QProgressBar,
@@ -14,6 +15,7 @@ from PySide6.QtWidgets import (
 
 from emu68hatcher.builder.stage_registry import PROGRESS_STAGE_ORDER, STAGE_LABELS
 from emu68hatcher.config.schema import BuildConfig, OutputType
+from emu68hatcher.gui.design import SECTION_GAP, apply_design, set_tone, style_sections
 from emu68hatcher.gui.workers import BuildWorker
 from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
 
@@ -51,10 +53,24 @@ class BuildProgressDialog(QDialog):
 
     def setup_ui(self):
         self.setWindowTitle("Building Image...")
-        self.setMinimumWidth(520)
+        self.setMinimumWidth(600)
         self.setModal(True)
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(SECTION_GAP)
+
+        self.title_label = QLabel("Building image")
+        self.title_label.setProperty("heading", "page")
+        layout.addWidget(self.title_label)
+        description = QLabel("Follow the build progress. Open the log for details.")
+        description.setProperty("tone", "muted")
+        description.setWordWrap(True)
+        layout.addWidget(description)
+
+        progress_group = QGroupBox("Build progress")
+        progress_layout = QVBoxLayout(progress_group)
+        layout.addWidget(progress_group)
 
         # stylesheets so the bar heights are honoured (native macOS ignores setFixedHeight)
         overall_css = (
@@ -69,45 +85,49 @@ class BuildProgressDialog(QDialog):
 
         # overall progress across the whole pipeline (prominent: bold label + chunky bar)
         self.overall_label = QLabel("Overall  0%")
-        self.overall_label.setStyleSheet("font-weight: bold;")
-        layout.addWidget(self.overall_label)
+        self.overall_label.setProperty("heading", "brand")
+        progress_layout.addWidget(self.overall_label)
         self.overall_bar = QProgressBar()
         self.overall_bar.setRange(0, 100)
         self.overall_bar.setTextVisible(False)
         self.overall_bar.setFixedHeight(18)
         self.overall_bar.setStyleSheet(overall_css)
-        layout.addWidget(self.overall_bar)
+        progress_layout.addWidget(self.overall_bar)
 
-        layout.addSpacing(6)
+        progress_layout.addSpacing(6)
 
         # progress within the current step (subtle: gray label + thin bar)
         self.stage_label = QLabel("Initializing")
-        self.stage_label.setStyleSheet("color: gray;")
-        layout.addWidget(self.stage_label)
+        self.stage_label.setProperty("tone", "muted")
+        progress_layout.addWidget(self.stage_label)
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setFixedHeight(7)
         self.progress_bar.setStyleSheet(self._step_css)
-        layout.addWidget(self.progress_bar)
+        progress_layout.addWidget(self.progress_bar)
 
-        layout.addSpacing(6)
+        progress_layout.addSpacing(6)
 
         # current action
         self.status_label = QLabel("")
+        self.status_label.setTextFormat(Qt.TextFormat.PlainText)
         self.status_label.setWordWrap(True)
-        layout.addWidget(self.status_label)
+        self.status_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        progress_layout.addWidget(self.status_label)
 
         # collapsible log - hidden by default
         self.log_toggle = QPushButton("▸ Show log")
-        self.log_toggle.setFlat(True)
-        self.log_toggle.setStyleSheet("text-align: left; color: palette(link); border: none;")
         self.log_toggle.clicked.connect(self._toggle_log)
         layout.addWidget(self.log_toggle, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        self.log_output.setFont(QFont("Courier", 10))
+        self.log_output.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
+        self.log_output.setStyleSheet(
+            "QTextEdit { background: palette(base); color: palette(text);"
+            " border: 1px solid palette(mid); border-radius: 5px; padding: 8px; }"
+        )
         self.log_output.setMinimumHeight(220)
         self.log_output.setVisible(False)
         layout.addWidget(self.log_output)
@@ -128,11 +148,24 @@ class BuildProgressDialog(QDialog):
         self._eject_worker: _EjectWorker | None = None
 
         self.close_btn = QPushButton("Close")
+        self.close_btn.setProperty("primary", True)
         self.close_btn.clicked.connect(self.accept)
         self.close_btn.setEnabled(False)
         btn_layout.addWidget(self.close_btn)
 
         layout.addLayout(btn_layout)
+        style_sections(self)
+        apply_design(self)
+        # Resolve colors before Qt applies widget-local stylesheets on first show.
+        for role in ("base", "text", "mid", "highlight"):
+            color = self.palette().color(getattr(QPalette.ColorRole, role.title())).name()
+            overall_css = overall_css.replace(f"palette({role})", color)
+            self._step_css = self._step_css.replace(f"palette({role})", color)
+            self.log_output.setStyleSheet(
+                self.log_output.styleSheet().replace(f"palette({role})", color)
+            )
+        self.overall_bar.setStyleSheet(overall_css)
+        self.progress_bar.setStyleSheet(self._step_css)
 
     def _toggle_log(self):
         """show/hide the log and resize the dialog to fit"""
@@ -201,6 +234,8 @@ class BuildProgressDialog(QDialog):
 
         if success:
             self.setWindowTitle("Build Complete")
+            self.title_label.setText("Build complete")
+            set_tone(self.stage_label, "success")
             self._overall = 100.0
             self.overall_bar.setValue(100)
             self.overall_label.setText("Overall  100%")
@@ -213,9 +248,11 @@ class BuildProgressDialog(QDialog):
                 self.eject_btn.setEnabled(True)
         else:
             self.setWindowTitle("Build Failed")
+            self.title_label.setText("Build failed")
+            set_tone(self.stage_label, "warning")
             self.stage_label.setText("Failed")
             self.status_label.setText(error)
-            self.status_label.setStyleSheet("color: #c0392b;")
+            set_tone(self.status_label, "warning")
             self.log_output.append(f"\nBuild failed: {error}")
             # surface the log automatically on failure so the error context is visible
             if not self.log_output.isVisible():
@@ -242,7 +279,7 @@ class BuildProgressDialog(QDialog):
             return
         self.eject_btn.setEnabled(False)
         self.eject_btn.setText("Ejecting…")
-        self.status_label.setStyleSheet("")
+        set_tone(self.status_label, "")
         self.status_label.setText(f"Ejecting {device}…")
         self._eject_worker = _EjectWorker(device, self)
         self._eject_worker.done.connect(self._on_eject_done)
@@ -257,7 +294,7 @@ class BuildProgressDialog(QDialog):
         else:
             self.eject_btn.setText("Eject SD Card")
             self.eject_btn.setEnabled(True)
-            self.status_label.setStyleSheet("color: #c0392b;")
+            set_tone(self.status_label, "warning")
             self.status_label.setText(f"Eject failed: {msg}")
 
     def cancel_build(self):

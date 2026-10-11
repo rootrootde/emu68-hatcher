@@ -27,7 +27,32 @@ needs its matching ADF.
 
 ## AmigaOS / Workbench
 
-The Amiga-side tools run in CON windows: **SYS:Utilities/Network Config** keeps its window open after it exits so the output can be read or copied, while the Connect WiFi / Connect Ethernet launchers close their window automatically when they finish.
+**SYS:Utilities/Network Config** and **Network → Network Config** open Hatcher Prefs
+(**C:Hatcher-Prefs**). Connect and disconnect are done in its window and ask for a
+typed confirmation; there are no one-click connect icons any more.
+
+The old ARexx tools stay on the card for this release as a fallback. From a Shell:
+
+```
+rx S:NetworkConfig.rexx                    ; Roadshow / AmiTCP_NG settings
+rx S:NetworkConfig.rexx ONLINE WIFI        ; or ONLINE ETHERNET
+rx S:MiamiNetwork.rexx CONFIG              ; MiamiDX settings
+rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
+```
+
+### Clock is not set after boot (full Roadshow)
+
+With the full Roadshow archive, User-Startup syncs the clock after the network comes
+up with `rx S:NetworkConfig.rexx SYNCTIME`, as in earlier releases. Check that
+**S:Network-disabled** does not exist and that the network connects at boot.
+
+Hatcher Prefs can take over this job: run `Hatcher-Prefs migrate enable-startup-time SYS:`
+once from a Shell and retire that change as described in
+**SYS:Emu68-Hatcher/Tools/Hatcher-Prefs/ReadMe.txt**. It replaces the SYNCTIME line
+with **C:Hatcher-Prefs startup-time** and also saves the time to the clock chip. The
+opt-in is tied to the installed program and the card, so Emu68 Hatcher cannot set it
+up when it builds the image, and it has to be repeated after updating Hatcher Prefs.
+`Hatcher-Prefs startup-status SYS:` shows whether it is active.
 
 ### Browser reports a DNS error
 

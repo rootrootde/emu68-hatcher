@@ -1,0 +1,15 @@
+# Reviewed archive pins for packages the Amiga package tool may install
+# (native eligibility "supported"). Keyed by the package that downloads the
+# archive. scripts/export-amiga-catalog.py refuses a supported package without
+# an entry here and refuses an entry whose md5 differs from the package YAML,
+# so a changed upstream file never picks up a new SHA-256 by itself. Update an
+# entry only after checking the new archive's contents and every consumer's
+# install rules; scripts/check-package-downloads.py verifies these values.
+artifacts:
+  sysinfo:
+    url: https://download.d0.se/pub/SysInfo.lha
+    filename: SysInfo.lha
+    size: 55323
+    sha256: 9b86be2368b1b0f62977fba9341f8c0c17267a01ffd1ce9acb22707f6908272b
+    md5: 8384493a31cf4c2a3f03fe51ef0341f7
+    review: hatcher-packages registry/sysinfo-4.4.json

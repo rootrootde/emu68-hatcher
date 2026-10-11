@@ -22,6 +22,7 @@ from emu68hatcher.config.schema import (
     KickstartConfig,
     KickstartVersion,
 )
+from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets.asset_scan_panel import AssetScanPanel
 
 # dropdown order follows schema.SUPPORTED_KICKSTARTS (add a version there to expose it here)
@@ -34,6 +35,7 @@ class KickstartTab(QWidget):
 
     # signal emitted when WB version changes
     version_changed = Signal(str)
+    settings_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -55,12 +57,12 @@ class KickstartTab(QWidget):
         scroll.setWidget(content)
         outer.addWidget(scroll)
 
-        layout = QVBoxLayout(content)
+        layout = page_layout(content)
 
         #####################
         # workbench Version #
         #####################
-        version_group = QGroupBox("Workbench Version")
+        version_group = QGroupBox("AmigaOS version")
         version_group_layout = QVBoxLayout(version_group)
 
         version_layout = QHBoxLayout()
@@ -73,26 +75,24 @@ class KickstartTab(QWidget):
         version_layout.addStretch()
         version_group_layout.addLayout(version_layout)
 
-        # icon set picker sits with the WB version - the available icon sets depend on it
+        # The selector is embedded in Appearance; version/media filtering stays here.
         self._load_icon_sets(self.get_selected_version())
-        icon_layout = QHBoxLayout()
+        self.icons_group = QGroupBox("Icons")
+        icon_layout = QHBoxLayout(self.icons_group)
         icon_layout.addWidget(QLabel("Icons:"))
         self.icon_set_combo = QComboBox()
         self.icon_set_combo.setMinimumWidth(200)
         self.icon_set_combo.setToolTip("GlowIcons recommended for high color displays")
         self.icon_set_combo.activated.connect(self._on_icon_set_activated)
+        self.icon_set_combo.currentIndexChanged.connect(lambda _index: self.settings_changed.emit())
         self._populate_icon_set_combo()
         icon_layout.addWidget(self.icon_set_combo)
         icon_layout.addStretch()
-        version_group_layout.addLayout(icon_layout)
 
         layout.addWidget(version_group)
 
         self.asset_panel = AssetScanPanel(self.get_selected_version())
         self.dir_list = self.asset_panel.dir_list
-        self.rom_status = self.asset_panel.rom_status
-        self.whdload_status = self.asset_panel.whdload_status
-        self.adf_status = self.asset_panel.adf_status
         self.asset_panel.adf_results.connect(self._on_adf_results)
         layout.addWidget(self.asset_panel)
 
@@ -132,6 +132,7 @@ class KickstartTab(QWidget):
         while self._lang_grid.count():
             item = self._lang_grid.takeAt(0)
             if item.widget():
+                item.widget().hide()
                 item.widget().deleteLater()
 
         locales = [
@@ -144,6 +145,7 @@ class KickstartTab(QWidget):
             label = (p.friendly_name or p.name).replace(" Locale Files", "").strip()
             cb = QCheckBox(label or (p.friendly_name or p.name))
             cb.setChecked(p.default)
+            cb.toggled.connect(lambda _checked: self.settings_changed.emit())
             self._lang_grid.addWidget(cb, i // columns, i % columns)
             self._locale_checks[p.name] = cb
         self._lang_group.setVisible(bool(locales))

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.packages import PackageInstaller
+from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.state import BuildStage, CreatedImage
 from emu68hatcher.data.package_loader import get_local_packages_dir
 
@@ -30,6 +31,7 @@ def stage_install_packages(
         return image
 
     local_packages_dir = get_local_packages_dir()
+    workflow.write_log = StagingWriteLog(workspace.staging_dir / workflow.config.boot_device)
 
     installer = PackageInstaller(
         staging_dir=workspace.staging_dir,
@@ -37,6 +39,7 @@ def stage_install_packages(
         extracted_paths=extracted.extracted_paths,
         local_packages_dir=local_packages_dir if local_packages_dir.exists() else None,
         boot_device=workflow.config.boot_device,
+        write_log=workflow.write_log,
     )
 
     from emu68hatcher.builder.pipeline._selection import get_resolution

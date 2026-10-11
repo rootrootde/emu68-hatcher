@@ -24,6 +24,8 @@ from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator, 
 from emu68hatcher import __version__
 from emu68hatcher.data.catalog import CatalogSnapshot, bundled_catalog
 from emu68hatcher.data.catalog_manifest import (
+    CATALOG_SCHEMA_VERSION,
+    SUPPORTED_CATALOG_SCHEMAS,
     CatalogRelease,
     validate_client_catalog,
     validate_ranges,
@@ -173,7 +175,12 @@ class UpdateManifestV2(BaseModel):
 
     def select_catalog(self, version: str = __version__) -> CatalogRelease | None:
         return next(
-            (c for c in self.catalogs if c.matches(version) and c.catalog_schema_version == 1), None
+            (
+                c
+                for c in self.catalogs
+                if c.matches(version) and c.catalog_schema_version in SUPPORTED_CATALOG_SCHEMAS
+            ),
+            None,
         )
 
 
@@ -292,7 +299,7 @@ def initialize_manifest(
                 revision=1,
                 source_commit="0" * 40,
                 min_hatcher_version="0",
-                catalog_schema_version=1,
+                catalog_schema_version=CATALOG_SCHEMA_VERSION,
                 **bundled_catalog().data().model_dump(mode="json", by_alias=True),
             )
         ],
