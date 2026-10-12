@@ -10,57 +10,34 @@ Change a download hash and any affected installation paths together.
 
 | Endpoint on the updates branch | Clients | Contents |
 | --- | --- | --- |
-| manifest.json | Existing schema 1 clients | Reviewed download overrides and current app release metadata |
-| manifest-v2.json | Full catalog clients starting at 1.1.0 | Complete catalogs for explicit app version ranges and current app release metadata |
+| manifest.json | 1.0 clients | Their frozen download overrides and the current app release metadata |
+| manifest-v2.json | Clients from 1.1.0 | One complete catalog for the latest released version and the current app release metadata |
 
 Both files use the existing Ed25519 signature envelope and the **updates-2026** key
 identifier. The private key stays in the **UPDATE_MANIFEST_PRIVATE_KEY** repository
 secret. Neither file is edited by hand.
 
-**legacy-manifest-source.json** is the migration fallback for schema 1. If an older
-publication exists, its verified overrides are preserved instead. For a changed
-archive that retains the files required by older clients, add its package name to
-**catalog-target.yaml** under **legacy_hash_updates**. The generator copies only
-the new hash from YAML and rejects changes to the old download source. Check the
-older installation rules against the archive first. An upstream server can replace
-the archive again, so the checksum must be checked before publication.
+The overrides in **manifest.json** are copied from the previous publication as they
+are. They are not maintained any more; 1.0 clients only get the release block.
 
-## Compatibility ranges
+## One catalog per app version
 
-**catalog-target.yaml** describes the current target. Its minimum version is
-inclusive; its maximum is exclusive. Versions use Python packaging version
-ordering, including prereleases. The catalog schema version describes supported
-rules independently of the app version.
+Only the latest released Hatcher version gets package updates. The manifest carries
+one catalog, stamped with the version of the checkout it was generated from, and a
+client activates a catalog only when that stamp equals its own version. Older
+clients keep their last activated list, or their bundled YAML, and still read the
+release block, which is how they learn about the new version.
 
-For a compatible change, keep the target unchanged. For a new engine capability,
-use a new target id and minimum version, and explicitly close the previous range:
+The stamp is the catalog's minimum version; its maximum stays empty. The catalog
+schema number is derived from the same version, so clients before 1.3.0, which pick a
+catalog by version range and parse every schema number they know, keep a newer
+catalog opaque instead of failing on package fields they do not know.
 
-```yaml
-target:
-  id: hatcher-1_2
-  min_hatcher_version: "1.2.0"
-  max_hatcher_version_exclusive: null
-  catalog_schema_version: 2
-close_ranges:
-  hatcher-1_1: "1.2.0"
-```
-
-Catalog schema 2 (target **hatcher-1_2**, from 1.2.0) adds two optional package
-fields: **upstream_version**, a display label that never orders updates, and
-**native**, the live-install policy for the Amiga package tool (eligibility
-`supported`, `protected`, `user-archive-required` or `unsupported`, a reason for
-everything but `supported`, `preserve` paths for changed configuration files and
-`reboot: none|cold`). Packages without **native** get a conservative policy from
-their recipe (`data/package_identity.py`). 1.1 clients reject unknown package fields,
-so **hatcher-1_1** is closed at 1.2.0 and keeps its last schema 1 catalog; the
-generator refuses to put these fields into a schema 1 target. Publishing the first
-hatcher-1_2 catalog needs hatcher-1_1 in the previous signed manifest.
-
-The generator preserves previous signed catalogs outside the target. Closing a
-range changes its compatibility metadata and revision, while retaining its package,
-bundle and ADF content. Overlapping ranges and unknown ids in **close_ranges** fail
-publication. Historical catalog data is generated output, not a second maintained
-package list. Keep the current id's minimum version unchanged.
+The generator refuses a checkout whose version is not the latest published GitHub
+release. Publication therefore happens in two ways: automatically from the release
+tag when a release is published, and on demand from that release's branch, named
+after the version, for example **1.2.0**, for package fixes between releases. A
+checkout of main during development cannot publish.
 
 Host tools, themes, local archives, templates, media detection and Python code ship
 with the application. New local assets, new rule types and new engine behavior need
@@ -68,12 +45,12 @@ an app release. Changing a field in a manifest cannot add those capabilities.
 
 ## Activation and builds
 
-A client uses bundled YAML offline, then its last valid compatible signed cache.
-A complete compatible catalog replaces the previous catalog; omitted packages are
-removed. Invalid signatures, unknown fields, unsafe paths, broken references,
-missing local resources and incompatible engine requirements prevent activation.
-An unsupported app range or catalog schema leaves the prior catalog active while
-still allowing the app release notification.
+A client uses bundled YAML offline, then its last valid signed cache whose catalog
+is stamped with its own version. A complete catalog replaces the previous catalog;
+omitted packages are removed. Invalid signatures, unknown fields, unsafe paths,
+broken references, missing local resources and incompatible engine requirements
+prevent activation. A catalog for another version leaves the prior catalog active
+while still allowing the app release notification.
 
 The cache files are **manifest-v2.json** and **manifest-v2-meta.json** under the runtime
 updates cache. Schema 1 caches are ignored. **HATCHER_UPDATE_MANIFEST_URL** overrides
@@ -113,66 +90,26 @@ For local verification, use temporary release metadata and installer artifacts:
 Omit the previous-file arguments only for the initial publication. Previous files
 must be signed with the trusted key. Explicit **--revision** values must exceed both
 published revisions; otherwise the generator uses the greater of the current Unix
-time and the previous revisions plus one. Identical sources, artifacts, previous
-publications and explicit revision produce identical payloads. Sign with
+time and the previous revisions plus one. The catalog revision counts the
+publications for one version. Identical sources, artifacts, previous publications
+and explicit revision produce identical payloads. Sign with
 **scripts/sign-update-manifest.py** and verify using **scripts/verify-update-publication.py**.
 
 The client limit remains 2 MiB per signed manifest. The generator checks the encoded
 size before signing, reserving room for the envelope; the signer checks it again.
-Several catalog generations fit, but publication fails rather than silently removing
-older compatibility ranges when the limit is reached.
 
 To revert a broken catalog, restore its good YAML content and publish with a higher
 revision. Do not reduce publication or catalog revisions. A failed download or
 validation leaves the last compatible cache available.
 
-## Amiga catalog
-
-**amiga-catalog-v1.json** is the package catalog as the Amiga tool Hatcher Packages
-reads it, generated from the same validated YAML. It is the unsigned
-`hatcher-native-metadata-1` payload of feed `hatcher-packages` (data schema
-`packages-audit-1`), wrapping a `hatcher-native-catalog-draft-1` catalog: every
-package, bundle, compatibility list and dependency edge, with the recipe identity
-defined by hatcher-packages. It is an audit view; installing on the Amiga still
-needs a signed package plan and set from hatcher-packages.
-
-The native reader accepts only `eligibility: unreviewed`, `upstream_version: null`
-and `content_identity: null`. So the catalog policy travels as the first entry of
-`reasons` (`Hatcher policy: <eligibility>: <reason>`, then preserved files and the
-reboot note), and the reviewed archive pin (`pinned_url`, `sha256`, `size`) is added
-to the opaque `source` descriptor. The upstream version and content identity stay in
-the desktop catalog until the native format grows fields for them.
-
-**amiga-artifacts.lock.yaml** holds the reviewed pins (HTTPS URL, size, SHA-256 and
-the MD5 the YAML must still carry) for every package marked
-`native.eligibility: supported`. The exporter refuses a supported package without a
-pin, a pin whose MD5 no longer matches the YAML, a supported recipe that uses rules
-the native executor lacks (`**`, `?`, classes, non-User-Startup blocks, several menu
-entries, desktop-only archives) and a supported package on a hard dependency cycle.
-A changed upstream file therefore never picks up a new SHA-256 by itself.
-
-Export from a clean checkout (the source commit label is HEAD), then sign with the
-publisher key, which never enters this repository:
-
-```bash
-.venv/bin/python scripts/export-amiga-catalog.py /tmp/amiga-catalog-v1.payload.json \
-  --revision <N>
-python tools/sign-native-metadata.py /tmp/amiga-catalog-v1.payload.json \
-  amiga-catalog-v1.json --signing-key-file <publisher-key.pem> \
-  --confirm-sign-native-audit            # run inside hatcher-packages
-```
-
-The revision must increase with every publication. Neither tool overwrites an
-existing file. `--allow-dirty` exists for local previews only.
-
 ## Package checks
 
 **scripts/check-package-downloads.py** reads the checkout catalog directly, without
-runtime manifests or download overrides. It downloads remote packages, compares MD5
-checksums and checks pinned GitHub tags for newer releases. Packages in
-**amiga-artifacts.lock.yaml** are also downloaded from the pinned URL and compared by
-SHA-256 and size; a mismatch is reported as "pinned artifact changed". The daily workflow
-updates its tracking issue and closes it when all checks pass.
+runtime manifests or download overrides. The daily workflow runs it on the branch of
+the latest published release. It downloads remote packages, compares MD5
+checksums and checks pinned GitHub tags for newer
+releases. The daily workflow updates its tracking issue and closes it when all checks
+pass.
 
 A fixed URL can reveal changed bytes or a broken link, but not a new release at a
 different URL. Set **download.check_latest_release** to false for intentionally

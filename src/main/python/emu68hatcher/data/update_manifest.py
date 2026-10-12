@@ -19,18 +19,15 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from packaging.version import InvalidVersion, Version
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator
 
 from emu68hatcher import __version__
 from emu68hatcher.data.catalog import CatalogSnapshot, bundled_catalog
 from emu68hatcher.data.catalog_manifest import (
     CATALOG_SCHEMA_VERSION,
-    SUPPORTED_CATALOG_SCHEMAS,
     CatalogRelease,
     validate_client_catalog,
-    validate_ranges,
 )
-from emu68hatcher.data.package_schema import DownloadInfo, SourceType
 from emu68hatcher.utils.paths import get_cache_dir
 from emu68hatcher.utils.platform import OperatingSystem, PlatformInfo, get_platform_info
 
@@ -40,48 +37,8 @@ DEFAULT_MANIFEST_URL = (
 _REFERENCE_DIR = Path(__file__).parent / "reference"
 _BUNDLED_MANIFEST_PATH = _REFERENCE_DIR / "update_manifest.json"
 _PUBLIC_KEY_PATH = _REFERENCE_DIR / "update_manifest_public_key.pem"
-_IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9_]*$")
-_GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 _SAFE_FILENAME_RE = re.compile(r"^[^/\\\x00-\x1f]+$")
 _MAX_MANIFEST_BYTES = 2 * 1024 * 1024
-
-
-class PackageDownloadOverride(BaseModel):
-    """Replacement download fields for one bundled package."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    source: SourceType
-    path: str | None = None
-    url: AnyHttpUrl | None = None
-    backup_url: AnyHttpUrl | None = None
-    repo: str | None = None
-    tag: str | None = Field(default=None, pattern=r"^[\w.\-+]+$")
-    hash: str = Field(pattern=r"^[0-9a-fA-F]{32}$")
-    filename: str
-
-    @field_validator("filename")
-    @classmethod
-    def _validate_filename(cls, value: str) -> str:
-        if not _SAFE_FILENAME_RE.fullmatch(value) or value in {".", ".."}:
-            raise ValueError("filename must be a plain file name")
-        return value
-
-    @model_validator(mode="after")
-    def _validate_source_fields(self):
-        if self.source == SourceType.LOCAL:
-            raise ValueError("remote manifests cannot select local package sources")
-        if self.source == SourceType.AMINET and not self.path:
-            raise ValueError("aminet source requires 'path'")
-        if self.source == SourceType.GITHUB:
-            if not self.repo or not _GITHUB_REPO_RE.fullmatch(self.repo):
-                raise ValueError("github source requires a valid owner/repo")
-        if self.source == SourceType.WEB and not self.url:
-            raise ValueError("web source requires 'url'")
-        return self
-
-    def as_download_info(self) -> DownloadInfo:
-        return DownloadInfo.model_validate(self.model_dump(mode="json", exclude_none=True))
 
 
 class HatcherArtifact(BaseModel):
@@ -137,24 +94,14 @@ class HatcherRelease(BaseModel):
 
 
 class UpdateManifest(BaseModel):
-    """Validated manifest payload."""
+    """schema 1: release metadata plus the frozen download overrides of 1.0 clients"""
 
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[1]
     revision: int = Field(ge=1)
     hatcher: HatcherRelease
-    packages: dict[str, PackageDownloadOverride] = Field(default_factory=dict)
-
-    @field_validator("packages")
-    @classmethod
-    def _validate_package_names(
-        cls, value: dict[str, PackageDownloadOverride]
-    ) -> dict[str, PackageDownloadOverride]:
-        invalid = [name for name in value if not _IDENTIFIER_RE.fullmatch(name)]
-        if invalid:
-            raise ValueError(f"invalid package names: {sorted(invalid)}")
-        return value
+    packages: dict[str, Any] = Field(default_factory=dict)
 
 
 UpdateManifestV1 = UpdateManifest
@@ -168,20 +115,8 @@ class UpdateManifestV2(BaseModel):
     hatcher: HatcherRelease
     catalogs: list[CatalogRelease] = Field(min_length=1)
 
-    @model_validator(mode="after")
-    def validate_catalogs(self):
-        validate_ranges(self.catalogs)
-        return self
-
     def select_catalog(self, version: str = __version__) -> CatalogRelease | None:
-        return next(
-            (
-                c
-                for c in self.catalogs
-                if c.matches(version) and c.catalog_schema_version in SUPPORTED_CATALOG_SCHEMAS
-            ),
-            None,
-        )
+        return next((c for c in self.catalogs if c.is_for(version)), None)
 
 
 def parse_manifest_payload(payload: dict) -> UpdateManifestV1 | UpdateManifestV2:
@@ -246,10 +181,8 @@ def _unique_json_object(pairs):
     return result
 
 
-def verify_manifest_bytes(
-    content: bytes,
-    public_key_path: Path = _PUBLIC_KEY_PATH,
-) -> UpdateManifestV1 | UpdateManifestV2:
+def verify_signed_payload(content: bytes, public_key_path: Path = _PUBLIC_KEY_PATH) -> dict:
+    """the payload of a signed envelope, once its signature checks out"""
     if len(content) > _MAX_MANIFEST_BYTES:
         raise ValueError("manifest is too large")
     try:
@@ -267,7 +200,14 @@ def verify_manifest_bytes(
         raise ValueError("manifest signature is invalid") from error
     if envelope.signature.key_id != "updates-2026":
         raise ValueError("unknown manifest signing key id")
-    return parse_manifest_payload(envelope.payload)
+    return envelope.payload
+
+
+def verify_manifest_bytes(
+    content: bytes,
+    public_key_path: Path = _PUBLIC_KEY_PATH,
+) -> UpdateManifestV1 | UpdateManifestV2:
+    return parse_manifest_payload(verify_signed_payload(content, public_key_path))
 
 
 def _cache_paths(cache_dir: Path | None = None) -> tuple[Path, Path]:
@@ -298,7 +238,7 @@ def initialize_manifest(
                 id="bundled",
                 revision=1,
                 source_commit="0" * 40,
-                min_hatcher_version="0",
+                min_hatcher_version=__version__,
                 catalog_schema_version=CATALOG_SCHEMA_VERSION,
                 **bundled_catalog().data().model_dump(mode="json", by_alias=True),
             )
@@ -347,7 +287,7 @@ def _candidate_selection(manifest, source, current, *, checked=False):
     snapshot = current.catalog
     notice = None
     if release is None:
-        notice = "This package list requires another Hatcher version; previous list remains active."
+        notice = "The published package list is for another Hatcher version; previous list remains active."
     else:
         snapshot = release.snapshot()
         validate_client_catalog(snapshot)

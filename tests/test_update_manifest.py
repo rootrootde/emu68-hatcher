@@ -7,8 +7,10 @@ from copy import deepcopy
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from emu68hatcher import __version__
 from emu68hatcher.builder.host.download_catalog import get_package_downloads
 from emu68hatcher.data.catalog import load_catalog_source
+from emu68hatcher.data.catalog_manifest import CATALOG_SCHEMA_VERSION
 from emu68hatcher.data.package_loader import clear_package_caches
 from emu68hatcher.data.update_manifest import (
     HatcherArtifact,
@@ -41,8 +43,8 @@ def _payload(revision=1):
                 "id": "test",
                 "revision": revision,
                 "source_commit": "1" * 40,
-                "min_hatcher_version": "0",
-                "catalog_schema_version": 1,
+                "min_hatcher_version": __version__,
+                "catalog_schema_version": CATALOG_SCHEMA_VERSION,
                 **data,
             }
         ],

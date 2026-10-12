@@ -19,6 +19,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Switch to the latest release branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --json tagName --jq .tagName -R "$GITHUB_REPOSITORY")
+          git checkout "origin/${tag#v}" 2>/dev/null || git checkout "$tag"
 
       - uses: actions/setup-python@v7
         with:
