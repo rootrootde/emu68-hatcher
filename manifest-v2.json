@@ -4107,7 +4107,7 @@
               "backup_url": null,
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "D3B88EA5F91A454A1169E096A49C8639",
+              "hash": "7017659AAC267AFE1BF5F216BDA39010",
               "path": null,
               "repo": null,
               "source": "web",
@@ -12029,8 +12029,8 @@
             ]
           }
         },
-        "revision": 12,
-        "source_commit": "c28d8af9429e296f9a7fcc4fdca7c80ffbe8a22c"
+        "revision": 13,
+        "source_commit": "17d11dbb73f4488c69829cebe5afb3ada96db167"
       }
     ],
     "hatcher": {
@@ -12075,12 +12075,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.0",
       "version": "1.2.0"
     },
-    "revision": 1791687300,
+    "revision": 1791813332,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "TACu8chld6YuNM0D8OkwLMWiAaSo0x0KQFaNy+YR9AsLDlNLyIue7V+UbStQb16iw/VnUXe0xfCcgBwrf8AJBQ=="
+    "value": "oZEKdemG3qSKuG3lF1u5BsmAwMY2c292rvv6s5B46bUnGSHGnZGc6jOZOTdJLvE+X4C0ayPAMTHJltaslnBSDQ=="
   }
 }
