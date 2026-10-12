@@ -10,11 +10,11 @@ versions:
 - '3.9'
 mandatory: false
 download:
-  source: web
-  url: https://ftp2.grandis.nu/turran/FTP/Misc/WHDUpdate/datafile/Amiga/Prism2v2.lha
-  hash: C2C6060C016DC4F22902C8809477985A
-  sha256: 0a214f42e3d4f2aed5d2d8a59d252449af2b4c7190ea16bc0e70c527b5084684
-  filename: Prism2v2.lha
+  source: aminet
+  path: driver/net/prism2v2.lha
+  hash: 18EB7E3318659F77042A0C69F8A405FF
+  sha256: 25b400ef25c44af940e1887576106b8312dcd28fe6c8030fcb78804480c07bc5
+  filename: prism2v2.lha
 install:
 - from: prism2v2/C/WirelessManager
   to: C/
