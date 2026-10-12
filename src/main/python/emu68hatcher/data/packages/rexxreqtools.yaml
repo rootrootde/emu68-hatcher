@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/libs/ReqToolsUsr.lha
   hash: d2155055d235218d213b08743b334e6c
+  sha256: 0a70c72f709a6d6487f45d8a937b69ac7030b560dc34f76a9a365683058f86e3
   filename: ReqToolsUsr.lha
 install:
 - from: ReqTools/RexxReqTools/rexxreqtools.library

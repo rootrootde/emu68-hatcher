@@ -16,6 +16,7 @@ download:
   source: aminet
   path: dev/mui/MCC_NList-0.128.lha
   hash: A8F6DE36C1F51CEA237D31F0482A2B38
+  sha256: 639e54660e1c8a83f3c030e2b383b575534a155c9087909b59300177e8adb0e7
   filename: MCC_NList-0.128.lha
 install:
 - from: MCC_NList/Libs/MUI/AmigaOS3/*

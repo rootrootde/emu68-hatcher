@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/time/SetDST.lha
   hash: EF32E16790F81AAF5AB8DDC1A60E372B
+  sha256: cc7648ca1d87f2aea26a1fddcb82bf5528fd5b1903d1cccbf6800b3187daa584
   filename: SetDST.lha
 install:
 - from: SetDST-*/C/*

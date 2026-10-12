@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/cdity/AKeys.lha
   hash: 5EC7EFA6AFDA8B4F8B220BA55B4E6911
+  sha256: 30becfad757e4a60248a6e718c304291adf4d4c749f5ba843394b398c7bdcee5
   filename: AKeys.lha
 # shipped .info already carries DONOTWAIT + CX_POPUP=NO, so it runs at boot without a popup
 install:

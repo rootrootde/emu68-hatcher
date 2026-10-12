@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/libs/Reqtools-Wide.lha
   hash: 7b146009ce6b99623d73a244a89b8c2a
+  sha256: 0bc0104d4a24320ddf77ff3d02bec28e481565a8deb4150dfe2fdd1ddc3a061f
   filename: ReqtoolsWide.lha
 install:
 - from: reqtools.library

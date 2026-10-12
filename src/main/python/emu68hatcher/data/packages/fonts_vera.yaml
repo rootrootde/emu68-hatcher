@@ -10,6 +10,7 @@ download:
   source: web
   url: https://download.gnome.org/sources/ttf-bitstream-vera/1.10/ttf-bitstream-vera-1.10.zip
   hash: ff1b2d3037c1dc369595fb719c296960
+  sha256: 1b0ba0f7af2e1d05f64e259d351965a2cb2673104a057ce715a06969c478f6cc
   filename: ttf-bitstream-vera-1.10.zip
 install:
 - from: ttf-bitstream-vera-1.10/*.ttf

@@ -14,6 +14,7 @@ download:
   repo: pulchart/cfd
   tag: v20261007
   hash: 9F317F5658C49866D7458866ED5143E2
+  sha256: 1221375868be6837cd92936530c2369c0d7fc2e0e0d88e51d2b1c3476c3df7bc
   filename: cfd.v20261007.lha
 install:
 # small (no debug) / 68020+ tier; the device now needs ptable.library beside it

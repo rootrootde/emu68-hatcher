@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/dtype/akTIFF-dt.lha
   hash: 01c8c82022816b41baf683940cd3a8cf
+  sha256: d8d5499e730b4132e60048f647d2325622786c367a0ae81e302bd3f242a897c5
   filename: akTIFF-dt.lha
 install:
 - from: akTIFF-Datatype/Classes/DataTypes/akTIFF.datatype

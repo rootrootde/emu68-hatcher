@@ -13,6 +13,7 @@ download:
   source: web
   url: http://www.whdload.de/games/7CitiesOfGold.lha
   hash: 66E9152B0CEABA95B2A2D957D66E4940
+  sha256: a59f9968911d02a36acc1231e9d52edbfcaf6378f3fe38d16a791debae41b066
   filename: 7CitiesOfGold.lha
 install:
 - from: 7CitiesOfGoldInstall/kick31034.A1000.RTB

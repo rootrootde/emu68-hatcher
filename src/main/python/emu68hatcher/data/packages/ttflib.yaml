@@ -6,6 +6,7 @@ download:
   source: aminet
   path: util/libs/ttflib68040.lha
   hash: 11697f9995edb72c3439d810ca299c54
+  sha256: 126130e9f60e5c084643b66608cf61c1636de75d41894929ca752ac9b21e8ec8
   filename: ttflib68040.lha
 install:
 - from: ttflib68040_0.85.lha/ttflib68040/ttf.library

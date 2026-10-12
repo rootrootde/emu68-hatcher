@@ -102,12 +102,22 @@ To revert a broken catalog, restore its good YAML content and publish with a hig
 revision. Do not reduce publication or catalog revisions. A failed download or
 validation leaves the last compatible cache available.
 
+## Amiga tools
+
+The Amiga tools read the same signed files as the desktop. Hatcher Packages reads
+**manifest-v2.json** and installs packages whose download carries a **sha256**
+(**scripts/check-package-downloads.py --write-sha256** records it). Emu68 Manager
+reads **emu68-releases-v1.json**, the signed export of
+**data/reference/emu68_releases.yaml** that the publish workflow writes next to the
+manifests with the same revision. Both tools verify the **updates-2026** signature
+with AmiSSL.
+
 ## Package checks
 
 **scripts/check-package-downloads.py** reads the checkout catalog directly, without
 runtime manifests or download overrides. The daily workflow runs it on the branch of
 the latest published release. It downloads remote packages, compares MD5
-checksums and checks pinned GitHub tags for newer
+checksums, verifies a recorded SHA-256 and checks pinned GitHub tags for newer
 releases. The daily workflow updates its tracking issue and closes it when all checks
 pass.
 

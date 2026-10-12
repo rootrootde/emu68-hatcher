@@ -20,6 +20,7 @@ download:
   source: aminet
   path: comm/tcp/MiamiDx10cmain.lha
   hash: C698B2E570254C6D6CB99A1A01FE5917
+  sha256: 25b89bf4dcb60eceb6b2c956431ab0c3bbeab72844743a1bf09df0aff7161709
   filename: MiamiDx10cmain.lha
 install:
 - from: MiamiDx10_Install/main/Libs/plain.MiamiPanel

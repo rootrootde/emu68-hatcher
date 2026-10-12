@@ -7,6 +7,7 @@ download:
   source: aminet
   path: text/bfont/terminus-font.lha
   hash: d0a89dcddb076364f856e4c9a216b4d1
+  sha256: 60619ae78b3faf50275d98da871c71e8184ffb806bc7314cf971c814c301c17c
   filename: terminus-font.lha
 install:
 - from: terminus-font/Fonts/*

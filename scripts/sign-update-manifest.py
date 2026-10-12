@@ -8,6 +8,7 @@ from pathlib import Path
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from emu68hatcher.data.emu68_releases import Emu68ReleaseIndex
 from emu68hatcher.data.update_manifest import (
     _MAX_MANIFEST_BYTES,
     canonical_payload,
@@ -22,11 +23,15 @@ def main() -> int:
     parser.add_argument("output", type=Path)
     parser.add_argument("--key", type=Path, required=True)
     parser.add_argument("--key-id", default="updates-2026")
+    parser.add_argument("--format", choices=("manifest", "releases"), default="manifest")
     args = parser.parse_args()
 
     try:
         payload = json.loads(args.source.read_text(encoding="utf-8"))
-        parse_manifest_payload(payload)
+        if args.format == "releases":
+            Emu68ReleaseIndex.model_validate(payload)
+        else:
+            parse_manifest_payload(payload)
     except (OSError, json.JSONDecodeError, ValidationError) as error:
         parser.error(str(error))
 

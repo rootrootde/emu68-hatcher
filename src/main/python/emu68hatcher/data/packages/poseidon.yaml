@@ -21,6 +21,7 @@ download:
   source: web
   url: https://wiki.icomp.de/w/images/4/40/PoseidonV4.lha
   hash: 4209D5940A7FCD2F2744A80F1472D672
+  sha256: 0efef3e94fbff60a7f70237a03509cec7012ccd1d5aa25dc41c3d69db791e74f
   filename: PoseidonV4.lha
 install:
 - from: PoseidonV4/InstallData/Libs/poseidon.library

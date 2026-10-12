@@ -13,6 +13,7 @@ download:
   source: aminet
   path: disk/misc/smb2fs.m68k-amigaos.lha
   hash: 131156C5C3F56C4512A00743DE74FFB4
+  sha256: 375a5ecf6d2e34400b184b67b69982db0f4f79584971be2eccea7d3e33cbcfa8
   filename: smb2fs.m68k-amigaos.lha
 install:
 - from: smb2fs/L/smb2-handler.020

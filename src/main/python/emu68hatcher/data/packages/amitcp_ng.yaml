@@ -21,6 +21,7 @@ download:
   tag: v4.1.8
   filename: AmiTCP_NG-v4.1.8.lha
   hash: 02C3C528BA699B984894C292CD043E62
+  sha256: 49f9318e792ed42449f1609823208505f8143749548994c0c61c3b305b3ace65
 install:
 - from: AmiTCP_NG/data/Libs/bsdsocket.library
   to: Libs/

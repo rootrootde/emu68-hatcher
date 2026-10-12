@@ -15,6 +15,7 @@ download:
   source: aminet
   path: dev/mui/MCC_BetterString_68k.lha
   hash: B3BA21A971C23D108DF239FF6461AABE
+  sha256: 2f5b032d6494cbf0af684e4dacf82785108bc1210c8fa624ba28d09d0f0aa6b4
   filename: MCC_BetterString_68k.lha
 install:
 - from: BetterString.mcc

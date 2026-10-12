@@ -12,6 +12,7 @@ download:
   source: aminet
   path: dev/misc/guigfxlib.lha
   hash: AA83710882AC07BC10A7C4485372D549
+  sha256: c0be7adafd0595c094856a0434b34b7411c66daa7cb866d7b4c8c2da4cba3d35
   filename: guigfxlib.lha
 # 68040 build (uses the FPU) - pistorm/emu68 emulates a 68040; rename to the plain name
 install:

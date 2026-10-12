@@ -12,6 +12,7 @@ download:
   source: aminet
   path: util/libs/asyncioppc.lha
   hash: BE3454C8811CEE206719B564CAD1A822
+  sha256: b5a387c13dabba3b9fcebb08d4aefe580f8dd0e47a05799711e90dbebe20f4e6
   filename: asyncioppc.lha
 install:
 - from: asyncioppc/libs/asyncio.library

@@ -11,6 +11,7 @@ download:
   repo: dejavu-fonts/dejavu-fonts
   tag: version_2_37
   hash: 33e1e61fab06a547851ed308b4ffef42
+  sha256: 7576310b219e04159d35ff61dd4a4ec4cdba4f35c00e002a136f00e96a908b0a
   filename: dejavu-fonts-ttf-2.37.zip
 install:
 - from: dejavu-fonts-ttf-2.37/ttf/*.ttf

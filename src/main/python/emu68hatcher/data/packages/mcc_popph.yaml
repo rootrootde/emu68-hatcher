@@ -15,6 +15,7 @@ download:
   source: aminet
   path: dev/mui/MCC_Popph.lha
   hash: B68A9E8508EBF3378A9C97F412C9DFE9
+  sha256: bbd4ba874a5be8d02197f9d2024a9eec94af145bb429c102ce39d5e7f45d78d5
   filename: MCC_Popph.lha
 install:
 - from: MCC_Popph/Libs/mui/Popplaceholder.mcc

@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/arc/UnZIP552.lha
   hash: A657AA4A7E323D504FBB0B7443292EE6
+  sha256: 3dd82117d4a809d1753ce4defcc65756f9a575687b51122f50f29ecd79a8a056
   filename: Unzip552.lha
 install:
 - from: UnZIP*/UnZip

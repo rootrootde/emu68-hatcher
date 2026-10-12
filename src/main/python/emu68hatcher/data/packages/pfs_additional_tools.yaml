@@ -13,6 +13,7 @@ download:
   source: aminet
   path: disk/misc/PFS3_53.lha
   hash: FEDAA397BDD9C593EF1EA7C2E86BFB33
+  sha256: 171f03ad571638b7463fc5334e3f402e4fc23d908d0aaf8026180768d8ac0c82
   filename: PFS3_53.lha
 install:
 - from: PFS3/tools/setfnsize

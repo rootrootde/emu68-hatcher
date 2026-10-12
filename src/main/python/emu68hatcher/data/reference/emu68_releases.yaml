@@ -11,6 +11,10 @@
 #             from downloaded bytes on 2026-10-09 and match the sha256 digest
 #             GitHub reports for the asset. Use null for anything not checked
 #             that way - never fill in a guess.
+# dialect: which config.txt/cmdline.txt layout the builder writes for the release
+#   (builder/staging/scripts/generator.py: legacy-1.0 = cmdline tokens, 1.1-alpha =
+#   emu68 overlay without storage overlays, 1.1-beta = storage overlays). Emu68 Manager
+#   installs a release onto a card only when its dialect matches the installed one.
 # kernels: file names config.txt boots per board family. modern = PiStorm32-lite
 #   and PiStorm16 builds, classic = original PiStorm. The pistorm16 mapping is
 #   inherited from the builder and is not hardware-verified.
@@ -25,6 +29,7 @@ releases:
   - version: "1.0.7"
     tag: v1.0.7
     channel: stable
+    dialect: legacy-1.0
     assets:
       - role: emu68_boot
         kind: zip
@@ -46,6 +51,7 @@ releases:
   - version: "1.1.0-alpha.1"
     tag: v1.1.0-alpha.1
     channel: alpha
+    dialect: 1.1-alpha
     assets:
       - role: emu68_boot
         kind: zip
@@ -74,6 +80,7 @@ releases:
   - version: "1.1.0-beta.1"
     tag: v1.1.0-beta.1
     channel: beta
+    dialect: 1.1-beta
     assets:
       - role: emu68_boot
         kind: zip

@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/boot/reboot.lha
   hash: 95355F5C845088151874633164A95693
+  sha256: b6ffb4a84893dc46615527acd2d5c78ebd2f4025548b0c89e2a74449edc85246
   filename: reboot.lha
 install:
 - from: Reboot/Reboot

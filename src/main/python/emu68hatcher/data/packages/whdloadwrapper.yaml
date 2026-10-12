@@ -14,6 +14,7 @@ download:
   source: web
   url: https://www.dropbox.com/scl/fi/8l78g3ncw098r781tskvr/WHDLoadWrapper.lha?rlkey=6zr0bxd1rqmga840iykl4tgum&dl=1
   hash: B7BE793656776C8F7E3D153499E9FA1D
+  sha256: a8189c40e7940303ca6d85dcda49375693ac20a86feb8f6f010c93b11e0f2cd6
   filename: WHDLoadWrapper.lha
 install:
 - from: WHDLoadWrapper/C/Bplcon3Hack

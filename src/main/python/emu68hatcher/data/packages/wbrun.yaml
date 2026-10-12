@@ -12,6 +12,7 @@ download:
   source: aminet
   path: util/cli/WBRun_fix.lha
   hash: 88BA6BCF9106930B33ACC5DBD94A9A26
+  sha256: e2b71019a26f412fdeaa6dbce82e409f1de9f450ea3185bc58fe8cc46ec5fb18
   filename: WBRun_fix.lha
 install:
 - from: WBRun/WBRun

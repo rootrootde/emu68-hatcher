@@ -12,6 +12,7 @@ download:
   source: aminet
   path: dev/misc/renderlib.lha
   hash: 835201535B6B924FB4112BAD96AB157D
+  sha256: 15a9af6f81deb0d44ce5e7115bd5fa42505f05fd5cfd80b49d39cb8b5a4b72e1
   filename: renderlib.lha
 # only a single 68k build ships (no cpu/fpu variants); the .elf/.os4 ones are for OS4
 install:

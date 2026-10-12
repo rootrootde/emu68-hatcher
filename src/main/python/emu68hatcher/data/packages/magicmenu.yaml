@@ -19,6 +19,7 @@ download:
   repo: AmiKit/MagicMenu
   tag: v3.1
   hash: 4539081FCE7789F11374B07F99915AE1
+  sha256: 35ebfbefe41695ae2e071c22cbf13c7d15da0dc30e0d259dd16997a9ab7b13e0
   filename: MagicMenu_3.1.lha
 # the archive mirrors the destinations (WBStartup/, Prefs/, Catalogs/); the
 # install script only adds the icon-set choice and the LOCALE: copies.

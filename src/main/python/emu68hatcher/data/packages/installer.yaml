@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/misc/Installer-43_3.lha
   hash: B22CD3A6A6CBE7D8A44BD7853ABB56E9
+  sha256: 25da2a3ec06fa8626d1fba171ec853611035d06203c13a43f4d53713d9927aac
   filename: Installer-43_3.lha
 install:
 - from: Installer43_3/Installer

@@ -66,31 +66,33 @@ Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools can be selecte
 separately. A network stack requires both Ethernet and WiFi support. USB and
 NVMe are offered only for compatible Emu68 versions.
 
-The **Utilities** group has three native Amiga tools. They are development builds
-and have not been tested on real hardware yet:
+The **Utilities** group has three Amiga tools. Each one is a single window with a
+few buttons; before it changes a file it keeps the old one under
+**SYS:Emu68-Hatcher/Backup/** and offers to undo the last change.
 
-- **Hatcher Prefs:** network settings, connect/disconnect and Emu68 boot settings.
-  Installed as **C:Hatcher-Prefs** with a copy in **SYS:Emu68-Hatcher/Tools/**.
-  Every network stack pulls it in, because **SYS:Utilities/Network Config** and
-  the Network menu now open it. Needs MUI for its window.
-- **Hatcher Packages:** browse and install signed packages on the Amiga. Needs
-  MUI, AmiSSL and XADMaster.
-- **Emu68 Manager:** download, switch and restore Emu68 releases on the card.
-  Needs MUI, AmiSSL (also offline: release plans are signature-checked) and
-  XADMaster. **Transaction-Recovery** in its drawer works without any of them.
+**Hatcher Prefs** is the network window: connect, disconnect, check the connection,
+WiFi name and password, addresses and DNS. Every network stack installs it. It is
+started from **Network → Network Settings** or the **Network Settings** icon in
+**SYS:Utilities** and lives in **SYS:Emu68-Hatcher/Tools/** with a copy in **C:**.
+It needs MUI.
 
-Hatcher Packages and Emu68 Manager are installed to **SYS:Emu68-Hatcher/Tools/**
-with their manuals.
+**Emu68 Manager** installs a newer Emu68 release on the card and undoes it. It
+reads the signed release list Hatcher publishes, shows the running and the
+installed version, and only offers releases that boot with the card's config.txt.
+Needs MUI, AmiSSL and XADMaster.
 
-Each image also gets two records the Amiga tools can read.
+**Hatcher Packages** installs programs from the same signed package list the
+desktop uses, with their menu entries, and removes them again. Needs MUI, AmiSSL
+and XADMaster.
+
+Each image also gets two records the tools read.
 **SYS:Emu68-Hatcher/Packages/build-receipts.json** lists, per package, the files the
-build wrote with their sizes and SHA-256, startup blocks and menu entries, and marks
-files your extra content replaced as locally modified. Packages that installed no
-files get no receipt. **SYS:Emu68-Hatcher/Installation.json** records the Kickstart and
-Emu68 versions, the network stack and hashes of the generated config.txt and
-cmdline.txt. Both describe the image as built; they are not signed, and Hatcher
-Packages lists the packages as untracked until you adopt them with a signed package
-set. Neither file contains WiFi passwords, archive paths or registration keys.
+build wrote with their sizes and SHA-256, the download hash, startup blocks and menu
+entries, and marks files your extra content replaced as locally modified. Packages
+that installed no files get no receipt. **SYS:Emu68-Hatcher/Installation.json**
+records the Kickstart and Emu68 versions, the network stack and hashes of the
+generated config.txt and cmdline.txt. Neither file contains WiFi passwords, archive
+paths or registration keys.
 
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream

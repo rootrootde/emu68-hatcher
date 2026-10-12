@@ -1,10 +1,7 @@
 """Record which package wrote which staged file, and turn that into build receipts.
 
-The receipts are what this build observed, not publisher-signed ownership. The
-Amiga package tool keeps its own ledger (Emu68-Hatcher/Packages/installed.json),
-which only accepts entries backed by signed package sets, so a fresh image stays
-"untracked" there until an explicit adopt with a signed set. These records give
-that adoption, and anyone diagnosing a card, the facts from the build.
+Hatcher Packages on the Amiga reads them to know what the build installed; its own
+installs go into installed.json in the same shape.
 """
 
 from __future__ import annotations
@@ -12,15 +9,9 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from fnmatch import fnmatchcase
 from pathlib import Path
 
 from emu68hatcher.builder.staging.files import resolve_source_path
-from emu68hatcher.data.package_identity import (
-    CONTENT_ENGINE,
-    content_identity,
-    effective_native_policy,
-)
 from emu68hatcher.data.package_schema import Package
 
 RECEIPTS_DIR = "Emu68-Hatcher/Packages"
@@ -85,12 +76,7 @@ def find_block(text: bytes, name: str) -> bytes | None:
     return block + b"\n" if stops[0] + 1 < len(lines) else block
 
 
-def _preserved(path: str, patterns: list[str]) -> bool:
-    lowered = path.casefold()
-    return any(fnmatchcase(lowered, pattern.casefold()) for pattern in patterns)
-
-
-def _file_entries(name: str, log: StagingWriteLog, policy) -> list[dict]:
+def _file_entries(name: str, log: StagingWriteLog) -> list[dict]:
     entries = []
     for key, writes in sorted(log.writes.items()):
         mine = [w for w in writes if w.package == name]
@@ -98,7 +84,7 @@ def _file_entries(name: str, log: StagingWriteLog, policy) -> list[dict]:
             continue
         path = log.names[key]
         staged = log.root / path
-        entry: dict = {"path": path, "preserve": _preserved(path, policy.preserve)}
+        entry: dict = {"path": path}
         if not staged.is_file():
             entry["state"] = "removed"
             entries.append(entry)
@@ -142,6 +128,20 @@ def _block_entries(package: Package, root: Path, user_archives: set[str]) -> lis
     return entries
 
 
+def _download_entry(package: Package, packages: dict[str, Package]) -> dict | None:
+    # consumers of a shared archive report the archive owner's download
+    seen = set()
+    while package.archive_package and package.archive_package not in seen:
+        seen.add(package.archive_package)
+        owner = packages.get(package.archive_package)
+        if owner is None:
+            break
+        package = owner
+    if package.download is None:
+        return None
+    return {"hash": package.download.hash, "sha256": package.download.sha256}
+
+
 def build_receipts(
     *,
     log: StagingWriteLog,
@@ -149,7 +149,6 @@ def build_receipts(
     packages: dict[str, Package],
     requested: set[str],
     user_archives: set[str],
-    local_root: Path | None,
     catalog: dict,
     builder_version: str,
 ) -> dict:
@@ -160,8 +159,7 @@ def build_receipts(
         package = packages.get(name)
         if package is None:
             continue
-        policy = effective_native_policy(package)
-        files = _file_entries(name, log, policy)
+        files = _file_entries(name, log)
         blocks = _block_entries(package, log.root, user_archives)
         menus = [
             {"title": m.title, "path": m.path, "menu": m.menu}
@@ -183,7 +181,7 @@ def build_receipts(
         receipt = {
             "id": name,
             "upstream_version": package.upstream_version,
-            "content_identity": content_identity(package, packages, local_root),
+            "download": _download_entry(package, packages),
             "selection": (
                 "requested"
                 if name in requested
@@ -191,8 +189,6 @@ def build_receipts(
                 if package.mandatory
                 else "dependency"
             ),
-            "native_eligibility": policy.eligibility.value,
-            "reboot": policy.reboot,
             "files": files,
             "blocks": blocks,
             "menu": menus,
@@ -205,10 +201,8 @@ def build_receipts(
     return {
         "format": RECEIPTS_FORMAT,
         "domain": "amiga",
-        "authority": "build observation, not signed ownership; adopt with a signed package set",
         "builder": {"name": "Emu68 Hatcher", "version": builder_version},
         "catalog": catalog,
-        "identity_engine": CONTENT_ENGINE,
         "packages": receipts,
         "not_recorded": skipped,
     }

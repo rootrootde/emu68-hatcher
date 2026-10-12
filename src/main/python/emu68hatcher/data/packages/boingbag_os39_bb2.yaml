@@ -9,5 +9,6 @@ download:
   source: web
   url: https://os.amigaworld.de/files/os39/BoingBag39-2.lha
   hash: FD45D24BB408203883A4C9A56E968E28
+  sha256: 4b2a777a289595ce327c0ee836a3e2f7739656d2f9ea3c34ad8372e9e3cd86a1
   filename: BoingBag39-2.lha
 install: []

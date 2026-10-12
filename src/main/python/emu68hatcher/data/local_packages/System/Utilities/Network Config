@@ -1,3 +1,0 @@
-; Hatcher-Prefs native UI; connect/disconnect now require fresh explicit action.
-; Original ARexx scripts remain in S: as fallback, not an automatic duplicate hook.
-SYS:C/Hatcher-Prefs

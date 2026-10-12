@@ -7,7 +7,8 @@ from pathlib import Path
 from emu68hatcher import __version__
 from emu68hatcher.data.catalog import load_catalog_source
 from emu68hatcher.data.catalog_manifest import validate_client_catalog
-from emu68hatcher.data.update_manifest import verify_manifest_bytes
+from emu68hatcher.data.emu68_releases import Emu68ReleaseIndex, release_index_payload
+from emu68hatcher.data.update_manifest import verify_manifest_bytes, verify_signed_payload
 
 
 def main():
@@ -35,6 +36,13 @@ def main():
         raise ValueError("published catalog differs from source YAML")
     validate_client_catalog(catalog.snapshot())
     print(f"verified {catalog.id}, revision {catalog.revision}, source {catalog.source_commit}")
+    releases = verify_signed_payload((args.directory / "emu68-releases-v1.json").read_bytes())
+    index = Emu68ReleaseIndex.model_validate(releases)
+    if index.revision != manifest.revision or index.source_commit != args.source_commit:
+        raise ValueError("release index revision or source commit differs from the manifest")
+    if releases != release_index_payload(index.revision, index.source_commit):
+        raise ValueError("published release index differs from emu68_releases.yaml")
+    print(f"verified release index: {len(index.releases)} releases")
 
 
 if __name__ == "__main__":

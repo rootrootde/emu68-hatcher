@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/rexx/RexxTricks_386.lha
   hash: 7ABF177D07FEF0E41B80315E5C403E83
+  sha256: 281c135d945023617b66822b4911dfb0897dfad9ffbdd63ddbb0705766068786
 install:
 - from: RexxTricks/Libs/rexxtricks.library
   to: Libs/

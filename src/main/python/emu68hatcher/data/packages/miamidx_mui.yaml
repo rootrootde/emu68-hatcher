@@ -12,6 +12,7 @@ download:
   source: aminet
   path: comm/tcp/MiamiDx10c-MUI.lha
   hash: 885BF8CB83BBA1FE7A587110E7BF1922
+  sha256: 2edd97484489665388163b01263f9db1813be289dea5051d5cff8cbdb42e0cf7
   filename: MiamiDx10c-MUI.lha
 install:
 - from: MiamiDx10_Install/MUI/*

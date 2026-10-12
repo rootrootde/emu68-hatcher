@@ -20,6 +20,7 @@ download:
   source: aminet
   path: comm/tcp/RNOXfer_68k.lha
   hash: CF4596EDFCB0CB2B6A65B02B87898396
+  sha256: 32e317d6b616fa187b2ac2bc857d9c0611f457711c07e199dfb23d274a2c8f24
   filename: RNOXfer_68k.lha
 install:
 - from: RNOXfer_68k.info

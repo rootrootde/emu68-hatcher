@@ -14,12 +14,10 @@ from emu68hatcher.builder.staging.files import resolve_source_path, resolve_stag
 from emu68hatcher.builder.staging.receipts import (
     RECEIPTS_FILE,
     build_receipts,
-    find_block,
     sha256_file,
     write_json,
 )
 from emu68hatcher.config.defaults import EMU68_BOOT_PARTITION_NAME
-from emu68hatcher.data.package_loader import get_local_packages_dir
 
 if TYPE_CHECKING:
     from emu68hatcher.builder.state import CreatedImage
@@ -38,19 +36,6 @@ def _user_archives(workflow: BuildWorkflow) -> set[str]:
     if workflow.config.display.picasso96_archive is not None:
         archives.add("picasso96")
     return archives
-
-
-def _startup_time(boot_root, licensed: bool) -> str:
-    """which boot-time clock hook the Roadshow block carries, as hatcher-prefs names it"""
-    user_startup = resolve_source_path(boot_root, "S/User-Startup")
-    block = find_block(user_startup.read_bytes(), "Roadshow TCP/IP") if user_startup else None
-    if block is None or not licensed:
-        return "none"
-    if b"NetworkConfig.rexx SYNCTIME" in block:
-        return "networkconfig-synctime"
-    if b"Hatcher-Prefs startup-time" in block:
-        return "hatcher-prefs-opt-in"
-    return "none"
 
 
 def _boot_files(staging_dir) -> dict[str, str]:
@@ -94,7 +79,6 @@ def write_build_records(workflow: BuildWorkflow, image: CreatedImage) -> None:
         packages=packages,
         requested=resolution.requested,
         user_archives=user_archives,
-        local_root=get_local_packages_dir(),
         catalog=catalog,
         builder_version=__version__,
     )
@@ -110,7 +94,6 @@ def write_build_records(workflow: BuildWorkflow, image: CreatedImage) -> None:
     licensed = "roadshow" in user_archives and "roadshow" in selected
     installation = {
         "format": INSTALLATION_FORMAT,
-        "authority": "build observation; the files on the card are authoritative",
         "builder": {"name": "Emu68 Hatcher", "version": __version__},
         "built": datetime.now(timezone.utc).date().isoformat(),
         "kickstart": workflow.config.kickstart.version.value,
@@ -121,7 +104,6 @@ def write_build_records(workflow: BuildWorkflow, image: CreatedImage) -> None:
         "boot_files": _boot_files(image.workspace.staging_dir),
         "network_stack": stack.value.lower() if stack else None,
         "roadshow_licensed": licensed,
-        "startup_time": _startup_time(boot_root, licensed),
         "tools": sorted(t for t in _SETTINGS_TOOLS if t in selected and t in packages),
         "catalog": catalog,
         "receipts": RECEIPTS_FILE,

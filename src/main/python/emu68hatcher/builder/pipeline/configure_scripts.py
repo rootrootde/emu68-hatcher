@@ -37,9 +37,8 @@ class _MenuLauncher:
     stack: int = 8192
 
 
-# Hatcher-Prefs handles every stack; connect/disconnect need typed consent in its
-# window, so one entry replaces the old one-click ARexx launchers. Same form as
-# hatcher-prefs' own launcher migration writes onto older cards.
+# Hatcher-Prefs serves every stack: one window to connect, disconnect and edit
+# the settings, so the Network menu has one entry
 _HATCHER_PREFS = "SYS:C/Hatcher-Prefs"
 _HATCHER_PREFS_STACK = 65536
 
@@ -186,7 +185,9 @@ def _collect_app_entries(all_packages: list[str]) -> list[_MenuLauncher]:
 def _network_entries(network_stack: NetworkStack | None) -> list[_MenuLauncher]:
     if network_stack is None:
         return []
-    return [_MenuLauncher("Network", "Network Config", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)]
+    return [
+        _MenuLauncher("Network", "Network Settings", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)
+    ]
 
 
 def _prefs_entries(all_packages: list[str], p96_modern: bool) -> list[_MenuLauncher]:

@@ -15,6 +15,7 @@ download:
   source: aminet
   path: dev/mui/MCC_TextEditor_68k.lha
   hash: 68C0FA74C26491E7344548357E6143D6
+  sha256: eadf34bb2384c7c8cbfd7ef873d98cb9f8d595419711996a00d5c54ec91dd4eb
   filename: MCC_TextEditor_68k.lha
 install:
 - from: TextEditor.mcc

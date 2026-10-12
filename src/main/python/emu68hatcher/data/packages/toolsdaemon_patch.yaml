@@ -14,5 +14,6 @@ download:
   source: aminet
   path: util/boot/ToolsDaemon22.lha
   hash: 79ef8ec1c9d6eff110dd838df9c6863e
+  sha256: 782de05ab069a539e0e07c0bb90a51d8a695cf7d51545ea3a06518dc16866496
   filename: ToolsDaemon22.lha
 install: []

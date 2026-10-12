@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/arc/lha_68k.lha
   hash: b027204c48dfde2b653dadb598124e28
+  sha256: b1e9ce416a84c4e2b53c70fd51d434df09eb11fe110014d86c0bea76147d1899
   filename: lha_68k.lha
 install:
 - from: lha_68040

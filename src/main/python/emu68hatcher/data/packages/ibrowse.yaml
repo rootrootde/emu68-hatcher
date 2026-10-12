@@ -13,6 +13,7 @@ download:
   source: web
   url: http://www.ibrowse-dev.net/resources/IBrowse3.0a-OS3.lha
   hash: E448F1B7E46034A5D2DBCB464C9A7268
+  sha256: ae8ffb88a82050ad9bc3f29d68ce9470a6531f519bea75cf15276dd342813087
   filename: IBrowse-OS3.lha
 install:
 - from: IBrowse*.info

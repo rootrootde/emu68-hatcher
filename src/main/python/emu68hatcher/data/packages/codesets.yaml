@@ -12,6 +12,7 @@ download:
   source: aminet
   path: util/libs/codesets-68000.lha
   hash: 6B120E1B89FF2F80F5136E050A0A0DA0
+  sha256: 3876612a5e5c987106512655c39b376914ca654fe84449ad723705e35df2ff78
   filename: codesets-68000.lha
 install:
 - from: codesets.library

@@ -1,7 +1,7 @@
 name: hatcher_prefs
 friendly_name: Hatcher Prefs
 group: Utilities
-description: 'native network and Emu68 boot settings editor (development build, not hardware-verified)'
+description: 'network settings window: connect, disconnect, WiFi password, addresses'
 versions:
 - '3.1'
 - '3.2'
@@ -12,24 +12,17 @@ versions:
 download:
   source: local
   path: Hatcher-Prefs.lha
-  hash: 663FBF4B6C41EA6B933723813FE1C688
+  hash: 64055AC26026CE7EF506E3A9B9524526
   filename: Hatcher-Prefs.lha
 install:
-# SYS:C/Hatcher-Prefs is fixed: the network launchers, the startup-time hook and
-# its opt-in record all name that path
+# the Network Settings icon and the Network menu name SYS:C/Hatcher-Prefs
 - from: Hatcher-Prefs/Hatcher-Prefs
   to: C/
 - from: Hatcher-Prefs
   to: Emu68-Hatcher/Tools/
   recursive: true
-menu_entry:
-  title: Hatcher Prefs
-  path: Emu68-Hatcher/Tools/Hatcher-Prefs/Hatcher-Prefs
-  menu: System
-  wb_launch: true
-# MUI is only needed for the window; the CLI and offline recovery run without it
+# the Network menu carries the launcher (configure_scripts), so no menu_entry here
+default: true
+# MUI draws the window; the Shell entry Hatcher-Prefs CONNECT runs without it
 requires:
 - mui
-native:
-  eligibility: protected
-  reason: 'Hatcher tool; updated from its own release archive, not by Hatcher Packages'

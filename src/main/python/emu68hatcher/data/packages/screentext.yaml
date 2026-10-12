@@ -13,6 +13,7 @@ download:
   source: web
   url: http://thomas-rapp.hier-im-netz.de/downloads/ScreenText.lha
   hash: 55EAC0A9583DC989A69DA48FC626DC6F
+  sha256: 4e3a31e48bb429b20bf6ce8b0f4ff4121a9c70ef253403273eb8a46b970c6c30
   filename: ScreenText.lha
 install:
 - from: ScreenText

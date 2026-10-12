@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/cdity/WinZoom.lha
   hash: 966B1A30E214B6C89AA84965D45ABFA8
+  sha256: 16497bfcc2af0c45d23fe49da67c21ccae41996ed1c1b5ec6a506ceb664f31b1
   filename: WinZoom.lha
 # shipped .info already carries DONOTWAIT, CX_POPUP=NO and the installer's default tooltypes
 # (RESTOREAFTERMAX=YES, CYCLEWBWINDOWS=YES), so a plain copy to WBStartup matches WinZoomInstall

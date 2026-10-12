@@ -17,6 +17,7 @@ download:
   source: aminet
   path: driver/video/Picasso96.lha
   hash: 16287F92CE6DDEA23F5456CEB4525189
+  sha256: 0146d4a2aaadb82ec454dde6ca4fb33a3f646ca4c0daa46e569c025f4d9728af
   filename: Picasso96.lha
 install:
 - from: Picasso96Install/Classes/DataTypes/picture.datatype

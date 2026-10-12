@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/dtype/akPNG-dt.lha
   hash: ff0fe74ed8f9790ee27098aaf43ef756
+  sha256: 0fa61eac5f969683de2ebf9cb7cd3511b8b0f0ede95e518b9eedb351561246a9
   filename: akPNG-dt.lha
 install:
 - from: akPNG-Datatype/Classes/DataTypes/akPNG.datatype

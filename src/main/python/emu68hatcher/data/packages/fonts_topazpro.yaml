@@ -7,6 +7,7 @@ download:
   source: aminet
   path: text/bfont/dS-tpro.lha
   hash: 8f9dd915e3360cd1531c6de36291b433
+  sha256: 2bef9e85b806371335ca970f54e9dfb38b4b2a300f2d579a8ef79407dd0ddbfc
   filename: dS-tpro.lha
 install:
 - from: dS!-tpro/TopazPro*

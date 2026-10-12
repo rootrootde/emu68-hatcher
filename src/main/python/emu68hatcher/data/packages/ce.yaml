@@ -13,6 +13,7 @@ download:
   source: aminet
   path: util/cli/CE14.lha
   hash: 5A3B871F77E2B2804EDC80D507C01233
+  sha256: 92b816ba5d76423e8a713b4f449cde15ff7c5a1df6edbd56c1721b14bdf585af
   filename: CE14.lha
 install:
 - from: CE

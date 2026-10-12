@@ -27,11 +27,9 @@ needs its matching ADF.
 
 ## AmigaOS / Workbench
 
-**SYS:Utilities/Network Config** and **Network → Network Config** open Hatcher Prefs
-(**C:Hatcher-Prefs**). Connect and disconnect are done in its window and ask for a
-typed confirmation; there are no one-click connect icons any more.
-
-The old ARexx tools stay on the card for this release as a fallback. From a Shell:
+**Network → Network Settings** and the **Network Settings** icon in **SYS:Utilities**
+open the Hatcher Prefs window (**C:Hatcher-Prefs**). Connect, disconnect and the
+settings are all in that window. The old ARexx scripts stay in **S:** for the Shell:
 
 ```
 rx S:NetworkConfig.rexx                    ; Roadshow / AmiTCP_NG settings
@@ -44,19 +42,17 @@ rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
 
 With the full Roadshow archive, User-Startup syncs the clock after the network comes
 up with `rx S:NetworkConfig.rexx SYNCTIME`, as in earlier releases. Check that
-**S:Network-disabled** does not exist and that the network connects at boot.
+**Connect at boot** is on in Network Settings (it removes **S:Network-disabled**) and
+that the network connects at boot.
 
-Hatcher Prefs can take over this job: run `Hatcher-Prefs migrate enable-startup-time SYS:`
-once from a Shell and retire that change as described in
-**SYS:Emu68-Hatcher/Tools/Hatcher-Prefs/ReadMe.txt**. It replaces the SYNCTIME line
-with **C:Hatcher-Prefs startup-time** and also saves the time to the clock chip. The
-opt-in is tied to the installed program and the card, so Emu68 Hatcher cannot set it
-up when it builds the image, and it has to be repeated after updating Hatcher Prefs.
-`Hatcher-Prefs startup-status SYS:` shows whether it is active.
+### Emu68 Manager says the card has a newer version than is running
+
+A reset does not reload the Pi firmware and kernel. Switch the Amiga off and on
+again; the window then shows the same version for the card and the running system.
 
 ### Browser reports a DNS error
 
-Open **SYS:Utilities/Network Config** and check the interface, gateway and DNS servers. Save and
-reconnect. Static address, netmask and gateway have to match.
+Open **Network Settings** and check the address, gateway and DNS servers. Save and
+connect again. Static address, netmask and gateway have to match.
 
 Issue tracker: <https://github.com/rootrootde/emu68-hatcher/issues>

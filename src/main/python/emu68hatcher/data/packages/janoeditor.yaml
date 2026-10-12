@@ -15,6 +15,7 @@ download:
   source: aminet
   path: text/edit/JanoEditor.lha
   hash: f7ad33f8c8374ccb8b9488f571ff76f5
+  sha256: 57a493f09c2bd51933fba91cf3fa0324481a4bf28b5b15399d34710c546b7a3f
   filename: JanoEditor.lha
 install:
 - from: Jano_v*/Jano*

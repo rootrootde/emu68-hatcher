@@ -9,6 +9,7 @@ download:
   source: web
   url: https://github.com/rewtnull/amigafonts/archive/d42987535d94ebbfb51e64fee76f9974c6ae145a.zip
   hash: 8650777db2db0f5517e01813b42a5b59
+  sha256: 1984e9ce2f0015c48c462579f608f84df934010873732647214eb5cfd81f6e63
   filename: amigafonts-d429875.zip
 install:
 - from: amigafonts-d42987535d94ebbfb51e64fee76f9974c6ae145a/ttf/*.ttf
