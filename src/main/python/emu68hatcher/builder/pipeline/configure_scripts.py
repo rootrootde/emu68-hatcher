@@ -42,18 +42,6 @@ class _MenuLauncher:
 _HATCHER_PREFS = "SYS:C/Hatcher-Prefs"
 _HATCHER_PREFS_STACK = 65536
 
-# AGS scripts that copy one gameslist.csv into the iGame drawer before starting it
-_IGAME_LISTS = (
-    ("All games and demos", "IGame_All"),
-    ("Games", "IGame_Games"),
-    ("Games (English)", "IGame_Games_English"),
-    ("AGA games", "IGame_AGA"),
-    ("ECS games", "IGame_ECS"),
-    ("OCS games", "IGame_OCS"),
-    ("Demos", "IGame_Demos"),
-)
-
-
 # System->Prefs submenu launchers.
 # requires: package name(s) that must be installed for the editor to exist; empty = stock editor.
 # p96_modern: editor exists only in the user-supplied modern Picasso96 archive, not the aminet one.
@@ -256,28 +244,23 @@ def _build_toolsdaemon_menu(
             _append_launcher(lines, entry)
 
     games = package_menus.pop("Games", [])
-    if ags or games:
+    wrapper = "whdloadwrapper" in all_packages
+    if ags or games or wrapper:
         lines.append("TITLE Games")
     if ags:
-        # AGS_Drive: and Scripts: come from S:User-Startup. WBRun opens the AGS project
-        # through its IconX icon; the AGS list scripts confirm, copy a gameslist.csv
-        # into the iGame drawer and start iGame from there.
+        # AGS_Drive: comes from S:User-Startup. WBRun opens the AGS project through its
+        # IconX icon. iGame is a CLI start on purpose: started from Workbench, the shell
+        # it spawns for WHDLoad has no console, and the WHDLoad wrapper chain hangs in it.
+        # iGame finds its lists and prefs through PROGDIR:, so no cd is needed.
         _append_launcher(lines, _MenuLauncher("Games", "AGS", "C:WBRun AGS_Drive:AGS"))
-        lines.append(f"{_MENU_INDENT}ITEM iGame")
-        _append_launcher(
-            lines,
-            _MenuLauncher("Games", "Last list", "C:WBRun AGS_Drive:IGame/iGame"),
-            keyword="SUB",
-        )
-        lines.append(f"{_MENU_INDENT}SUBBAR")
-        for title, script in _IGAME_LISTS:
-            _append_launcher(
-                lines,
-                _MenuLauncher("Games", title, f"C:Execute Scripts:{script}"),
-                keyword="SUB",
-            )
+        _append_launcher(lines, _MenuLauncher("Games", "iGame", "AGS_Drive:iGame", stack=65536))
     for entry in games:
         _append_launcher(lines, entry)
+    if wrapper:
+        _append_launcher(
+            lines,
+            _MenuLauncher("Games", "WHDLoad wrapper on/off", "C:Execute S:WHDLoadWrapper-Switch"),
+        )
 
     system_apps = package_menus.pop("System", [])
     lines.append("TITLE System")

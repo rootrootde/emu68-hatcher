@@ -46,6 +46,10 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     if moved:
         workflow.logger.info(f"Relocated {moved} staged file(s)")
 
+    from emu68hatcher.builder.pipeline.configure_games import configure_whdload_wrapper
+
+    configure_whdload_wrapper(workflow, boot_staging, all_packages)
+
     # phase 2: Boot partition setup (40-70%)
     configure_boot_partition(workflow, image)
 

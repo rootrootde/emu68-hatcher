@@ -1,0 +1,34 @@
+; WHDLoadWrapper-Switch - C:WHDLoad is either the wrapper or the plain WHDLoad
+FailAt 21
+If NOT EXISTS C:WHDLoadWrapper
+  RequestChoice >NIL: "WHDLoad wrapper" "C:WHDLoadWrapper is missing.*NThe wrapper package is not installed." "OK"
+  Quit
+EndIf
+If NOT EXISTS C:WHDLoad.ori
+  RequestChoice >NIL: "WHDLoad wrapper" "C:WHDLoad.ori is missing.*NCopy the plain WHDLoad there first." "OK"
+  Quit
+EndIf
+Version >ENV:HatcherWHDLoad C:WHDLoad
+Search >NIL: ENV:HatcherWHDLoad WHDLoadWrapper QUIET
+If WARN
+  RequestChoice >ENV:HatcherWHDAnswer "WHDLoad wrapper" "The WHDLoad wrapper is off.*NGames start with the plain WHDLoad.*N*NSwitch the wrapper on?" "Switch on|Cancel"
+  If $HatcherWHDAnswer EQ 1
+    Copy C:WHDLoadWrapper C:WHDLoad CLONE QUIET
+    If FAIL
+      RequestChoice >NIL: "WHDLoad wrapper" "Copying C:WHDLoadWrapper to C:WHDLoad failed.*NNothing changed." "OK"
+    Else
+      RequestChoice >NIL: "WHDLoad wrapper" "The WHDLoad wrapper is on.*NIt sets EmuControl before every game." "OK"
+    EndIf
+  EndIf
+Else
+  RequestChoice >ENV:HatcherWHDAnswer "WHDLoad wrapper" "The WHDLoad wrapper is on.*NIt sets EmuControl before every game.*N*NSwitch the wrapper off?" "Switch off|Cancel"
+  If $HatcherWHDAnswer EQ 1
+    Copy C:WHDLoad.ori C:WHDLoad CLONE QUIET
+    If FAIL
+      RequestChoice >NIL: "WHDLoad wrapper" "Copying C:WHDLoad.ori to C:WHDLoad failed.*NNothing changed." "OK"
+    Else
+      RequestChoice >NIL: "WHDLoad wrapper" "The WHDLoad wrapper is off.*NGames start with the plain WHDLoad." "OK"
+    EndIf
+  EndIf
+EndIf
+Delete >NIL: ENV:HatcherWHDLoad ENV:HatcherWHDAnswer QUIET

@@ -1,0 +1,19 @@
+name: whdloadwrapper_config
+friendly_name: WHDLoadWrapper Config
+group: System
+description: 'wrapper updater kept offline, plus the on/off switch script'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+download:
+  source: local
+install:
+- from: System/S/WHDLoad-Wrapper/Updater/WHDUpdate.conf
+  to: S/WHDLoad-Wrapper/Updater/
+# Games menu entry "WHDLoad wrapper on/off" (configure_scripts); C:WHDLoad becomes
+# C:WHDLoadWrapper or C:WHDLoad.ori
+- from: System/S/WHDLoadWrapper-Switch
+  to: S/

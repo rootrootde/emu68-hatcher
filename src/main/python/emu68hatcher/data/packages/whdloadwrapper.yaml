@@ -62,3 +62,5 @@ requires:
 - whdload
 - emu68_control
 - screentext
+# the updater phones home at every game start unless the config turns that off
+- whdloadwrapper_config

@@ -197,6 +197,12 @@ kernel or its boot-time capture setup.
 Power cycle the Amiga after installation and after changing its video standard
 or HDMI rate.
 
+The WHDLoad wrapper sets EmuControl options before every game, which disturbs the
+RGB2RTG picture. RGB2RTG builds therefore install the wrapper but start with the
+plain WHDLoad in **C:**. **Games → WHDLoad wrapper on/off** swaps the two at any
+time, so the wrapper is back after testing; the same switch is
+**Execute S:WHDLoadWrapper-Switch** in a Shell.
+
 To return to the baseline kernel and driver, run this from an Amiga Shell:
 
 ```text
