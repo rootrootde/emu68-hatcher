@@ -9503,13 +9503,13 @@
             "download": {
               "backup_url": null,
               "check_latest_release": true,
-              "filename": "Prism2v2.lha",
-              "hash": "C2C6060C016DC4F22902C8809477985A",
-              "path": null,
+              "filename": "prism2v2.lha",
+              "hash": "18EB7E3318659F77042A0C69F8A405FF",
+              "path": "driver/net/prism2v2.lha",
               "repo": null,
-              "source": "web",
+              "source": "aminet",
               "tag": null,
-              "url": "https://ftp2.grandis.nu/turran/FTP/Misc/WHDUpdate/datafile/Amiga/Prism2v2.lha"
+              "url": null
             },
             "emu68_versions": null,
             "friendly_name": "Prism2",
@@ -12029,8 +12029,8 @@
             ]
           }
         },
-        "revision": 13,
-        "source_commit": "17d11dbb73f4488c69829cebe5afb3ada96db167"
+        "revision": 14,
+        "source_commit": "00515494a26cef5a8bc0e9bca8628ae237a11398"
       }
     ],
     "hatcher": {
@@ -12075,12 +12075,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.0",
       "version": "1.2.0"
     },
-    "revision": 1791813332,
+    "revision": 1791829096,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "oZEKdemG3qSKuG3lF1u5BsmAwMY2c292rvv6s5B46bUnGSHGnZGc6jOZOTdJLvE+X4C0ayPAMTHJltaslnBSDQ=="
+    "value": "lrm464EtCfDYdBfDtwMP6HwA2lHdb2Be4ldyuam1fECxw7EfdHBt+XZtXVYu6xN2gXmPz44G2fY7Ag2trfddCA=="
   }
 }
