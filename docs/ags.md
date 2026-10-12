@@ -1,6 +1,6 @@
 # AGS partition import
 
-**Storage → AGS import** copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. With ToolsDaemon installed, the **Games** menu also starts AGS and iGame. The source Workbench, boot scripts and FAT partition are not imported.
+**Storage → AGS import** copies complete filesystem partitions from a local AGS image. Start AGS through **WHDLoad:AGS** on the Workbench installed by Hatcher. With ToolsDaemon installed, the **Games** menu also starts AGS and iGame; iGame is started from a shell there, because a Workbench start leaves the shell iGame spawns for WHDLoad without a console and the WHDLoad wrapper hangs in it. The source Workbench, boot scripts and FAT partition are not imported.
 
 **WHDLoad:AGS** and **WHDLoad:AGS2/Start_AGS** retain their original contents. The required paths and assigns are set in **S:User-Startup** when Workbench boots.
 
@@ -31,7 +31,7 @@ AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its B
 
 In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
 
-Missing Ex, kgiconload, WBLoad and WBRun helpers are supplied from AGS. Existing Workbench versions are retained. Additional AGS commands, libraries and fonts are available through the portable search paths. The import leaves **S:WHDLoad.prefs** and **S:WHDLoad-Startup** unchanged. AGS can subsequently write these files through its original Speed_Reset and Quit-Key functions.
+Missing Ex, kgiconload, WBLoad and WBRun helpers are supplied from AGS. Existing Workbench versions are retained. Additional AGS commands, libraries and fonts are available through the portable search paths. The import removes AGS's own **WHDLoad** and **WHDLoadCD32** from **AGS2/OS/C**, so AGS starts games through the WHDLoad in **C:** like every other launcher, wrapper or not. The import leaves **S:WHDLoad.prefs** and **S:WHDLoad-Startup** unchanged. AGS can subsequently write these files through its original Speed_Reset and Quit-Key functions.
 
 When a VideoCore Workbench mode is selected, Hatcher sets **AGS2.conf** and every **Themes/*.conf** to VideoCore 640x256 with 256 colours. AGS keeps its own resolution regardless of the selected Workbench resolution. Backgrounds, screenshots and layout coordinates remain unchanged. Native Workbench builds retain the source image's menu and theme modes.
 

@@ -30,6 +30,7 @@ class HSTCommand(str, Enum):
     # filesystem operations
     FS_DIR = "fs dir"
     FS_COPY = "fs copy"
+    FS_DELETE = "fs delete"
 
 
 @dataclass

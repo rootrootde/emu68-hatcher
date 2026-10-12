@@ -24,6 +24,7 @@ class AGSScriptPlan:
 class AGSLauncherSummary:
     verified_files: tuple[tuple[str, str, str], ...]
     staged_files: tuple[tuple[str, str], ...] = ()
+    removed_files: tuple[tuple[str, str], ...] = ()
 
 
 def prepare_drive_checks(source: bytes, aliases: Mapping[str, str]) -> bytes:

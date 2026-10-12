@@ -42,8 +42,9 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
     workflow._milestone("Copying staged files to image")
     _copy_staged_files_to_image(workflow, image)
 
-    from emu68hatcher.builder.pipeline.import_ags import verify_ags_target
+    from emu68hatcher.builder.pipeline.import_ags import remove_ags_files, verify_ags_target
 
+    remove_ags_files(workflow, image)
     verify_ags_target(workflow, image)
     workflow._update_state(progress=90.0)
     workflow._milestone("Cleaning up")

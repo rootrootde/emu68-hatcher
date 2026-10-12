@@ -54,10 +54,14 @@ def stage_import_ags(workflow, image):
     display_files = prepare_ags_display(
         plan, staging, rtg=rtg, cancel_check=lambda: workflow._cancelled
     )
+    # AGS puts AGS2/OS/C in front of C:, so its own WHDLoad would shadow the one Hatcher
+    # installs (wrapper or plain); every launcher is meant to end up at C:WHDLoad
+    whd = plan.target("whdload")
     launcher = replace(
         launcher,
         verified_files=launcher.verified_files + display_files,
         staged_files=launcher.staged_files + tuple((d, p) for d, p, _ in display_files),
+        removed_files=((whd.device, "AGS2/OS/C/WHDLoad"), (whd.device, "AGS2/OS/C/WHDLoadCD32")),
     )
     validate_source_identity(plan.inventory)
     workflow._update_state(progress=100.0)
@@ -85,6 +89,40 @@ def verify_ags_staging(workflow, image) -> None:
     for relative in ("C/WHDLoad", "C/IconX", "S/WHDLoad.prefs"):
         if not resolve_staging_path(boot, relative).is_file():
             raise BuildError(f"AGS requires {relative} in the staged Workbench")
+
+
+def remove_ags_files(workflow, image) -> None:
+    plan = image.workspace.validated.ags_plan
+    if plan is None or not image.ags_launcher.removed_files:
+        return
+    from emu68hatcher.builder.host.hst_commands import HSTCommand, HSTCommandLine, hst_path
+    from emu68hatcher.builder.host.hst_runner import HSTRunner
+    from emu68hatcher.builder.pipeline.finalize import _build_device_map
+
+    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    mapping = _build_device_map(workflow)
+    with tempfile.TemporaryDirectory(prefix="ags-remove-") as temporary:
+        for number, (device, relative) in enumerate(image.ags_launcher.removed_files):
+            workflow._check_cancelled()
+            source = hst_path(
+                image.image_path, "mbr", mapping[device], "rdb", device, *relative.split("/")
+            )
+            # a source image without the file is fine; the copy below decides
+            deleted = runner.run_command(
+                HSTCommandLine(HSTCommand.FS_DELETE, [source]), elevation=workflow.state.elevation
+            )
+            destination = Path(temporary) / str(number)
+            destination.mkdir()
+            runner.run_command(
+                HSTCommandLine(
+                    HSTCommand.FS_COPY, [source, str(destination), "--uaemetadata", "None"]
+                ),
+                elevation=workflow.state.elevation,
+            )
+            if resolve_staging_path(destination, Path(relative).name).is_file():
+                raise BuildError(f"AGS file could not be removed: {device}:{relative}")
+            state = "Removed" if deleted.success else "Not present on the AGS partition:"
+            workflow.logger.info(f"{state} {device}:{relative}")
 
 
 def verify_ags_target(workflow, image) -> None:
