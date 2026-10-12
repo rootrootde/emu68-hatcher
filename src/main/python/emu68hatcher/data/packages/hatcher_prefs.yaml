@@ -12,7 +12,7 @@ versions:
 download:
   source: local
   path: Hatcher-Prefs.lha
-  hash: 64055AC26026CE7EF506E3A9B9524526
+  hash: 9C82AA5E762F473A98FEE10AD23EF76D
   filename: Hatcher-Prefs.lha
 install:
 # the Network Settings icon and the Network menu name SYS:C/Hatcher-Prefs

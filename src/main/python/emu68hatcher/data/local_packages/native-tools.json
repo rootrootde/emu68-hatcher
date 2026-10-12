@@ -22,11 +22,11 @@
   "hatcher-prefs": {
     "archive": ".build/Hatcher-Prefs.lha",
     "built_clean": true,
-    "commit": "79a468f18cd24eb06b3675d54bded0bece275968",
+    "commit": "e09010e30891babac20c8ef55075a77bb90ca701",
     "file": "Hatcher-Prefs.lha",
-    "md5": "64055ac26026ce7ef506e3a9b9524526",
+    "md5": "9c82aa5e762f473a98fee10ad23ef76d",
     "repository": "hatcher-tools",
-    "sha256": "61c16aa87ec95d0f72a6221778570c1d3cd18c1f48789a426466e9b2dae11168",
-    "size": 47410
+    "sha256": "1430b5d47312f232980189cd72f0741d0d0e9d3aec5e4ab523d9df04e2b68028",
+    "size": 47878
   }
 }
