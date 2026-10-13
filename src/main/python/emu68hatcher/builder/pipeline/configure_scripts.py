@@ -253,7 +253,9 @@ def _build_toolsdaemon_menu(
         # it spawns for WHDLoad has no console, and the WHDLoad wrapper chain hangs in it.
         # iGame finds its lists and prefs through PROGDIR:, so no cd is needed.
         _append_launcher(lines, _MenuLauncher("Games", "AGS", "C:WBRun AGS_Drive:AGS"))
-        _append_launcher(lines, _MenuLauncher("Games", "iGame", "AGS_Drive:iGame", stack=65536))
+        _append_launcher(
+            lines, _MenuLauncher("Games", "iGame", "AGS_Drive:IGame/iGame", stack=65536)
+        )
     for entry in games:
         _append_launcher(lines, entry)
     if wrapper:
