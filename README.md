@@ -51,41 +51,6 @@ emu68hatcher                    # windows: python -m emu68hatcher
 
 For usage see → [docs](https://rootrootde.github.io/emu68hatcher/).
 
-### Picasso96 settings
-
-**src/main/python/emu68hatcher/data/reference/picasso96.json** defines the
-57 bundled resolutions, their display IDs and per-depth timings. The configure
-stage generates **DEVS:Picasso96Settings** from it. Workbench mode IDs come from
-the same data; reordering resolution blocks does not renumber them.
-
-The default output is byte-identical to the previous bundled file, including
-disabled depths and the original annotation and name bytes. BoardType remains
-14, paired with **VC4_LEGACY_ID** on VideoCore. UAE uses the same settings file.
-Switching to PiStorm BoardType 39 would also require separate UAE settings and
-changes to monitor tooltypes; it is not selected by Emu68 version.
-
-The format reference was [Emu68P96Settings](https://github.com/flype44/Emu68P96Settings)
-and the VideoCore [P96 headers](https://github.com/michalsc/VideoCore.card/blob/main/src/settings.h).
-The reader and writer here are implemented locally; no upstream scripts are bundled.
-
-With the development environment activated, inspect an existing file or
-regenerate the bundled copy:
-
-```bash
-python -m emu68hatcher.data.picasso96 inspect \
-  src/main/python/emu68hatcher/data/local_packages/System/Devs/Picasso96Settings \
-  /tmp/picasso96-inspected.json
-python -m emu68hatcher.data.picasso96 generate \
-  src/main/python/emu68hatcher/data/reference/picasso96.json \
-  src/main/python/emu68hatcher/data/local_packages/System/Devs/Picasso96Settings
-```
-
-Keep the bundled copy in sync when editing the JSON: cached package catalogues
-still install it before configuration. The JSON stores ordered IFF chunks;
-**defaults** supplies shared fields, and each chunk can override them.
-Inspection preserves unknown chunks as hex and retains padding bytes.
-New resolutions or timing changes need PiStorm hardware verification.
-
 ## Credits
 
 Thanks to:
