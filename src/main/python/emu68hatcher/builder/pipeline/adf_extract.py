@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from emu68hatcher.builder.ags_metadata import drop_superseded_records
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.pipeline.adf_mapping import build_adf_name_map, resolve_adf_path
 from emu68hatcher.builder.staging.files import resolve_staging_path
@@ -122,6 +123,8 @@ def _run_rules(
             workflow._milestone(f"Extracting from {rule.adf}")
             last_adf = rule.adf
 
+    # e.g. 3.2 Locale-PL and 3.2.3 Locale-PL spell topaz_iso-8859-2 differently
+    drop_superseded_records(workspace.workbench_dir)
     total_files = sum(1 for path in workspace.workbench_dir.rglob("*") if path.is_file())
     workflow.logger.info(f"Extracted {total_files} files from ADFs using {processed} YAML rules")
     return total_files, errors

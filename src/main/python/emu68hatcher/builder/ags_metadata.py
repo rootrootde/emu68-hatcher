@@ -32,7 +32,7 @@ class _Record:
 
 def _check_name(name: str, directory: Path) -> str:
     if not name or name in (".", "..") or "/" in name or "\0" in name:
-        raise BuildError(f"AGS metadata has an unsafe name in {directory}: {name!r}")
+        raise BuildError(f"Amiga file metadata has an unsafe name in {directory}: {name!r}")
     return name
 
 
@@ -44,7 +44,7 @@ def _field_name(record: bytes, field: slice, directory: Path) -> str:
             .decode("utf-8" if field == _HOST_NAME else "iso-8859-1")
         )
     except UnicodeDecodeError as exc:
-        raise BuildError(f"AGS metadata has an invalid host name in {directory}") from exc
+        raise BuildError(f"Amiga file metadata has an invalid host name in {directory}") from exc
     return _check_name(value, directory)
 
 
@@ -55,26 +55,26 @@ def _records_by_host(parent: Path) -> dict[str, _Record]:
     except FileNotFoundError:
         return {}
     if not stat.S_ISREG(info.st_mode):
-        raise BuildError(f"AGS metadata is not a regular file in {parent}")
+        raise BuildError(f"Amiga file metadata is not a regular file in {parent}")
     data = path.read_bytes()
     if len(data) % _RECORD_SIZE:
-        raise BuildError(f"AGS metadata is damaged in {parent}")
+        raise BuildError(f"Amiga file metadata is damaged in {parent}")
     records: dict[str, _Record] = {}
     for offset in range(0, len(data), _RECORD_SIZE):
         raw = data[offset : offset + _RECORD_SIZE]
         if raw[0] == 0:
             continue
         if raw[0] != 1:
-            raise BuildError(f"AGS metadata has an invalid record in {parent}")
+            raise BuildError(f"Amiga file metadata has an invalid record in {parent}")
         amiga_name = _field_name(raw, _AMIGA_NAME, parent)
         host_name = _field_name(raw, _HOST_NAME, parent)
         protection_bits = int.from_bytes(raw[1:5], "big")
         if protection_bits > 255:
-            raise BuildError(f"AGS metadata has invalid protection bits for {host_name}")
+            raise BuildError(f"Amiga file metadata has invalid protection bits for {host_name}")
         comment = raw[_COMMENT].split(b"\0", 1)[0].decode("iso-8859-1")
         key = host_name.casefold()
         if key in records:
-            raise BuildError(f"AGS metadata has duplicate records for {host_name}")
+            raise BuildError(f"Amiga file metadata has duplicate records in {parent}: {host_name}")
         records[key] = _Record(amiga_name, host_name, protection_bits, comment)
     return records
 
@@ -88,7 +88,7 @@ def iter_staged_entries(
     from emu68hatcher.builder.ags_source import AGSEntry
 
     if not root.is_dir() or root.is_symlink():
-        raise BuildError(f"AGS staging root is not a directory: {root}")
+        raise BuildError(f"Staging root is not a directory: {root}")
     stack = [(root, "")]
     count = 0
     while stack:
@@ -105,27 +105,27 @@ def iter_staged_entries(
                     count += 1
                     if child.name.casefold() == _DB_NAME.casefold():
                         if child.name != _DB_NAME or child.is_symlink():
-                            raise BuildError(
-                                f"AGS staging has an invalid metadata file: {child.path}"
-                            )
+                            raise BuildError(f"Staging has an invalid metadata file: {child.path}")
                         continue
                     host_name = _check_name(child.name, parent)
                     host_key = host_name.casefold()
                     if host_key in seen_host:
-                        raise BuildError(f"AGS staging has colliding host names: {child.path}")
+                        raise BuildError(f"Staging has colliding host names: {child.path}")
                     seen_host.add(host_key)
                     record = records.pop(host_key, None)
                     if record and record.host_name != host_name:
-                        raise BuildError(f"AGS metadata host name differs in case: {child.path}")
+                        raise BuildError(
+                            f"Amiga file metadata host name differs in case: {child.path}"
+                        )
                     amiga_name = record.amiga_name if record else host_name
                     amiga_key = amiga_name.casefold()
                     if amiga_key in seen_amiga:
-                        raise BuildError(f"AGS staging has colliding Amiga names: {child.path}")
+                        raise BuildError(f"Staging has colliding Amiga names: {child.path}")
                     seen_amiga.add(amiga_key)
                     info = child.stat(follow_symlinks=False)
                     is_dir = stat.S_ISDIR(info.st_mode)
                     if not is_dir and not stat.S_ISREG(info.st_mode):
-                        raise BuildError(f"AGS staging has a non-file entry: {child.path}")
+                        raise BuildError(f"Staging has a non-file entry: {child.path}")
                     relative = f"{prefix}/{amiga_name}" if prefix else amiga_name
                     yield AGSEntry(
                         relative,
@@ -137,10 +137,12 @@ def iter_staged_entries(
                     if is_dir:
                         directories.append((Path(child.path), relative))
         except OSError as exc:
-            raise BuildError(f"Cannot scan AGS staging in {parent}: {exc}") from exc
+            raise BuildError(f"Cannot scan staging in {parent}: {exc}") from exc
         if records and not allow_stale_metadata:
             missing = next(iter(records.values())).host_name
-            raise BuildError(f"AGS metadata refers to a missing entry in {parent}: {missing}")
+            raise BuildError(
+                f"Amiga file metadata refers to a missing entry in {parent}: {missing}"
+            )
         stack.extend(reversed(directories))
 
 
@@ -148,9 +150,9 @@ def _name_bytes(name: str, *, host: bool = False) -> bytes:
     try:
         encoded = name.encode("utf-8" if host else "iso-8859-1")
     except UnicodeEncodeError as exc:
-        raise BuildError(f"AGS metadata name cannot be encoded: {name}") from exc
+        raise BuildError(f"Amiga file metadata name cannot be encoded: {name}") from exc
     if not encoded or len(encoded) > 255 or b"\0" in encoded:
-        raise BuildError(f"AGS metadata name is invalid: {name}")
+        raise BuildError(f"Amiga file metadata name is invalid: {name}")
     return encoded + bytes(256 - len(encoded))
 
 
@@ -161,10 +163,10 @@ def _read_records(parent: Path) -> list[bytearray]:
     except FileNotFoundError:
         return []
     if not stat.S_ISREG(info.st_mode):
-        raise BuildError(f"AGS metadata is not a regular file in {parent}")
+        raise BuildError(f"Amiga file metadata is not a regular file in {parent}")
     data = path.read_bytes()
     if len(data) % _RECORD_SIZE:
-        raise BuildError(f"AGS metadata is damaged in {parent}")
+        raise BuildError(f"Amiga file metadata is damaged in {parent}")
     return [bytearray(data[i : i + _RECORD_SIZE]) for i in range(0, len(data), _RECORD_SIZE)]
 
 
@@ -180,7 +182,7 @@ def _find_record(records: list[bytearray], name: str) -> bytearray | None:
         if record[0] == 1 and _record_name(record, _HOST_NAME) == encoded
     ]
     if len(matches) > 1:
-        raise BuildError(f"AGS metadata has {len(matches)} records for {name}")
+        raise BuildError(f"Amiga file metadata has {len(matches)} records for {name}")
     return matches[0] if matches else None
 
 
@@ -210,10 +212,25 @@ def rename_uaefsdb_entry(parent: Path, old_name: str, new_name: str) -> None:
         for other in records
         if other is not record
     ):
-        raise BuildError(f"AGS metadata already has an entry for {new_name}")
+        raise BuildError(f"Amiga file metadata already has an entry for {new_name}")
     record[_AMIGA_NAME] = _name_bytes(new_name)
     record[_HOST_NAME] = _name_bytes(new_name, host=True)
     _write_records(parent, records)
+
+
+def drop_superseded_records(root: Path) -> None:
+    # HST appends a new record when an overwrite differs only in case, the last one is current
+    for database in root.rglob(_DB_NAME):
+        records = _read_records(database.parent)
+        latest: dict[str, bytearray] = {}
+        for record in records:
+            if record[0] == 1:
+                host = _record_name(record, _HOST_NAME).decode("utf-8", "replace")
+                latest[host.casefold()] = record
+        current = {id(record) for record in latest.values()}
+        kept = [record for record in records if record[0] != 1 or id(record) in current]
+        if len(kept) != len(records):
+            _write_records(database.parent, kept)
 
 
 def copy_uaefsdb_entry(source_file: Path, dest_file: Path) -> None:
