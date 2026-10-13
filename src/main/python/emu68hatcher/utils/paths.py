@@ -53,6 +53,11 @@ def _get_home() -> Path:
     return _ensure(p)
 
 
+def get_extra_packages_dir() -> Path:
+    """'<home>/packages': the user's own package files, not created"""
+    return _get_home() / "packages"
+
+
 @cache
 def get_cache_dir() -> Path:
     """return '<home>/cache'"""

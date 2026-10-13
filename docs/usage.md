@@ -170,6 +170,15 @@ macOS, hst-imager also needs Full Disk Access; see
 Screenshots show the offscreen Qt interface without private installation media.
 They illustrate navigation, not a completed image or device-write test.
 
+## Own packages
+
+Package files you put into **packages** inside the Hatcher data folder join the catalog on
+that machine only: **Library/Application Support/Emu68 Hatcher** on macOS, **LOCALAPPDATA**
+on Windows, **.local/share/emu68hatcher** on Linux, or **hatcher_data** in a source checkout.
+They use the same YAML form as the bundled packages, show up in the Software work area and
+survive catalog updates. They are never published or shipped. A file that does not load is
+reported in the log and skipped.
+
 ## RGB2RTG
 
 RGB2RTG v0.75 is an optional experimental installation for an A1200 with
