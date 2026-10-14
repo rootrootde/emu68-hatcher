@@ -251,10 +251,12 @@ def _build_toolsdaemon_menu(
         # AGS_Drive: comes from S:User-Startup. WBRun opens the AGS project through its
         # IconX icon. iGame is a CLI start on purpose: started from Workbench, the shell
         # it spawns for WHDLoad has no console, and the WHDLoad wrapper chain hangs in it.
-        # iGame finds its lists and prefs through PROGDIR:, so no cd is needed.
+        # iGame finds its lists and prefs through PROGDIR:, so no cd is needed. Without
+        # Run, ToolsDaemon's CLI start never brings iGame up.
         _append_launcher(lines, _MenuLauncher("Games", "AGS", "C:WBRun AGS_Drive:AGS"))
         _append_launcher(
-            lines, _MenuLauncher("Games", "iGame", "AGS_Drive:IGame/iGame", stack=65536)
+            lines,
+            _MenuLauncher("Games", "iGame", "Run >NIL: AGS_Drive:IGame/iGame", stack=65536),
         )
     for entry in games:
         _append_launcher(lines, entry)
