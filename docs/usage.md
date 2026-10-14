@@ -2,238 +2,176 @@
 
 ## Choose a work area
 
-The sidebar has six areas. Visit them in any order; incomplete settings do not
-prevent navigation. **Load Configuration…** and **Save Configuration…** are in
-the File menu. Settings are not saved automatically, and WiFi credentials are
-not written to configuration files.
+The sidebar has six areas; visit them in any order. **Load Configuration…** and
+**Save Configuration…** are in the File menu. Settings are not saved
+automatically, and WiFi passwords are never written to configuration files.
 
 ### Overview
 
-**Updates and tools** is visible at the top when the app opens: the application
-version, the signed package list and the host tools (hst-imager, 7-Zip) with their
-install state. **Check now** repeats the update check, **Download Missing Tools…**
-fetches what is not installed yet, and **Reset App Data…** deletes downloaded
-tools and cached files. Application downloads go to Downloads; opening a Linux
-installer requires a Debian-based system.
+**Updates and tools** shows the application version, the package list and the
+host tools (hst-imager, 7-Zip) with their install state. **Check now** repeats
+the update check, **Download Missing Tools…** fetches what is not installed yet,
+and **Reset App Data…** deletes downloaded tools and cached files.
 
-**Build checks** lists what still blocks a build. Click a check or activate it with
-the keyboard to open its setting. The configuration summary is on **Review & build**.
+**Build checks** lists what still blocks a build. Click a check to open its
+setting.
 
 [![Configuration overview](assets/screenshots/overview.png)](assets/screenshots/overview.png){ target="_blank" }
 
 ### System
 
-**Hardware & Emu68:** select the release and hardware settings. Boot, storage,
-CPU, compatibility and manual overrides are under **Show advanced settings**.
+**Hardware & Emu68:** select the Emu68 release and hardware settings. Boot,
+storage, CPU, compatibility and manual overrides are under **Show advanced
+settings**.
 
 [![Hardware & Emu68](assets/screenshots/system-hardware.png)](assets/screenshots/system-hardware.png){ target="_blank" }
 
-**AmigaOS & files:** choose the Workbench version, add directories containing
-ROMs and installation media, and select languages. Files are matched by hash;
-**Show details…** lists the detected files. AmigaOS 3.9 uses the CD **.iso**
-and a Kickstart 3.1 ROM. Do not mount the ISO.
+**AmigaOS & files:** choose the Workbench version, add the folders that contain
+your ROMs and installation media, and select languages. Files are recognised by
+content, not by name; **Show details…** lists what was found. AmigaOS 3.9 uses
+the CD **.iso** and a Kickstart 3.1 ROM. Do not mount the ISO.
 
 [![AmigaOS & files](assets/screenshots/system-amiga.png)](assets/screenshots/system-amiga.png){ target="_blank" }
 
-**Network:** choose Roadshow, MiamiDX, AmiTCP_NG or None. Roadshow archives and
-MiamiDX registration-key folders belong here. DHCP/static addresses, routing,
-DNS and WiFi settings remain available where the selected stack supports them.
+**Network:** choose Roadshow, MiamiDX, AmiTCP_NG or None. The full Roadshow
+archive and the MiamiDX registration keys go here, as do DHCP or static
+addresses, routing, DNS and WiFi.
 
 [![Network](assets/screenshots/system-network.png)](assets/screenshots/system-network.png){ target="_blank" }
 
 ### Appearance
 
-HDMI output, Workbench screen mode, icons, Picasso96 and native-video capture
-share one page, without subpages. **Force HDMI output without EDID** is directly
-below the output mode. Selecting native-video capture reveals its device and
-scaling controls. C790 requires Emu68 1.1 or later and a VideoCore Workbench mode.
-Use **Browse…** to supply your full **Picasso96.lha**.
+Choose the HDMI output mode and the Workbench screen mode. **Force HDMI output
+without EDID**, on by default, keeps the HDMI output on when no monitor is
+detected at boot. Native-video capture (C790)
+needs Emu68 1.1 or later and a VideoCore Workbench mode. Use **Browse…** to
+supply your full **Picasso96.lha** instead of the free Aminet version.
 
-Available icons follow the selected OS version and detected media. GlowIcons
-requires its matching ADF.
+Available icon sets follow the selected OS version and detected media. GlowIcons
+needs its matching ADF.
 
 [![Display settings](assets/screenshots/appearance.png)](assets/screenshots/appearance.png){ target="_blank" }
 
 ### Software
 
 Select applications, bundles and hardware drivers. The list is filtered for the
-chosen Workbench and Emu68 versions. The expandable **Required packages** group
-shows automatic selections and their reasons. The network stack is chosen in
-System, not duplicated here. MUI remains selectable when an application requires
-it. See [Packages](packages.md) for the catalog.
+chosen Workbench and Emu68 versions, and **Required packages** shows what gets
+added automatically and why. **Select All**, **Select None** and **Defaults**
+change the optional packages only. See [Packages](packages.md) for the catalog.
 
-**Select All** ticks every optional package and picks MUI 5, **Select None**
-clears them, and **Defaults** restores the preselected set. None of the three
-changes the network stack. Packages a selected stack or application depends on
-stay in **Required packages**. The OS, RTG, filesystem and FirstBoot helpers are
-always installed. Extra files are still copied and can add software to an
-otherwise empty selection.
+Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools are separate
+packages; a network stack brings the Ethernet and WiFi drivers with it. USB and
+NVMe are offered only for Emu68 versions that support them.
 
-Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools can be selected
-separately. A network stack requires both Ethernet and WiFi support. USB and
-NVMe are offered only for compatible Emu68 versions.
+Three entries in the **Utilities** group are Hatcher's own Amiga tools. Each one
+is a single window with a few buttons; before it changes a file it keeps the old
+one under **SYS:Emu68-Hatcher/Backup/** and offers to undo the last change.
 
-Three entries in the **Utilities** group are Hatcher's own Amiga tools. Each one is a single window with a
-few buttons; before it changes a file it keeps the old one under
-**SYS:Emu68-Hatcher/Backup/** and offers to undo the last change.
-
-**Hatcher Prefs** is the network window: connect, disconnect, check the connection,
-WiFi name and password, addresses and DNS. Every network stack installs it. It is
-started from **Network → Network Settings** or the **Network Settings** icon in
-**SYS:Utilities** and lives in **SYS:Emu68-Hatcher/Tools/** with a copy in **C:**.
-It needs MUI.
-
-**Emu68 Manager** installs a newer Emu68 release on the card and undoes it. It
-reads the signed release list Hatcher publishes, shows the running and the
-installed version, and only offers releases that boot with the card's config.txt.
-Needs MUI, AmiSSL and XADMaster.
-
-**Hatcher Packages** installs programs from the same signed package list the
-desktop uses, with their menu entries, and removes them again. Needs MUI, AmiSSL
-and XADMaster.
-
-Each image also gets two records the tools read.
-**SYS:Emu68-Hatcher/Packages/build-receipts.json** lists, per package, the files the
-build wrote with their sizes and SHA-256, the download hash, startup blocks and menu
-entries, and marks files your extra content replaced as locally modified. Packages
-that installed no files get no receipt. **SYS:Emu68-Hatcher/Installation.json**
-records the Kickstart and Emu68 versions, the network stack and hashes of the
-generated config.txt and cmdline.txt. Neither file contains WiFi passwords, archive
-paths or registration keys.
+- **Hatcher Prefs** is the network window: connect, disconnect, check the
+  connection, WiFi name and password, addresses and DNS. Every network stack
+  installs it. Open it from **Network → Network Settings** or the **Network
+  Settings** icon in **SYS:Utilities**.
+- **Emu68 Manager** installs a newer Emu68 release on the card and undoes it. It
+  shows the running and the installed version and only offers releases that
+  boot with the card's config.txt.
+- **Hatcher Packages** installs programs from the same package list the desktop
+  app uses, with their menu entries, and removes them again.
 
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream
 Vera, DejaVu, Roboto). Installing a pack does not change the active font.
-TrueType packs include **ttf.library**; first boot registers their fonts before
-regional settings. Failed registration is retried without repeating the
-interactive setup. Fonts come from their original sources, not CaffeineOS.
 MagicWB is shareware and requires registration after its evaluation period.
 
 [![Software selection](assets/screenshots/software.png)](assets/screenshots/software.png){ target="_blank" }
 
 ### Storage
 
-Storage is one scrolling page: **Output target**, **AGS import**,
-**Partition layout**, and **Extra files**. There are no nested tabs.
-Capacity labels use GiB; card presets retain the existing
-95% allowance for nominal card sizes. A selected card supplies its exact byte
-capacity, locks the size control and leaves manual partitions/content choices
-intact. A shortfall is shown instead of shrinking partitions.
-
 Choose an output mode:
 
 - **Image:** write an **.img** file, with optional sparse allocation.
-- **Image + SD card:** retain the image and then write it to the selected card.
+- **Image + SD card:** keep the image and then write it to the selected card.
 - **Direct to SD card:** skip the image file; large builds can be slower.
 
-For image + card, **Verify after writing** starts a separate readback pass after
-writing. The card stays unmounted between passes. All-zero image blocks are
-skipped, so verification checks written blocks, not untouched sectors. Progress
-and speed are shown separately. Verification requires the Hatcher fork of
-hst-imager with `--verify-after`; older tools still support write-only flashing.
+For image + card, **Verify after writing** reads the card back and compares it
+with the image.
 
 !!! danger "Double-check the target!"
-    **Picking the wrong disk will wipe it.** Root-disk protection does not make
-    another connected disk safe to erase. Check the selected device before
+    **Picking the wrong disk will wipe it.** Check the selected device before
     confirming a build.
 
-- **AGS import:** select **Import AGS** to reveal the source and content choices.
-  Choose a local source image. Inspection
-  starts automatically; **Refresh** checks the source again. WHDLoad/AGS is
-  required. Games, the complete Work partition and Media are separate choices.
-  Source changes discard old inspection results. Fixed imported sizes and
-  capacity errors appear beside the choices. See [AGS import](ags.md).
-- **Partition layout:** edit capacity, device/volume names, boot flags, filesystems
-  and sizes, or add/remove manual partitions. Imported partitions show their
-  origin and fixed-size restrictions; change their selection in **AGS import** above.
-- **Extra files:** choose a destination partition and a source folder. The
-  estimated size and usable filesystem capacity are shown together. Imported
-  AGS partitions do not accept extra files. Extra files are copied last and can
-  overwrite generated files.
+A selected card sets the capacity; for an image file, pick a card size. If the
+partitions no longer fit, the shortfall is shown and nothing is shrunk.
 
-The default is a nominal 64 GB image with **EMU68BOOT**, Workbench and the rest
-unallocated. Unallocated capacity is not free space inside a filesystem.
+- **AGS import:** tick **Import AGS** and choose the source image. Games, the
+  Work partition and Media are separate choices. See [AGS import](ags.md).
+- **Partition layout:** edit capacity, device and volume names, boot flags,
+  filesystems and sizes, or add and remove partitions. Imported partitions are
+  fixed; change them in **AGS import** above.
+- **Extra files:** choose a partition and a folder to copy into it. The size
+  of the folder and the usable capacity are shown together. Extra files are
+  copied last and overwrite generated files with the same name.
+
+The default is a 64 GB card with **EMU68BOOT**, a Workbench partition and the
+rest unallocated. Unallocated capacity is not free space inside a filesystem.
 
 [![Shared storage target and partition plan](assets/screenshots/storage.png)](assets/screenshots/storage.png){ target="_blank" }
 
 ### Review & build
 
-The footer's **Review & build** button only opens this area. Review lists the
-current checks and configuration summary. **Preview boot files…** opens the
-combined Emu68, display and software result without exposing WiFi passwords.
+Review lists the open checks and a summary of the configuration. **Preview boot
+files…** shows the config.txt and cmdline.txt the build will write.
 
-The build button is available when blocking checks finish successfully. Its
-label follows the output mode. Checks run again before starting; SD-card modes
-warn about erasing the target. The existing progress dialog supports
-cancellation and records the build log in **buildlog.txt**. The first build
-downloads packages; later builds reuse the cache.
+The build button is available once the checks pass; SD-card modes warn before
+erasing the target. The progress dialog can cancel the build and records
+**buildlog.txt**. The first build downloads packages; later builds reuse them.
 
 [![Review checks and build controls](assets/screenshots/review.png)](assets/screenshots/review.png){ target="_blank" }
 
-Device writes request admin access during the build, not during review. On
-macOS, hst-imager also needs Full Disk Access; see
-[Installation](installation.md#macos).
-
-Screenshots show the offscreen Qt interface without private installation media.
-They illustrate navigation, not a completed image or device-write test.
+Writing to a card asks for admin access during the build. On macOS, hst-imager
+also needs Full Disk Access; see [Installation](installation.md#macos).
 
 ## Own packages
 
-Package files you put into **packages** inside the Hatcher data folder join the catalog on
-that machine only: **Library/Application Support/Emu68 Hatcher** on macOS, **LOCALAPPDATA**
-on Windows, **.local/share/emu68hatcher** on Linux, or **hatcher_data** in a source checkout.
-They use the same YAML form as the bundled packages, show up in the Software work area and
-survive catalog updates. They are never published or shipped. A file that does not load is
-reported in the log and skipped.
+Package files you put into **packages** inside the Hatcher data folder join the
+catalog on that machine: **Library/Application Support/Emu68 Hatcher** on macOS,
+**LOCALAPPDATA** on Windows, **.local/share/emu68hatcher** on Linux, or
+**hatcher_data** in a source checkout. They use the same YAML form as the
+bundled packages, show up in the Software work area and survive catalog
+updates. A file that does not load is reported in the log and skipped.
 
 ## RGB2RTG
 
 RGB2RTG v0.75 is an optional experimental installation for an A1200 with
-PiStorm32-lite and a Raspberry Pi 4 or CM4. Pi 3 is not tested. Enable it in the
-**System** work area under **Hardware & Emu68** and browse to your local
+PiStorm32-lite and a Raspberry Pi 4 or CM4. Pi 3 is not tested. Enable it in
+**System → Hardware & Emu68** and browse to your local
 **RGB2RTG_A1200_v0.75.7z** release from
-[the author](https://astair86.itch.io/rgb2rtg-amiga1200). Hatcher checks the release
-files before building. The archive is not included or downloaded automatically.
+[the author](https://astair86.itch.io/rgb2rtg-amiga1200). The archive is not
+included or downloaded automatically.
 
-Choose PAL (1080p50) or NTSC (1080p60). This sets and locks the HDMI mode in the
-**Appearance** work area while RGB2RTG is enabled. Use a VideoCore Workbench screen mode,
-and disable Framethrower/C790 capture. Read/write eMMC unit 0 access is required
-for the command to save boot settings. Enabling RGB2RTG selects the matching
-Emu68 1.1.0-beta.1 baseline and installs ToolsDaemon and Picasso96 dependencies.
-The custom kernel and VideoCore 1.5 driver are installed together.
+Choose PAL (1080p50) or NTSC (1080p60); this sets the HDMI mode while RGB2RTG is
+enabled. Use a VideoCore Workbench screen mode and leave native-video capture
+off. Enabling RGB2RTG switches the build to Emu68 1.1.0-beta.1.
 
-The desktop menu is **System → RGB2RTG**, with **Init...**, **Settings...**, **Sound...**
-and **About...**. Saved preferences are applied during User-Startup. New
-installations default to `picture=off`: the RTG desktop still shows, but native
-Amiga screens show black on HDMI after the preferences are applied. Turn the
-picture on through **Init...** or run `C:rgb2rtg ON`; the choice is saved for
-later boots. Existing preferences are kept. This does not disable the RGB2RTG
-kernel or its boot-time capture setup.
+The desktop menu is **System → RGB2RTG**, with **Init...**, **Settings...**,
+**Sound...** and **About...**. New installations start with the picture off: the
+RTG desktop shows, but native Amiga screens stay black on HDMI. Turn the picture
+on through **Init...** or with **C:rgb2rtg ON**; the choice is saved for later
+boots.
 
-Power cycle the Amiga after installation and after changing its video standard
+Power cycle the Amiga after installation and after changing the video standard
 or HDMI rate.
 
-The WHDLoad wrapper sets EmuControl options before every game, which disturbs the
-RGB2RTG picture. RGB2RTG builds therefore install the wrapper but start with the
-plain WHDLoad in **C:**. **Games → WHDLoad wrapper on/off** swaps the two at any
-time, so the wrapper is back after testing; the same switch is
-**Execute S:WHDLoadWrapper-Switch** in a Shell.
+The WHDLoad wrapper disturbs the RGB2RTG picture, so RGB2RTG builds start with
+the plain WHDLoad in **C:**. **Games → WHDLoad wrapper on/off** swaps the two at
+any time; the same switch is **Execute S:WHDLoadWrapper-Switch** in a Shell.
 
-To return to the baseline kernel and driver, run this from an Amiga Shell:
+To return to the standard kernel and driver, run this from an Amiga Shell and
+power cycle afterwards:
 
 ```text
 Execute SYS:Emu68-Hatcher/RGB2RTG/Recover
 ```
 
-Recovery removes Hatcher's RGB2RTG submenu and startup block while retaining
-other menu and startup edits. It restores both boot configurations, including
-the FirstBoot backup if still present, before restoring the matched baseline
-driver. If recovery reports a failure, complete the indicated restore before
-power cycling. Copies of the baseline configuration, driver, menu and startup
-files remain for manual recovery. Power cycle the Amiga to start the restored
-kernel and driver and reload the menus.
-
-Extra Files are copied after this installation. Replacing the kernel, driver,
-monitor icon, boot configuration or startup files there can break RGB2RTG and
-its recovery. Hardware acceptance still requires testing on the A1200; a host
-build or emulator cannot verify the capture path.
+If recovery reports a failure, follow the restore step it names before power
+cycling. Extra files that replace the kernel, driver, monitor icon or startup
+files can break RGB2RTG and its recovery.
