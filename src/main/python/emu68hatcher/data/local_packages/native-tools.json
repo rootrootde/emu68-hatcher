@@ -1,24 +1,4 @@
 {
-  "emu68-manager": {
-    "archive": "amiga/.build/Emu68-Manager.lha",
-    "built_clean": true,
-    "commit": "cdabc66971946b497cdab3201d83c18a54c8b23e",
-    "file": "Emu68-Manager.lha",
-    "md5": "477ce3cea95ed1a37ffecac6a589f2ed",
-    "repository": "emu68-manager",
-    "sha256": "bdb3e6edc8baae91dfd21d2f4bdaa1832c000324563d4e47f36c25695b4ffa51",
-    "size": 303628
-  },
-  "hatcher-packages": {
-    "archive": ".build/Hatcher-Packages.lha",
-    "built_clean": true,
-    "commit": "79a468f18cd24eb06b3675d54bded0bece275968",
-    "file": "Hatcher-Packages.lha",
-    "md5": "8c841fe61d9a2fa541287885cf82e8f9",
-    "repository": "hatcher-tools",
-    "sha256": "d8fd37ce977b7ee666ac30d6e6f76554ca3686da3673945897e07d295cbf165b",
-    "size": 319608
-  },
   "hatcher-prefs": {
     "archive": ".build/Hatcher-Prefs.lha",
     "built_clean": true,

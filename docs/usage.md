@@ -63,19 +63,12 @@ Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools are separate
 packages; a network stack brings the Ethernet and WiFi drivers with it. USB and
 NVMe are offered only for Emu68 versions that support them.
 
-Three entries in the **Utilities** group are Hatcher's own Amiga tools. Each one
-is a single window with a few buttons; before it changes a file it keeps the old
-one under **SYS:Emu68-Hatcher/Backup/** and offers to undo the last change.
-
-- **Hatcher Prefs** is the network window: connect, disconnect, check the
-  connection, WiFi name and password, addresses and DNS. Every network stack
-  installs it. Open it from **Network → Network Settings** or the **Network
-  Settings** icon in **SYS:Utilities**.
-- **Emu68 Manager** installs a newer Emu68 release on the card and undoes it. It
-  shows the running and the installed version and only offers releases that
-  boot with the card's config.txt.
-- **Hatcher Packages** installs programs from the same package list the desktop
-  app uses, with their menu entries, and removes them again.
+**Hatcher Prefs** in the **Utilities** group is Hatcher's own network window for
+the Amiga: connect, disconnect, check the connection, WiFi name and password,
+addresses and DNS. Every network stack installs it. Open it from **Network →
+Network Settings** or the **Network Settings** icon in **SYS:Utilities**. Before it
+changes a file it keeps the old one under **SYS:Emu68-Hatcher/Backup/** and offers
+to undo the last change.
 
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy the native tool release archives from their sibling repos into local_packages.
 
-hatcher-tools builds Hatcher-Prefs and Hatcher-Packages; emu68-manager is its own repo.
+hatcher-tools builds Hatcher-Prefs.
 
 For each tool the archive is copied to data/local_packages/<name>.lha, the MD5 in
 the package YAML's download.hash is updated, and data/local_packages/native-tools.json
@@ -56,26 +56,6 @@ TOOLS = {
         docker_workdir=None,
         package="hatcher_prefs",
         dest="Hatcher-Prefs.lha",
-    ),
-    "hatcher-packages": Tool(
-        repo="hatcher-tools",
-        archive=".build/Hatcher-Packages.lha",
-        build_dir=".build",
-        seed=("deps",),
-        command=("make", "dist"),
-        docker_workdir=None,
-        package="hatcher_packages",
-        dest="Hatcher-Packages.lha",
-    ),
-    "emu68-manager": Tool(
-        repo="emu68-manager",
-        archive="amiga/.build/Emu68-Manager.lha",
-        build_dir="amiga/.build",
-        seed=("deps", "mui38-include"),
-        command=("make", "package-release"),
-        docker_workdir="amiga",
-        package="emu68_manager",
-        dest="Emu68-Manager.lha",
     ),
 }
 

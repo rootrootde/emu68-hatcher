@@ -44,11 +44,6 @@ up with `rx S:NetworkConfig.rexx SYNCTIME`, as in earlier releases. Check that
 **Connect at boot** is on in Network Settings (it removes **S:Network-disabled**) and
 that the network connects at boot.
 
-### Emu68 Manager says the card has a newer version than is running
-
-A reset does not reload the Pi firmware and kernel. Switch the Amiga off and on
-again; the window then shows the same version for the card and the running system.
-
 ### Browser reports a DNS error
 
 Open **Network Settings** and check the address, gateway and DNS servers. Save and
