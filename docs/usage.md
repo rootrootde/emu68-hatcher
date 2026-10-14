@@ -9,11 +9,15 @@ not written to configuration files.
 
 ### Overview
 
-**Updates** is visible at the top when the app opens. The configuration summary
-and compact build checks follow below. Click a check or activate it with the
-keyboard to open its setting. **Required tools** contains tool downloads; the
-**Tools** menu jumps there directly. Application downloads go to Downloads;
-opening a Linux installer requires a Debian-based system.
+**Updates and tools** is visible at the top when the app opens: the application
+version, the signed package list and the host tools (hst-imager, 7-Zip) with their
+install state. **Check now** repeats the update check, **Download Missing Tools…**
+fetches what is not installed yet, and **Reset App Data…** deletes downloaded
+tools and cached files. Application downloads go to Downloads; opening a Linux
+installer requires a Debian-based system.
+
+**Build checks** lists what still blocks a build. Click a check or activate it with
+the keyboard to open its setting. The configuration summary is on **Review & build**.
 
 [![Configuration overview](assets/screenshots/overview.png)](assets/screenshots/overview.png){ target="_blank" }
 
@@ -29,7 +33,11 @@ opening a Linux installer requires a Debian-based system.
   MiamiDX registration-key folders belong here. DHCP/static addresses, routing,
   DNS and WiFi settings remain available where the selected stack supports them.
 
-[![System hardware and release settings](assets/screenshots/system.png)](assets/screenshots/system.png){ target="_blank" }
+[![Hardware & Emu68](assets/screenshots/system-hardware.png)](assets/screenshots/system-hardware.png){ target="_blank" }
+
+[![AmigaOS & files](assets/screenshots/system-amiga.png)](assets/screenshots/system-amiga.png){ target="_blank" }
+
+[![Network](assets/screenshots/system-network.png)](assets/screenshots/system-network.png){ target="_blank" }
 
 ### Appearance
 
@@ -40,8 +48,7 @@ scaling controls. C790 requires Emu68 1.1 or later and a VideoCore Workbench mod
 Use **Browse…** to supply your full **Picasso96.lha**.
 
 Available icons follow the selected OS version and detected media. GlowIcons
-requires its matching ADF. Theme support remains disabled in this checkout;
-there is no separate, mostly empty theme page.
+requires its matching ADF.
 
 [![Display settings](assets/screenshots/appearance.png)](assets/screenshots/appearance.png){ target="_blank" }
 
@@ -49,24 +56,22 @@ there is no separate, mostly empty theme page.
 
 Select applications, bundles and hardware drivers. The list is filtered for the
 chosen Workbench and Emu68 versions. The expandable **Required packages** group
-shows automatic selections and their reasons. Network and theme choices are
-edited in System and Appearance, not duplicated here. MUI remains selectable
-when an application requires it. See [Packages](packages.md) for the catalog.
+shows automatic selections and their reasons. The network stack is chosen in
+System, not duplicated here. MUI remains selectable when an application requires
+it. See [Packages](packages.md) for the catalog.
 
-**Minimal** clears optional software, networking and theme selection. The OS,
-RTG, filesystem and FirstBoot helpers remain, including fat95. AGS, extra files,
-ROMs, display mode, partitions, icons and installation media are unchanged.
-Extra files are still copied and can add software to a minimal image.
-
-**Select None** clears software requests only; network and theme dependencies
-can still be required. **Defaults** restores software defaults without changing
-those owners. Saved requests remain separate from automatic dependencies.
+**Select All** ticks every optional package and picks MUI 5, **Select None**
+clears them, and **Defaults** restores the preselected set. None of the three
+changes the network stack. Packages a selected stack or application depends on
+stay in **Required packages**. The OS, RTG, filesystem and FirstBoot helpers are
+always installed. Extra files are still copied and can add software to an
+otherwise empty selection.
 
 Ethernet, WiFi, USB, NVMe, I2C clock support and diagnostic tools can be selected
 separately. A network stack requires both Ethernet and WiFi support. USB and
 NVMe are offered only for compatible Emu68 versions.
 
-The **Utilities** group has three Amiga tools. Each one is a single window with a
+Three entries in the **Utilities** group are Hatcher's own Amiga tools. Each one is a single window with a
 few buttons; before it changes a file it keeps the old one under
 **SYS:Emu68-Hatcher/Backup/** and offers to undo the last change.
 

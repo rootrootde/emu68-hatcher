@@ -10,12 +10,12 @@ hst-imager needs Full Disk Access. See [Installation → macOS](installation.md#
 
 ### Corrupted downloads or tools
 
-**Reset App Data** deletes downloaded tools, packages and temporary files. Saved configs stay.
+**Reset App Data…** deletes downloaded tools, packages and temporary files. Saved configs stay.
 
 ### Update or package-list check failed
 
 The app keeps the last verified package list, or its bundled copy. Check the warning tooltip and
-try **Check for Updates** again. This can also fix package 404 or checksum errors.
+try **Check now** again. This can also fix package 404 or checksum errors.
 
 If an app update will not open, use **Open Downloads Folder**. Linux installation is only offered
 for Debian-based systems.
