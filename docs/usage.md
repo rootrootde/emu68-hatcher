@@ -23,19 +23,21 @@ the keyboard to open its setting. The configuration summary is on **Review & bui
 
 ### System
 
-- **Hardware & Emu68:** select the release and hardware settings. Boot, storage,
-  CPU, compatibility and manual overrides are under **Show advanced settings**.
-- **AmigaOS & files:** choose the Workbench version, add directories containing
-  ROMs and installation media, and select languages. Files are matched by hash;
-  **Show details…** lists the detected files. AmigaOS 3.9 uses the CD **.iso**
-  and a Kickstart 3.1 ROM. Do not mount the ISO.
-- **Network:** choose Roadshow, MiamiDX, AmiTCP_NG or None. Roadshow archives and
-  MiamiDX registration-key folders belong here. DHCP/static addresses, routing,
-  DNS and WiFi settings remain available where the selected stack supports them.
+**Hardware & Emu68:** select the release and hardware settings. Boot, storage,
+CPU, compatibility and manual overrides are under **Show advanced settings**.
 
 [![Hardware & Emu68](assets/screenshots/system-hardware.png)](assets/screenshots/system-hardware.png){ target="_blank" }
 
+**AmigaOS & files:** choose the Workbench version, add directories containing
+ROMs and installation media, and select languages. Files are matched by hash;
+**Show details…** lists the detected files. AmigaOS 3.9 uses the CD **.iso**
+and a Kickstart 3.1 ROM. Do not mount the ISO.
+
 [![AmigaOS & files](assets/screenshots/system-amiga.png)](assets/screenshots/system-amiga.png){ target="_blank" }
+
+**Network:** choose Roadshow, MiamiDX, AmiTCP_NG or None. Roadshow archives and
+MiamiDX registration-key folders belong here. DHCP/static addresses, routing,
+DNS and WiFi settings remain available where the selected stack supports them.
 
 [![Network](assets/screenshots/system-network.png)](assets/screenshots/system-network.png){ target="_blank" }
 
