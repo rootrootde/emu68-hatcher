@@ -1,6 +1,7 @@
 """hst-imager command exec - progress, capture, errors, timeout"""
 
 import logging
+import re
 import shlex
 import subprocess
 import time
@@ -65,6 +66,24 @@ class ScriptResult:
 
 # progress callback type
 HstProgressCallback = Callable[[int, int, str, CommandStatus], None]
+
+# "[13:00:17 INF] ..." - continuation lines (e.g. a DBG plist dump) carry no header
+_HST_LOG_HEADER_RE = re.compile(r"^\[\d{2}:\d{2}:\d{2} (\w{3})\]")
+
+
+def _failure_excerpt(stdout: str, limit: int = 40) -> list[str]:
+    """last non-DBG stdout lines - verbose DBG dumps would push the error out of view"""
+    kept: list[str] = []
+    level = None
+    for line in stdout.splitlines():
+        header = _HST_LOG_HEADER_RE.match(line)
+        if header:
+            level = header[1]
+        if level != "DBG" and line.strip():
+            kept.append(line.rstrip())
+    if not kept:
+        return [f"(only debug output, last 500 chars) {stdout[-500:]!r}"]
+    return kept[-limit:]
 
 
 class HSTRunner:
@@ -171,9 +190,10 @@ class HSTRunner:
                     f"hst-imager: rc={result.returncode} in {duration:.2f}s; error={error_detail!r}"
                 )
                 if result.stdout:
-                    _logger.info(f"hst-imager: stdout (500 chars): {result.stdout[:500]!r}")
+                    for line in _failure_excerpt(result.stdout):
+                        _logger.info(f"hst-imager: | {line}")
                 if result.stderr:
-                    _logger.info(f"hst-imager: stderr (500 chars): {result.stderr[:500]!r}")
+                    _logger.info(f"hst-imager: stderr (last 500 chars): {result.stderr[-500:]!r}")
                 return CommandResult(
                     command=command,
                     status=CommandStatus.FAILED,
