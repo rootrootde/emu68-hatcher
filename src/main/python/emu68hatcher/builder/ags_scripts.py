@@ -103,6 +103,9 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
     setup = [f'Assign {name}: "{target}"' for name, target in aliases.items()]
     setup += [
         "Path AGSOS:C ADD",
+        # kgiconload finds an icon's default tool through the path list only, which
+        # holds C:WHDLoad once the import has removed the AGS copy
+        "Path C: ADD",
         "Assign Libs: AGSOS:Libs ADD",
         "Assign Fonts: AGSOS:Fonts ADD",
     ]
