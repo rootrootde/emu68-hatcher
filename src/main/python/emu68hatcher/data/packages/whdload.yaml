@@ -13,8 +13,8 @@ mandatory: false
 download:
   source: web
   url: http://whdload.de/whdload/WHDLoad_usr.lha
-  hash: E76EC3049BFD7DE6E9CFC17D7F52EC0C
-  sha256: 093333953737528d79c1eda7d21a16a0aa298698722624e7cfb31f588a0a156d
+  hash: C4292398CE6F49937FDDE67E5C2A6474
+  sha256: 725b9255e6f55c57a57b2dd52dec221b223df5560d29153607088ffff6ae1bc1
   filename: Whdload_usr.lha
 install:
 - from: WHDLoad/C/WHDLoad
