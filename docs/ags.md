@@ -31,6 +31,8 @@ AGS detects portable mode through the absence of **S:AGS-Stuff** and hides its B
 
 In Check_Drives, Hatcher replaces volume-only InfoNew checks for its portable assigns with Assign EXISTS. This lets AGS recognize content exposed through directory assigns, including Work:Emulators.
 
+Start_AGS gets **Path C: ADD** as its first line. The shell that IconX opens for AGS has no path list when the Games menu starts it through WBRun, and kgiconload looks up the WHDLoad tool of a game icon in that list only. With the AGS copy of WHDLoad removed, the line is what makes **C:WHDLoad** visible to game starts.
+
 Missing Ex, kgiconload, WBLoad and WBRun helpers are supplied from AGS. Existing Workbench versions are retained. Additional AGS commands, libraries and fonts are available through the portable search paths. The import removes AGS's own **WHDLoad** and **WHDLoadCD32** from **AGS2/OS/C**, so AGS starts games through the WHDLoad in **C:** like every other launcher, wrapper or not. The import leaves **S:WHDLoad.prefs** and **S:WHDLoad-Startup** unchanged. AGS can subsequently write these files through its original Speed_Reset and Quit-Key functions.
 
 When a VideoCore Workbench mode is selected, Hatcher sets **AGS2.conf** and every **Themes/*.conf** to VideoCore 640x256 with 256 colours. AGS keeps its own resolution regardless of the selected Workbench resolution. Backgrounds, screenshots and layout coordinates remain unchanged. Native Workbench builds retain the source image's menu and theme modes.
@@ -45,7 +47,7 @@ Napalm temporarily changes **ENV:RtgMaster**. onEscapee invokes SetPatch and add
 
 Hatcher checks source identity before target initialization and around partition copies. Source and output must be different files, and the source cannot be stored on the selected output or flash disk. Capacity checks include the output image's full configured size, temporary staging and any cross-volume move.
 
-Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It stages the corrected Check_Drives and theme-switch scripts on the imported WHDLoad partition, along with the theme configurations for RTG builds. Their hashes are verified after copying. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
+Copies run in the applied partition order. Normal partitions are created and formatted; imported partitions are copied directly and never formatted afterward. The AGS stage adds startup assigns and missing helpers to the boot partition. It stages the corrected Check_Drives, Start_AGS and theme-switch scripts on the imported WHDLoad partition, along with the theme configurations for RTG builds. Their hashes are verified after copying. Workbench directory metadata corrections remain independent of AGS; imported game trees need no host metadata conversion.
 
 Production checks compare HST's reported copy byte count with the planned length, then inspect target geometry, partition order, volume names and filesystem flags. Original AGS profile markers and generated startup setup are read back and hashed before cleanup. A successful HST exit code alone is insufficient: the tested version can report success after copying zero bytes. Production checks do not compare every copied block or enumerate every game file.
 

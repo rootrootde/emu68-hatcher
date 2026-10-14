@@ -40,6 +40,15 @@ def prepare_drive_checks(source: bytes, aliases: Mapping[str, str]) -> bytes:
     return text.encode("iso-8859-1")
 
 
+# the AGS shell starts with an empty path list when WBRun launches IconX, and
+# kgiconload resolves an icon's default tool through that list only. The AGS copy of
+# WHDLoad is removed at import, so C: has to be listed for C:WHDLoad to be found.
+def prepare_start_ags(source: bytes) -> bytes:
+    """Put C: on the path list before the AGS launcher starts."""
+    line = b"Path C: ADD\n"
+    return source if source.startswith(line) else line + source
+
+
 def required_script_paths(profile: str | AGSProfile) -> tuple[str, ...]:
     profile = get_profile(profile)
     return tuple(profile.marker_hashes)
@@ -86,11 +95,17 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
     if "media" in roles:
         aliases["ST-00"] = f"{plan.target('media').device}:ST-00"
     _check_cancel(cancel_check)
-    relative = "AGS2/Scripts/Check_Drives"
-    source = plan.inventory.source_scripts[relative]
-    patched = prepare_drive_checks(source, aliases)
     staged = [("__boot__", "S/User-Startup")]
-    if patched != source:
+    scripts = plan.inventory.source_scripts
+    patches = (
+        ("AGS2/Scripts/Check_Drives", lambda source: prepare_drive_checks(source, aliases)),
+        ("AGS2/Scripts/Start_AGS", prepare_start_ags),
+    )
+    for relative, patch in patches:
+        source = scripts[relative]
+        patched = patch(source)
+        if patched == source:
+            continue
         destination = resolve_staging_path(boot_root.parent, f"{whd.device}/{relative}")
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(patched)
@@ -103,9 +118,6 @@ def prepare_ags_launcher(plan, boot_root: Path, cancel_check=None) -> AGSLaunche
     setup = [f'Assign {name}: "{target}"' for name, target in aliases.items()]
     setup += [
         "Path AGSOS:C ADD",
-        # kgiconload finds an icon's default tool through the path list only, which
-        # holds C:WHDLoad once the import has removed the AGS copy
-        "Path C: ADD",
         "Assign Libs: AGSOS:Libs ADD",
         "Assign Fonts: AGSOS:Fonts ADD",
     ]
