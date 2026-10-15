@@ -16,7 +16,7 @@ from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.staging.tree_copy import FileCopied, copy_contained_tree
 from emu68hatcher.config.defaults import DEFAULT_BOOT_DEVICE
 from emu68hatcher.data.package_loader import get_package_by_name
-from emu68hatcher.data.package_schema import InstallRule, Package
+from emu68hatcher.data.package_schema import InstallRule, Package, SourceType
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import ensure_dir
 
@@ -68,6 +68,7 @@ class PackageInstaller:
         self.staging_dir = staging_dir
         self.extracted_dir = extracted_packages_dir
         self.local_packages_dir = local_packages_dir
+        self._extracted_paths = dict(extracted_paths or {})
         # the extraction stage can link package roots into the download cache.
         self._extracted_roots = frozenset(
             path.resolve() for path in (extracted_paths or {}).values()
@@ -121,33 +122,20 @@ class PackageInstaller:
         if not pkg.download:
             return None
 
-        if pkg.download.source.value == "local":
-            # extracted dir first (for local archives), fall back to local_packages_dir
-            source_dir = self.extracted_dir / pkg.name
-            if source_dir.exists():
-                return source_dir
-            return self.local_packages_dir
+        extracted = self._extracted_paths.get(pkg.name)
+        if extracted is not None and extracted.is_dir():
+            return extracted
 
         source_dir = self.extracted_dir / pkg.name
-        if source_dir.exists():
+        if source_dir.is_dir():
             return source_dir
 
-        # try filename without archive extension
-        if pkg.download.filename:
-            base_name = pkg.download.filename
-            for ext in [".lha", ".zip", ".7z", ".tar.gz"]:
-                if base_name.lower().endswith(ext):
-                    base_name = base_name[: -len(ext)]
-                    break
-
-            source_dir = self.extracted_dir / base_name
-            if source_dir.exists():
-                return source_dir
-
-        # try case-insensitive search
-        matched = ci_match_child(self.extracted_dir, pkg.name)
-        if matched and (self.extracted_dir / matched).is_dir():
-            return self.extracted_dir / matched
+        # local packages without an archive install straight from local_packages/
+        path = pkg.download.path
+        if pkg.download.source == SourceType.LOCAL and (
+            not path or Path(path).suffix.lower() not in ARCHIVE_EXTENSIONS
+        ):
+            return self.local_packages_dir
 
         self.logger.debug(f"Source directory not found for {pkg.name}")
         return None
@@ -163,7 +151,7 @@ class PackageInstaller:
 
             if next_path.is_file():
                 suffix = next_path.suffix.lower()
-                if suffix in ARCHIVE_EXTENSIONS:
+                if suffix in ARCHIVE_EXTENSIONS and i < len(parts) - 1:
                     extract_dir = require_contained_path(
                         source_dir, next_path.parent / f"_extracted_{next_path.stem}"
                     )
@@ -233,8 +221,13 @@ class PackageInstaller:
         search_dir = source_dir
         if base_parts:
             resolved = resolve_source_path(source_dir, "/".join(base_parts))
-            if resolved:
-                search_dir = resolved
+            if resolved is None:
+                self.logger.warning(
+                    f"install rule {rule.source} for {self._package}: source prefix "
+                    f"{'/'.join(base_parts)} not found in {source_dir}"
+                )
+                return 0
+            search_dir = resolved
 
         strip_levels = len(glob_part.split("/")) - 1
         installed = 0
@@ -270,12 +263,15 @@ class PackageInstaller:
         if not source.exists():
             return 0
         destination = resolve_staging_path(dest_dir, rule.rename or source.name)
+        is_dir = source.is_dir()
+        if is_dir and not rule.recursive:
+            self.logger.info(f"install rule {rule.source}: {source.name} is a directory, merging")
         return self._copy_item(
             source,
             destination,
             rule.stack,
             rule.xor_byte,
-            merge_dirs=rule.recursive,
+            merge_dirs=rule.recursive or is_dir,
         )
 
     def _copy_item(

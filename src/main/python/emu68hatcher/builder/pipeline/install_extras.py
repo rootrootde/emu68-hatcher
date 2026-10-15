@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
+from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.staging.tree_copy import (
+    TargetResolver,
     TreeUsage,
     copy_contained_tree,
     measure_contained_tree,
@@ -14,6 +16,7 @@ from emu68hatcher.builder.staging.tree_copy import (
 from emu68hatcher.builder.state import BuildStage, CreatedImage
 from emu68hatcher.config.partition_helpers import usable_partition_content_size
 from emu68hatcher.config.partition_models import AmigaPartition
+from emu68hatcher.data.catalog import validate_relative_path
 
 if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
@@ -39,6 +42,23 @@ def _check_partition_space(
         f"available on the {_format_size(part.size)} partition. Remove files or enlarge "
         "the partition."
     )
+
+
+def _amiga_target_resolver(part: AmigaPartition, src: Path) -> TargetResolver:
+    """case-insensitive staging resolver that rejects names an Amiga volume cannot hold"""
+
+    def resolve(parent: Path, name: str) -> Path:
+        try:
+            validate_relative_path(name)
+        except ValueError as e:
+            raise BuildError(
+                f"Extra content for {part.device} ({part.volume}) contains {name!r} in {src}, "
+                "a name an Amiga volume cannot hold. Rename it without ':', '\\' or control "
+                "characters and build again."
+            ) from e
+        return resolve_staging_path(parent, name)
+
+    return resolve
 
 
 def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
@@ -86,7 +106,9 @@ def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> Create
         # the receipts mark package files replaced here as locally modified
         log = workflow.write_log
         on_file = log.extra_wrote if log and part.device == workflow.config.boot_device else None
-        result = copy_contained_tree(src, dest, on_file=on_file)
+        result = copy_contained_tree(
+            src, dest, on_file=on_file, resolve_target=_amiga_target_resolver(part, src)
+        )
         staged_usage = measure_contained_tree(dest)
         _check_partition_space(part, staged_usage, "the staged files")
         total_files += result.files_copied
