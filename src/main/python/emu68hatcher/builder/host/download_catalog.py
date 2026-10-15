@@ -4,6 +4,9 @@ import json
 import re
 import urllib.parse
 import urllib.request
+from functools import cache
+
+import yaml
 
 from emu68hatcher.builder.host.downloads import DownloadItem
 from emu68hatcher.data.emu68_releases import download_table as emu68_download_table
@@ -226,8 +229,10 @@ def downloadable_mandatory_names(
     return mandatory
 
 
-# per-version asset map: each asset is {role, filename, url, size, sha256}, pins may be None
-EMU68_RELEASES: dict[str, dict] = emu68_download_table()
+@cache
+def emu68_releases() -> dict[str, dict]:
+    """per-version asset map: each asset is {role, filename, url, size, sha256}, pins may be None"""
+    return emu68_download_table()
 
 
 def get_emu68_boot_files(version: str) -> list[DownloadItem]:
@@ -236,10 +241,14 @@ def get_emu68_boot_files(version: str) -> list[DownloadItem]:
 
     logger = get_logger()
 
-    if version not in EMU68_RELEASES:
-        raise BuildError(f"Unknown Emu68 version '{version}'. Known: {', '.join(EMU68_RELEASES)}")
+    try:
+        releases = emu68_releases()
+    except (OSError, ValueError, yaml.YAMLError) as error:
+        raise BuildError(f"emu68_releases.yaml is invalid: {error}") from error
+    if version not in releases:
+        raise BuildError(f"Unknown Emu68 version '{version}'. Known: {', '.join(releases)}")
 
-    rel = EMU68_RELEASES[version]
+    rel = releases[version]
     assets = [(entry, True) for entry in rel.get("zips", [])]
     assets += [(entry, False) for entry in rel.get("extras", [])]
 

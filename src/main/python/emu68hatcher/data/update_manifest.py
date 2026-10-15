@@ -13,11 +13,8 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from packaging.version import InvalidVersion, Version
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator
 
@@ -31,11 +28,14 @@ from emu68hatcher.data.catalog_manifest import (
 from emu68hatcher.utils.paths import get_cache_dir
 from emu68hatcher.utils.platform import OperatingSystem, PlatformInfo, get_platform_info
 
+if TYPE_CHECKING:
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
 DEFAULT_MANIFEST_URL = (
     "https://raw.githubusercontent.com/rootrootde/emu68-hatcher/updates/manifest-v2.json"
 )
+_RELEASES_URL = "https://github.com/rootrootde/emu68-hatcher/releases"
 _REFERENCE_DIR = Path(__file__).parent / "reference"
-_BUNDLED_MANIFEST_PATH = _REFERENCE_DIR / "update_manifest.json"
 _PUBLIC_KEY_PATH = _REFERENCE_DIR / "update_manifest_public_key.pem"
 _SAFE_FILENAME_RE = re.compile(r"^[^/\\\x00-\x1f]+$")
 _MAX_MANIFEST_BYTES = 2 * 1024 * 1024
@@ -166,6 +166,9 @@ def canonical_payload(payload: dict[str, Any]) -> bytes:
 
 
 def _load_public_key(path: Path = _PUBLIC_KEY_PATH) -> Ed25519PublicKey:
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+
     key = load_pem_public_key(path.read_bytes())
     if not isinstance(key, Ed25519PublicKey):
         raise ValueError("manifest public key is not Ed25519")
@@ -183,6 +186,8 @@ def _unique_json_object(pairs):
 
 def verify_signed_payload(content: bytes, public_key_path: Path = _PUBLIC_KEY_PATH) -> dict:
     """the payload of a signed envelope, once its signature checks out"""
+    from cryptography.exceptions import InvalidSignature
+
     if len(content) > _MAX_MANIFEST_BYTES:
         raise ValueError("manifest is too large")
     try:
@@ -221,18 +226,16 @@ def _read_verified(path: Path, public_key_path: Path) -> UpdateManifestV1 | Upda
 
 def initialize_manifest(
     *,
-    bundled_path: Path = _BUNDLED_MANIFEST_PATH,
     public_key_path: Path = _PUBLIC_KEY_PATH,
     cache_dir: Path | None = None,
 ) -> ManifestSelection:
     global _active_selection
 
-    bundled = _read_verified(bundled_path, public_key_path)
-    # release metadata is signed; the complete offline catalog ships as YAML.
+    # offline baseline: this release with nothing to download, catalog from the bundled YAML
     baseline = UpdateManifestV2(
         schema_version=2,
         revision=1,
-        hatcher=bundled.hatcher,
+        hatcher=HatcherRelease(version=__version__, release_url=_RELEASES_URL),
         catalogs=[
             CatalogRelease(
                 id="bundled",
@@ -245,8 +248,6 @@ def initialize_manifest(
         ],
     )
     selection = ManifestSelection(baseline, "bundled", catalog=bundled_catalog())
-    if isinstance(bundled, UpdateManifestV2):
-        selection = _candidate_selection(bundled, "bundled", selection)
     cache_path, _ = _cache_paths(cache_dir)
     if cache_path.is_file():
         try:
@@ -255,7 +256,7 @@ def initialize_manifest(
             candidate = _candidate_selection(cached, "cache", selection)
             if not candidate.catalog_notice:
                 selection = candidate
-        except (OSError, ValueError):
+        except (OSError, ValueError, ImportError):
             pass
     with _active_lock:
         _active_selection = selection

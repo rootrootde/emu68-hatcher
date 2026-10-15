@@ -8,6 +8,7 @@ from packaging.version import Version
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from emu68hatcher import __version__
+from emu68hatcher.config.network_models import NetworkStack
 from emu68hatcher.data.catalog import (
     DATA_DIR,
     CatalogData,
@@ -80,7 +81,7 @@ def validate_client_catalog(snapshot: CatalogSnapshot) -> None:
     data = snapshot.data()
     baseline = load_catalog_source()
     engine_ids = {p.name for p in baseline.packages.values() if p.mandatory}
-    engine_ids.update({"roadshow", "amitcp_ng", "miamidx"})
+    engine_ids.update(stack.value.lower() for stack in NetworkStack)
     # Keep the font availability check required by existing catalog releases.
     engine_ids.update({"fonts_apparent", "fonts_magicwb"})
     missing = engine_ids - data.packages.keys()
