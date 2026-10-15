@@ -146,7 +146,7 @@ class UpdateCheckWorker(QThread):
     check_finished = Signal(object)
 
     def run(self):
-        from emu68hatcher.data.update_manifest import (
+        from emu68hatcher.data.manifest_state import (
             ManifestSelection,
             check_remote_manifest,
             get_active_selection,
@@ -182,7 +182,7 @@ class ApplicationUpdateDownloadWorker(QThread):
         self.destination_dir = destination_dir
 
     def run(self):
-        from emu68hatcher.data.update_manifest import download_hatcher_artifact
+        from emu68hatcher.data.app_update import download_hatcher_artifact
 
         try:
             path = download_hatcher_artifact(

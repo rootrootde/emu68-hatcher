@@ -8,7 +8,7 @@ from emu68hatcher import __version__
 from emu68hatcher.data.catalog import load_catalog_source
 from emu68hatcher.data.catalog_manifest import validate_client_catalog
 from emu68hatcher.data.emu68_releases import Emu68ReleaseIndex, release_index_payload
-from emu68hatcher.data.update_manifest import verify_manifest_bytes, verify_signed_payload
+from emu68hatcher.data.manifest_signing import verify_manifest_bytes, verify_signed_payload
 
 
 def main():

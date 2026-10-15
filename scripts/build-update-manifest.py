@@ -17,12 +17,8 @@ from emu68hatcher.data.catalog_manifest import (
     catalog_id,
     validate_client_catalog,
 )
-from emu68hatcher.data.update_manifest import (
-    _MAX_MANIFEST_BYTES,
-    UpdateManifestV1,
-    UpdateManifestV2,
-    verify_manifest_bytes,
-)
+from emu68hatcher.data.manifest_models import UpdateManifestV1, UpdateManifestV2
+from emu68hatcher.data.manifest_signing import MAX_MANIFEST_BYTES, verify_manifest_bytes
 
 _ARTIFACT_RE = re.compile(
     r"^emu68hatcher-(?P<version>.+)-(?P<platform>"
@@ -148,7 +144,7 @@ def _write_payload(path, manifest):
         "signature": {"algorithm": "ed25519", "key_id": "updates-2026", "value": "A" * 88},
     }
     signed_size = len((json.dumps(envelope, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
-    if signed_size > _MAX_MANIFEST_BYTES:
+    if signed_size > MAX_MANIFEST_BYTES:
         raise ValueError("generated manifest exceeds client size limit")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8", newline="\n")

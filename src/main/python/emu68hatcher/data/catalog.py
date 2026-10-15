@@ -214,7 +214,7 @@ def get_catalog_snapshot() -> CatalogSnapshot:
     snapshot = _catalog_context.get()
     if snapshot is not None:
         return snapshot
-    from emu68hatcher.data.update_manifest import get_active_selection
+    from emu68hatcher.data.manifest_state import get_active_selection
 
     return with_extra_packages(get_active_selection().catalog or bundled_catalog())
 

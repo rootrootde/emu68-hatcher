@@ -68,7 +68,7 @@ class StartTab(QWidget):
         self._app_download_worker = None
         self._row_widgets: dict[str, tuple[QLabel, QLabel]] = {}
         self._fresh_downloads: set[str] = set()
-        from emu68hatcher.data.update_manifest import get_active_selection
+        from emu68hatcher.data.manifest_state import get_active_selection
 
         self._update_selection = get_active_selection()
         self._setup_ui()
@@ -267,7 +267,7 @@ class StartTab(QWidget):
 
     def refresh_update_status(self):
         from emu68hatcher import __version__
-        from emu68hatcher.data.update_manifest import get_current_artifact, is_newer_version
+        from emu68hatcher.data.app_update import get_current_artifact, is_newer_version
         from emu68hatcher.utils.platform import (
             OperatingSystem,
             detect_os,
@@ -403,7 +403,7 @@ class StartTab(QWidget):
             return
         if not selection.error:
             from emu68hatcher.data.catalog import get_catalog_snapshot
-            from emu68hatcher.data.update_manifest import activate_manifest
+            from emu68hatcher.data.manifest_state import activate_manifest
 
             try:
                 previous = get_catalog_snapshot()
@@ -411,7 +411,7 @@ class StartTab(QWidget):
                 if selection.catalog != previous:
                     self.catalog_changed.emit()
             except Exception as error:
-                from emu68hatcher.data.update_manifest import (
+                from emu68hatcher.data.manifest_state import (
                     ManifestSelection,
                     get_active_selection,
                 )
@@ -444,7 +444,7 @@ class StartTab(QWidget):
 
     @Slot()
     def download_application_update(self):
-        from emu68hatcher.data.update_manifest import get_current_artifact
+        from emu68hatcher.data.app_update import get_current_artifact
         from emu68hatcher.gui.workers import ApplicationUpdateDownloadWorker
 
         if self._app_download_worker and self._app_download_worker.isRunning():
@@ -568,8 +568,8 @@ class StartTab(QWidget):
         if box.clickedButton() is not delete_btn:
             return
 
+        from emu68hatcher.data.manifest_state import initialize_manifest
         from emu68hatcher.data.package_loader import clear_package_caches
-        from emu68hatcher.data.update_manifest import initialize_manifest
         from emu68hatcher.utils.paths import reset_runtime_data
 
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)

@@ -15,7 +15,7 @@ SOURCE = "src/main/python/emu68hatcher/data/reference/emu68_releases.yaml"
 sys.path.insert(0, str(ROOT / "src/main/python"))
 
 from emu68hatcher.data.emu68_releases import release_index_payload  # noqa: E402
-from emu68hatcher.data.update_manifest import canonical_payload  # noqa: E402
+from emu68hatcher.data.manifest_signing import canonical_payload  # noqa: E402
 
 _INT32_MAX = 2147483647
 
