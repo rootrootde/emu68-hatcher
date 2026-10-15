@@ -6,10 +6,10 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from emu68hatcher.builder.ags_metadata import drop_superseded_records
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.pipeline.adf_mapping import build_adf_name_map, resolve_adf_path
 from emu68hatcher.builder.staging.files import resolve_staging_path
+from emu68hatcher.builder.staging.uaefsdb import drop_superseded_records
 from emu68hatcher.builder.state import Workspace
 
 if TYPE_CHECKING:

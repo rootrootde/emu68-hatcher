@@ -1,82 +1,35 @@
-"""UAE filesystem database records for copied Amiga files."""
+"""Walk staged trees and merge directories that share an Amiga name."""
 
 from __future__ import annotations
 
 import os
 import stat
-import tempfile
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
-
-if TYPE_CHECKING:
-    from emu68hatcher.builder.ags_source import AGSEntry
-
-_DB_NAME = "_UAEFSDB.___"
-_RECORD_SIZE = 600
-_AMIGA_NAME = slice(5, 261)
-_HOST_NAME = slice(262, 518)
-_COMMENT = slice(519, 600)
+from emu68hatcher.builder.staging.uaefsdb import (
+    _HOST_NAME,
+    DB_NAME,
+    _check_name,
+    _find_record,
+    _name_bytes,
+    _read_records,
+    _Record,
+    _record_name,
+    _write_records,
+    records_by_host,
+)
 
 
 @dataclass(frozen=True, slots=True)
-class _Record:
-    amiga_name: str
-    host_name: str
+class StagedEntry:
+    path: str
+    size: int
+    is_dir: bool
     protection_bits: int
     comment: str
-
-
-def _check_name(name: str, directory: Path) -> str:
-    if not name or name in (".", "..") or "/" in name or "\0" in name:
-        raise BuildError(f"Amiga file metadata has an unsafe name in {directory}: {name!r}")
-    return name
-
-
-def _field_name(record: bytes, field: slice, directory: Path) -> str:
-    try:
-        value = (
-            record[field]
-            .split(b"\0", 1)[0]
-            .decode("utf-8" if field == _HOST_NAME else "iso-8859-1")
-        )
-    except UnicodeDecodeError as exc:
-        raise BuildError(f"Amiga file metadata has an invalid host name in {directory}") from exc
-    return _check_name(value, directory)
-
-
-def _records_by_host(parent: Path) -> dict[str, _Record]:
-    path = parent / _DB_NAME
-    try:
-        info = path.lstat()
-    except FileNotFoundError:
-        return {}
-    if not stat.S_ISREG(info.st_mode):
-        raise BuildError(f"Amiga file metadata is not a regular file in {parent}")
-    data = path.read_bytes()
-    if len(data) % _RECORD_SIZE:
-        raise BuildError(f"Amiga file metadata is damaged in {parent}")
-    records: dict[str, _Record] = {}
-    for offset in range(0, len(data), _RECORD_SIZE):
-        raw = data[offset : offset + _RECORD_SIZE]
-        if raw[0] == 0:
-            continue
-        if raw[0] != 1:
-            raise BuildError(f"Amiga file metadata has an invalid record in {parent}")
-        amiga_name = _field_name(raw, _AMIGA_NAME, parent)
-        host_name = _field_name(raw, _HOST_NAME, parent)
-        protection_bits = int.from_bytes(raw[1:5], "big")
-        if protection_bits > 255:
-            raise BuildError(f"Amiga file metadata has invalid protection bits for {host_name}")
-        comment = raw[_COMMENT].split(b"\0", 1)[0].decode("iso-8859-1")
-        key = host_name.casefold()
-        if key in records:
-            raise BuildError(f"Amiga file metadata has duplicate records in {parent}: {host_name}")
-        records[key] = _Record(amiga_name, host_name, protection_bits, comment)
-    return records
 
 
 def iter_staged_entries(
@@ -84,16 +37,14 @@ def iter_staged_entries(
     cancel_check: Callable[[], bool] | None = None,
     *,
     allow_stale_metadata: bool = False,
-) -> Iterator[AGSEntry]:
-    from emu68hatcher.builder.ags_source import AGSEntry
-
+) -> Iterator[StagedEntry]:
     if not root.is_dir() or root.is_symlink():
         raise BuildError(f"Staging root is not a directory: {root}")
     stack = [(root, "")]
     count = 0
     while stack:
         parent, prefix = stack.pop()
-        records = _records_by_host(parent)
+        records = records_by_host(parent)
         seen_host: set[str] = set()
         seen_amiga: set[str] = set()
         directories = []
@@ -103,8 +54,8 @@ def iter_staged_entries(
                     if count % 4096 == 0 and cancel_check and cancel_check():
                         raise BuildCancelledError("Build was cancelled by user")
                     count += 1
-                    if child.name.casefold() == _DB_NAME.casefold():
-                        if child.name != _DB_NAME or child.is_symlink():
+                    if child.name.casefold() == DB_NAME.casefold():
+                        if child.name != DB_NAME or child.is_symlink():
                             raise BuildError(f"Staging has an invalid metadata file: {child.path}")
                         continue
                     host_name = _check_name(child.name, parent)
@@ -127,7 +78,7 @@ def iter_staged_entries(
                     if not is_dir and not stat.S_ISREG(info.st_mode):
                         raise BuildError(f"Staging has a non-file entry: {child.path}")
                     relative = f"{prefix}/{amiga_name}" if prefix else amiga_name
-                    yield AGSEntry(
+                    yield StagedEntry(
                         relative,
                         0 if is_dir else info.st_size,
                         is_dir,
@@ -144,76 +95,6 @@ def iter_staged_entries(
                 f"Amiga file metadata refers to a missing entry in {parent}: {missing}"
             )
         stack.extend(reversed(directories))
-
-
-def _name_bytes(name: str, *, host: bool = False) -> bytes:
-    try:
-        encoded = name.encode("utf-8" if host else "iso-8859-1")
-    except UnicodeEncodeError as exc:
-        raise BuildError(f"Amiga file metadata name cannot be encoded: {name}") from exc
-    if not encoded or len(encoded) > 255 or b"\0" in encoded:
-        raise BuildError(f"Amiga file metadata name is invalid: {name}")
-    return encoded + bytes(256 - len(encoded))
-
-
-def _read_records(parent: Path) -> list[bytearray]:
-    path = parent / _DB_NAME
-    try:
-        info = path.lstat()
-    except FileNotFoundError:
-        return []
-    if not stat.S_ISREG(info.st_mode):
-        raise BuildError(f"Amiga file metadata is not a regular file in {parent}")
-    data = path.read_bytes()
-    if len(data) % _RECORD_SIZE:
-        raise BuildError(f"Amiga file metadata is damaged in {parent}")
-    return [bytearray(data[i : i + _RECORD_SIZE]) for i in range(0, len(data), _RECORD_SIZE)]
-
-
-def _record_name(record: bytearray, field: slice) -> bytes:
-    return bytes(record[field]).split(b"\0", 1)[0]
-
-
-def _find_record(records: list[bytearray], name: str) -> bytearray | None:
-    encoded = _name_bytes(name, host=True).split(b"\0", 1)[0]
-    matches = [
-        record
-        for record in records
-        if record[0] == 1 and _record_name(record, _HOST_NAME) == encoded
-    ]
-    if len(matches) > 1:
-        raise BuildError(f"Amiga file metadata has {len(matches)} records for {name}")
-    return matches[0] if matches else None
-
-
-def _write_records(parent: Path, records: list[bytearray]) -> None:
-    target = parent / _DB_NAME
-    descriptor, temp_name = tempfile.mkstemp(prefix="._uaefsdb-", dir=parent)
-    try:
-        with os.fdopen(descriptor, "wb") as stream:
-            for record in records:
-                stream.write(record)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temp_name, target)
-    finally:
-        if os.path.exists(temp_name):
-            os.unlink(temp_name)
-
-
-def drop_superseded_records(root: Path) -> None:
-    # HST appends a new record when an overwrite differs only in case, the last one is current
-    for database in root.rglob(_DB_NAME):
-        records = _read_records(database.parent)
-        latest: dict[str, bytearray] = {}
-        for record in records:
-            if record[0] == 1:
-                host = _record_name(record, _HOST_NAME).decode("utf-8", "replace")
-                latest[host.casefold()] = record
-        current = {id(record) for record in latest.values()}
-        kept = [record for record in records if record[0] != 1 or id(record) in current]
-        if len(kept) != len(records):
-            _write_records(database.parent, kept)
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,15 +114,15 @@ class _StagedChild:
 def _staged_children(
     parent: Path, cancel_check: Callable[[], bool] | None
 ) -> tuple[_StagedChild, ...]:
-    records = _records_by_host(parent)
+    records = records_by_host(parent)
     result = []
     seen_host: set[str] = set()
     with os.scandir(parent) as children:
         for child in children:
             if cancel_check and cancel_check():
                 raise BuildCancelledError("Build was cancelled by user")
-            if child.name.casefold() == _DB_NAME.casefold():
-                if child.name != _DB_NAME or child.is_symlink():
+            if child.name.casefold() == DB_NAME.casefold():
+                if child.name != DB_NAME or child.is_symlink():
                     raise BuildError(f"Invalid staging metadata file: {child.path}")
                 continue
             name = _check_name(child.name, parent)
@@ -428,7 +309,7 @@ def _merge_directory(source: Path, target: Path, cancel_check: Callable[[], bool
             if not _same_file(child.path, existing.path, cancel_check):
                 raise BuildError(f"Staging file changed during merge: {child.path}")
             child.path.unlink()
-    database = source / _DB_NAME
+    database = source / DB_NAME
     if database.exists():
         database.unlink()
     source.rmdir()
