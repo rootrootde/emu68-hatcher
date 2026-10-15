@@ -35,13 +35,20 @@ LOG=$(mktemp)
 trap 'rm -f "$LOG"' EXIT
 
 echo "[notarize] submitting $TARGET..."
+# a non-zero submit still leaves the json in $LOG, so the status check below decides
 xcrun notarytool submit "$TARGET" \
     "${AUTH_ARGS[@]}" \
     --wait \
-    --output-format json | tee "$LOG"
+    --timeout 30m \
+    --output-format json | tee "$LOG" || true
 
-STATUS=$(python3 -c "import json; print(json.load(open('$LOG'))['status'])")
-SUB_ID=$(python3 -c "import json; print(json.load(open('$LOG'))['id'])")
+STATUS=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("status", ""))' "$LOG" 2>/dev/null || true)
+SUB_ID=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("id", ""))' "$LOG" 2>/dev/null || true)
+
+if [[ -z "$STATUS" ]]; then
+    echo "[notarize] no submission result, see output above" >&2
+    exit 1
+fi
 
 if [[ "$STATUS" != "Accepted" ]]; then
     echo "[notarize] status: $STATUS - fetching log..."

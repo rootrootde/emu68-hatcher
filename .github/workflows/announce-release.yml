@@ -1,33 +1,32 @@
 name: Announce release on Discord
 
+# announce only after the update manifest for a published release went out
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Publish update manifest"]
+    types: [completed]
 
 jobs:
   announce:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Post to Discord
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          TITLE: ${{ github.event.release.name }}
-          URL: ${{ github.event.release.html_url }}
-          BODY: ${{ github.event.release.body }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          payload=$(jq -n \
-            --arg title "$TITLE" \
-            --arg url "$URL" \
-            --arg desc "$BODY" \
-            '{
+          set -euo pipefail
+          gh api repos/${{ github.repository }}/releases/latest > "$RUNNER_TEMP/release.json"
+          payload=$(jq '(.name // "") as $title | {
               content: "@everyone  \($title)",
               allowed_mentions: { parse: ["everyone"] },
               embeds: [{
                 title: $title,
-                url: $url,
-                description: $desc,
+                url: .html_url,
+                description: ((.body // "")[:4000]),
                 color: 5793266
               }]
-            }')
+            }' "$RUNNER_TEMP/release.json")
           curl -fsSL -X POST -H "Content-Type: application/json" \
             -d "$payload" "$WEBHOOK"

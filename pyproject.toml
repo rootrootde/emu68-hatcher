@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=62.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -42,8 +42,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
     "ruff>=0.1.0",
 ]
 docs = [
@@ -58,6 +56,19 @@ Homepage = "https://github.com/rootrootde/emu68-hatcher"
 Documentation = "https://rootrootde.github.io/emu68hatcher/"
 Repository = "https://github.com/rootrootde/emu68-hatcher"
 Issues = "https://github.com/rootrootde/emu68-hatcher/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src/main/python"}
+
+[tool.setuptools.packages.find]
+where = ["src/main/python"]
+namespaces = false
+
+[tool.setuptools.package-data]
+emu68hatcher = ["data/**", "builder/staging/scripts/templates/*.j2"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.pyc"]
 
 [tool.ruff]
 line-length = 100
