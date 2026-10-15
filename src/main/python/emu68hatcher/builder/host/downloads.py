@@ -27,7 +27,6 @@ class DownloadItem:
     extract: bool = True
     extract_file: str | None = None  # specific file to extract
     mirrors: list[str] = field(default_factory=list)
-    optional: bool = False  # if True, download failure is non-fatal
 
     @property
     def pinned(self) -> bool:
@@ -61,13 +60,12 @@ class DownloadManager:
 
     def __init__(
         self,
-        cache_dir: Path | None = None,
         work_dir: Path | None = None,
         max_retries: int = 3,
         timeout: float = 60.0,
         cancel_callback: Callable[[], bool] | None = None,
     ):
-        self.cache_dir = cache_dir or get_cache_dir() / "downloads"
+        self.cache_dir = get_cache_dir() / "downloads"
         self.work_dir = work_dir or get_downloads_dir()
         self.max_retries = max_retries
         self.timeout = timeout

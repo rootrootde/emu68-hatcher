@@ -47,19 +47,6 @@ def wrap_for_elevation(cmd: list[str], token: ElevationToken | None) -> list[str
         return ["pkexec", "/bin/sh", "-c", inner]
     if token.method == "sudo":
         return _wrap_sudo(cmd)
-    if token.method == "runas":
-        ps_args = ", ".join(ps_quote(arg) for arg in cmd[1:]) if len(cmd) > 1 else ""
-        # RunAs uses ShellExecute, which cannot redirect child streams. Combining the two
-        # can make Start-Process fail before launch while PowerShell still reports success.
-        dotnet_path = ps_quote(str(get_dotnet_bundle_dir()))
-        script = (
-            f"$env:{DOTNET_BUNDLE_ENV_VAR} = {dotnet_path}; "
-            f"$p = Start-Process -FilePath {ps_quote(cmd[0])} "
-            + (f"-ArgumentList @({ps_args}) " if ps_args else "")
-            + "-Verb RunAs -Wait -PassThru -WindowStyle Hidden; "
-            "if ($null -ne $p -and $null -ne $p.ExitCode) { exit $p.ExitCode } else { exit 1 }"
-        )
-        return ["powershell", "-NoProfile", "-NonInteractive", "-Command", script]
     return cmd
 
 

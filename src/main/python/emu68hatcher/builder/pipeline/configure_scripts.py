@@ -109,12 +109,6 @@ def configure_scripts(
             raise BuildError(f"Startup-Sequence update failed: {details}")
         injection_count = sum(result.changed for result in injection_results)
         workflow.logger.info(f"Applied {injection_count} script injections to Startup-Sequence")
-
-        verify_content = startup_path.read_text(encoding="iso-8859-1", errors="replace")
-        if "FirstBoot" in verify_content and "RexxMast" in verify_content:
-            workflow.logger.debug("Startup-Sequence injection verified OK")
-        else:
-            raise BuildError("Startup-Sequence is missing required FirstBoot or RexxMast setup")
     else:
         raise BuildError(
             "No Startup-Sequence found in staging. "

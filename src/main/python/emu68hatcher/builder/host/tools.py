@@ -229,10 +229,9 @@ TOOL_LABELS = {
 # binary; an app upgrade that bumps tools.yaml then re-fetches the new version.
 def _tool_target_path(tool_name: str) -> Path | None:
     """path our downloader installs 'tool_name' to inside the tools dir"""
-    suf = _exe_suffix()
-    names = {"hst-imager": f"hst-imager{suf}"}
-    name = names.get(tool_name)
-    return get_tools_dir() / name if name else None
+    if tool_name != "hst-imager":
+        return None
+    return get_tools_dir() / f"hst-imager{_exe_suffix()}"
 
 
 def _stamp_path(target_path: Path) -> Path:
@@ -288,18 +287,13 @@ def download_tool(
     suf = _exe_suffix()
     label = TOOL_LABELS.get(tool_name, tool_name)
 
-    # target path + published-archive name candidates per tool
-    layout = {
-        "hst-imager": (
-            f"hst-imager{suf}",
-            [f"hst.imager{suf}", f"Hst.Imager.Console{suf}"],
-        ),
-    }
-    if tool_name not in layout:
+    if tool_name != "hst-imager":
         logger.error(f"Unknown tool: {tool_name}")
         return None
 
-    target_name, archive_names = layout[tool_name]
+    # target path + published-archive name candidates
+    target_name = f"hst-imager{suf}"
+    archive_names = [f"hst.imager{suf}", f"Hst.Imager.Console{suf}"]
     if not suf:
         # unix zips sometimes ship the hyphenated name directly
         archive_names = [target_name] + archive_names

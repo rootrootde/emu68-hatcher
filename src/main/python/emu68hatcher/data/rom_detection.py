@@ -354,11 +354,3 @@ def pick_boot_rom(found_roms: list[dict], version: str) -> Path | None:
     if not matching:
         return None
     return next((r["path"] for r in matching if "1200" in r["model"]), matching[0]["path"])
-
-
-def find_kickstart_for_version(
-    directories: Path | list[Path] | tuple[Path, ...], version: str
-) -> Path | None:
-    """find a Kickstart ROM matching the specified version (across one or more dirs), preferring A1200 variants"""
-    roms, _ = scan_for_kickstart_roms(directories)
-    return pick_boot_rom(roms, version)

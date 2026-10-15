@@ -17,6 +17,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     """flash .img to flash_target; no-op for DEVICE mode or IMG mode without flash_target"""
     output = workflow.config.output
     if output is None or output.type != OutputType.IMG or not output.flash_target:
+        workflow._update_state(BuildStage.FLASH, 100.0)
         return image
 
     workflow._update_state(BuildStage.FLASH, 0.0)

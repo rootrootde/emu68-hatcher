@@ -44,7 +44,6 @@ def list_disks() -> list[DiskInfo]:
                 device=f"/dev/{device['name']}",
                 name=name,
                 size_bytes=size,
-                is_removable=True,
                 is_system_disk=any(mount in ("/", "/boot", "/boot/efi") for mount in mounted),
                 mounted_partitions=mounted,
                 is_read_only=bool(device.get("ro")),

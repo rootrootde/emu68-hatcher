@@ -25,11 +25,6 @@ def stage_install_packages(
     extracted = image.extracted
     downloaded = extracted.downloaded
     workspace = downloaded.workspace
-    if not extracted.extracted_paths and not downloaded.downloaded_files:
-        workflow._update_state(progress=100.0)
-        workflow._milestone("No packages to install")
-        return image
-
     local_packages_dir = get_local_packages_dir()
     workflow.write_log = StagingWriteLog(workspace.staging_dir / workflow.config.boot_device)
 
@@ -46,12 +41,6 @@ def stage_install_packages(
 
     resolution = get_resolution(workflow)
     all_packages = resolution.install_order  # dep-before-dependent; independent order preserved
-    if resolution.unsatisfiable:
-        details = ", ".join(
-            f"{token} (required by {', '.join(sorted(reqs))})"
-            for token, reqs in sorted(resolution.unsatisfiable.items())
-        )
-        raise BuildError(f"Unsatisfied package requirements: {details}")
     for name, reason in resolution.dropped.items():
         workflow.logger.info(f"dropped {name}: {reason}")
 

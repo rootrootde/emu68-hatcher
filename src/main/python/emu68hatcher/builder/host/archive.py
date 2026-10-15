@@ -16,7 +16,6 @@ from emu68hatcher.utils.host_tools import (
     run_7z,
     run_hst_extract,
 )
-from emu68hatcher.utils.paths import get_extracted_dir
 
 
 class ArchiveFormat(str, Enum):
@@ -122,7 +121,7 @@ def detect_format(path: Path) -> ArchiveFormat:
 
 def extract_archive(
     archive_path: Path,
-    output_dir: Path | None = None,
+    output_dir: Path,
     progress_callback: ExtractProgressCallback | None = None,
 ) -> ExtractionResult:
     """extract archive to dir - detects format, picks extractor"""
@@ -137,12 +136,6 @@ def extract_archive(
         )
 
     fmt = detect_format(archive_path)
-
-    if output_dir is None:
-        base_name = archive_path.stem
-        if base_name.endswith(".tar"):
-            base_name = base_name[:-4]
-        output_dir = get_extracted_dir() / base_name
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

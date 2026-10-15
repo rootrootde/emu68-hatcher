@@ -69,17 +69,12 @@ def _failure_excerpt(stdout: str, limit: int = 40) -> list[str]:
 class HSTRunner:
     """runs hst-imager commands with progress callbacks"""
 
+    timeout: float = 300.0
     # binary path is logged once per process - buildlog gets noisy otherwise
     _logged_binary: bool = False
 
-    def __init__(
-        self,
-        hst_imager_path: Path | None = None,
-        timeout: float = 300.0,
-        cancel_check: Callable[[], bool] | None = None,
-    ):
-        self._hst_imager = hst_imager_path
-        self.timeout = timeout
+    def __init__(self, cancel_check: Callable[[], bool] | None = None):
+        self._hst_imager: Path | None = None
         self._cancel_check = cancel_check
 
     @property

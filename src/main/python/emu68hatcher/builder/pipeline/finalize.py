@@ -56,7 +56,7 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
                 shutil.rmtree(cleanup_path, ignore_errors=True)
 
     workflow._update_state(progress=100.0)
-    workflow._milestone("Build complete")
+    workflow._milestone("Image finalized")
     return image
 
 
@@ -85,14 +85,15 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
         and workflow.config.output.type != OutputType.DEVICE
         and not Path(image.image_path).exists()
     ):
-        workflow.logger.warning("No image file found, skipping file copy")
-        return
+        raise BuildError(f"Disk image not found at {image.image_path}; cannot copy staged files")
 
     runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
 
     if not runner.is_available():
-        workflow.logger.warning("HST Imager not available, skipping file copy")
-        return
+        raise BuildError(
+            "HST Imager is not available, so the staged files cannot be copied to the image. "
+            "Open the Start tab and download the required tools."
+        )
 
     image_path = image.image_path
     posix = image_path.as_posix() if isinstance(image_path, Path) else image_path

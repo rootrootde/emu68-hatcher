@@ -201,23 +201,6 @@ def _write_records(parent: Path, records: list[bytearray]) -> None:
             os.unlink(temp_name)
 
 
-def rename_uaefsdb_entry(parent: Path, old_name: str, new_name: str) -> None:
-    records = _read_records(parent)
-    record = _find_record(records, old_name)
-    if record is None:
-        return
-    encoded = _name_bytes(new_name, host=True).split(b"\0", 1)[0]
-    if any(
-        other[0] == 1 and _record_name(other, _HOST_NAME).lower() == encoded.lower()
-        for other in records
-        if other is not record
-    ):
-        raise BuildError(f"Amiga file metadata already has an entry for {new_name}")
-    record[_AMIGA_NAME] = _name_bytes(new_name)
-    record[_HOST_NAME] = _name_bytes(new_name, host=True)
-    _write_records(parent, records)
-
-
 def drop_superseded_records(root: Path) -> None:
     # HST appends a new record when an overwrite differs only in case, the last one is current
     for database in root.rglob(_DB_NAME):
@@ -231,25 +214,6 @@ def drop_superseded_records(root: Path) -> None:
         kept = [record for record in records if record[0] != 1 or id(record) in current]
         if len(kept) != len(records):
             _write_records(database.parent, kept)
-
-
-def copy_uaefsdb_entry(source_file: Path, dest_file: Path) -> None:
-    source_records = _read_records(source_file.parent)
-    source_record = _find_record(source_records, source_file.name)
-    target = dest_file.parent / _DB_NAME
-    records = _read_records(dest_file.parent) if target.exists() else []
-    old = _find_record(records, dest_file.name)
-    if source_record is None and old is None:
-        return
-    if old is not None:
-        records.remove(old)
-    if source_record is not None:
-        record = bytearray(source_record)
-        if dest_file.name != source_file.name:
-            record[_AMIGA_NAME] = _name_bytes(dest_file.name)
-        record[_HOST_NAME] = _name_bytes(dest_file.name, host=True)
-        records.append(record)
-    _write_records(dest_file.parent, records)
 
 
 @dataclass(frozen=True, slots=True)

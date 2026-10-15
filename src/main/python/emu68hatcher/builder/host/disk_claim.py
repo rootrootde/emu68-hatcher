@@ -14,14 +14,12 @@ from ctypes import (
     c_void_p,
 )
 
-from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
-
 logger = logging.getLogger(__name__)
 _failed_claims: list[DiskClaim] = []
 
 
 class DiskClaim:
-    """DA claim on /dev/diskN for the build; no-op on linux/windows"""
+    """DA claim on /dev/diskN for the build; macOS only"""
 
     def __init__(self, device: str) -> None:
         self.device = device
@@ -32,8 +30,6 @@ class DiskClaim:
         self._error: str | None = None
 
     def acquire(self) -> bool:
-        if get_platform_info().os != OperatingSystem.MACOS:
-            return False
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
         if not self._ready.wait(timeout=3.0):
@@ -128,8 +124,6 @@ class DiskClaim:
 
 def claim_macos_disk(device: str) -> DiskClaim | None:
     """build + acquire a DiskClaim; None if it cannot be obtained"""
-    if get_platform_info().os != OperatingSystem.MACOS:
-        return None
     claim = DiskClaim(device)
     if claim.acquire():
         return claim

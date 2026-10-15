@@ -11,7 +11,7 @@ from emu68hatcher.builder.host.download_catalog import (
     downloadable_mandatory_names,
     get_emu68_boot_files,
     get_package_downloads,
-    get_required_startup_files,
+    get_pfs3aio_download,
 )
 from emu68hatcher.builder.host.downloads import DownloadManager
 from emu68hatcher.builder.staging.files import prepare_staging_directory
@@ -70,22 +70,19 @@ def _download_pfs3aio_if_needed(
 
     workflow._update_state(progress=2.0)
     workflow._milestone("Downloading PFS3AIO filesystem handler")
-    startup_files = get_required_startup_files()
+    item = get_pfs3aio_download()
+    if item is None:
+        raise BuildError("PFS3AIO not found in startup files configuration")
 
-    for item in startup_files:
-        if item.name == "pfs3aio":
-            artifacts.required_artifacts.add(item.name)
-            result = manager.download(item)
-            if result.success and result.extracted_path:
-                artifacts.downloaded_files["pfs3aio"] = result.path
-                artifacts.extracted_paths["pfs3aio"] = result.extracted_path
-                workflow.logger.info(f"PFS3AIO handler ready: {result.extracted_path}")
-            else:
-                workflow._check_cancelled()
-                raise BuildError(f"Failed to download PFS3AIO filesystem handler: {result.error}")
-            return result.extracted_path
-
-    raise BuildError("PFS3AIO not found in startup files configuration")
+    artifacts.required_artifacts.add(item.name)
+    result = manager.download(item)
+    if not (result.success and result.extracted_path):
+        workflow._check_cancelled()
+        raise BuildError(f"Failed to download PFS3AIO filesystem handler: {result.error}")
+    artifacts.downloaded_files["pfs3aio"] = result.path
+    artifacts.extracted_paths["pfs3aio"] = result.extracted_path
+    workflow.logger.info(f"PFS3AIO handler ready: {result.extracted_path}")
+    return result.extracted_path
 
 
 def _extract_ffs_handler_if_needed(
@@ -177,22 +174,16 @@ def _download_boot_files(
         )
     workflow.logger.info(f"Downloading {len(items)} Emu68 boot file variant(s) from GitHub...")
     for item in items:
-        if not item.optional:
-            artifacts.required_artifacts.add(item.name)
-            artifacts.required_boot_artifacts.add(item.name)
+        artifacts.required_artifacts.add(item.name)
+        artifacts.required_boot_artifacts.add(item.name)
         result = manager.download(item)
-        if result.success:
-            artifacts.downloaded_files[item.name] = result.path
-            if result.extracted_path:
-                artifacts.extracted_paths[item.name] = result.extracted_path
-            workflow.logger.info(f"Downloaded Emu68 variant: {item.name} -> {result.path}")
-        elif item.optional:
-            workflow.logger.warning(
-                f"Optional Emu68 variant failed (non-fatal): {item.name} - {result.error}"
-            )
-        else:
+        if not result.success:
             workflow._check_cancelled()
             raise BuildError(f"Failed to download required {item.name}: {result.error}")
+        artifacts.downloaded_files[item.name] = result.path
+        if result.extracted_path:
+            artifacts.extracted_paths[item.name] = result.extracted_path
+        workflow.logger.info(f"Downloaded Emu68 variant: {item.name} -> {result.path}")
 
 
 def _failure_kind(failures: list[str]) -> str:

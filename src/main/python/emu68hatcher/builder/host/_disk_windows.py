@@ -60,7 +60,6 @@ def list_disks() -> list[DiskInfo]:
                 device=f"\\\\.\\PhysicalDrive{item['Number']}",
                 name=(item.get("FriendlyName") or f"Disk {item['Number']}").strip(),
                 size_bytes=size,
-                is_removable=True,
                 is_system_disk=any(
                     mount.rstrip("\\").upper().rstrip(":") == system_drive.rstrip(":").upper()
                     for mount in mounted

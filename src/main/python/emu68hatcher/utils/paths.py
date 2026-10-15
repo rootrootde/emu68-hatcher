@@ -71,12 +71,6 @@ def get_downloads_dir() -> Path:
 
 
 @cache
-def get_extracted_dir() -> Path:
-    """dir for extracted package contents"""
-    return _ensure(get_cache_dir() / "extracted")
-
-
-@cache
 def get_dotnet_bundle_dir() -> Path:
     """target for .NET single-file extraction (hst-imager bundle cache)"""
     return _ensure(get_cache_dir() / "dotnet-bundle")
@@ -125,7 +119,6 @@ def reset_runtime_data() -> list[Path]:
     for d in (
         get_cache_dir(),
         get_downloads_dir(),
-        get_extracted_dir(),
         get_dotnet_bundle_dir(),
         get_tools_dir(),
     ):

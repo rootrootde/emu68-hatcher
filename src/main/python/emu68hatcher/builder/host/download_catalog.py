@@ -23,24 +23,22 @@ from emu68hatcher.utils.logging import get_logger
 _GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 
 
-def get_required_startup_files() -> list[DownloadItem]:
-    """resolve pfs3aio FS handler from tools.yaml. returns single-item list (historical shape). empty if unresolvable"""
+def get_pfs3aio_download() -> DownloadItem | None:
+    """pfs3aio FS handler from tools.yaml, None if unresolvable"""
     from emu68hatcher.builder.host.tools import resolve_tool_download
 
     info = resolve_tool_download("pfs3aio")
     if not info or not info.get("url"):
-        return []
+        return None
 
-    return [
-        DownloadItem(
-            name="pfs3aio",
-            url=info["url"],
-            filename=info.get("filename") or "pfs3aio.lha",
-            expected_hash=info.get("hash") or None,
-            extract=True,
-            extract_file="pfs3aio",
-        )
-    ]
+    return DownloadItem(
+        name="pfs3aio",
+        url=info["url"],
+        filename=info.get("filename") or "pfs3aio.lha",
+        expected_hash=info.get("hash") or None,
+        extract=True,
+        extract_file="pfs3aio",
+    )
 
 
 def _resolve_github_download(
