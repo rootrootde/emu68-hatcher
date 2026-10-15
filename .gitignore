@@ -100,3 +100,5 @@ site/
 docs/packages.md
 
 output/
+# test suite was removed; keep it out
+tests/
