@@ -11,7 +11,6 @@ download:
   repo: googlefonts/roboto-2
   tag: v2.138
   hash: 5bf2e05feff2c242a1796557aaec9953
-  sha256: 70f64c718510a601fbcf752aafe644314dacaeb85474dc689c89787c4a72a728
   filename: roboto-unhinted.zip
 install:
 - from: '*.ttf'

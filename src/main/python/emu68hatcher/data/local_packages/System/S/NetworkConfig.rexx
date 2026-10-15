@@ -4,8 +4,7 @@
  * menu: WiFi/Ethernet/Offline actions plus a Settings submenu for WiFi
  * credentials, per-interface static IP / DHCP, DNS, and the Roadshow boot toggle.
  *
- * Invoked by 'rx s:NetworkConfig.rexx' - from the Network menu or from
- * SYS:Utilities/Network Config's double-click launcher.
+ * Invoked by 'rx s:NetworkConfig.rexx' from the Shell, or with SYNCTIME at boot.
  */
 
 if ~show('l', 'rexxsupport.library') then
@@ -35,8 +34,7 @@ hAmiTcp        = exists(hAmiTcpMarker)
 address command
 
 /* non-interactive entry: 'rx NetworkConfig.rexx ONLINE WIFI|ETHERNET'.
-   used by the Connect WiFi / Connect Ethernet launcher icons - bring up
-   the named interface and exit so the launcher window auto-closes.
+   brings up the named interface and exits.
    missing wifi credentials offer the credentials requester first; on
    failure a requester carries the reason before exiting. */
 parse arg hCmd hIface .

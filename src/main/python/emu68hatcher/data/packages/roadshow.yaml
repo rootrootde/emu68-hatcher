@@ -23,7 +23,6 @@ conflicts:
 download:
   source: local
   path: Roadshow-Demo-1.15.lha
-  hash: 25471647C76D8EAB98F78D24945B3FC6
   filename: Roadshow-Demo-1.15.lha
 install:
 - from: Roadshow*/Workbench/Storage/*

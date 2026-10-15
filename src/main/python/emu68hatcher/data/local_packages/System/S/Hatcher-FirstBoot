@@ -48,13 +48,6 @@ ENDIF
 IF $FIRSTTIMEBOOT EQ "TRUE"
    C:Echo "FALSE" > SYS:PREFS/ENV-ARCHIVE/FIRSTTIMEBOOT
 ENDIF
-IF $REBOOT EQ "TRUE"
-   C:Echo "FALSE" > SYS:PREFS/ENV-ARCHIVE/REBOOT
-   C:Echo "The Amiga will REBOOT in 3 seconds!"
-   C:DiskChange SDH0:
-   C:Wait 3
-   C:Reboot
-ENDIF
 
 Set HatcherFontsPending "FALSE"
 IF NOT EXISTS S:Hatcher-Fonts.done

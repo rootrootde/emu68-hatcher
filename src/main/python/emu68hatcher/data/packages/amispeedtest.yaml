@@ -13,7 +13,6 @@ download:
   source: aminet
   path: comm/net/AmiSpeedTest.lha
   hash: e68738db162376549e391ade3c6ad96b
-  sha256: a4803716e2ee67c76fae872bca4be8047f78aace54df41bbf842402f2c83cb5a
   filename: AmiSpeedTest.lha
 install:
 - from: AmiSpeedTest/*

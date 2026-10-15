@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/libs/AmiSSL-v5-OS3.lha
   hash: A4234F9CEDCAEADBC1D3BC759EB5F44E
-  sha256: 722476cfbf21c0caf6ff4a77e32ee8baf67d3045db0e9ff2ccce6c782bed5847
   filename: AmiSSL.lha
 install:
 - from: AmiSSL/Libs/AmigaOS3/amisslmaster.library

@@ -104,22 +104,19 @@ validation leaves the last compatible cache available.
 
 ## Amiga tools
 
-The Amiga tools read the same signed files as the desktop. Hatcher Packages reads
-**manifest-v2.json** and installs packages whose download carries a **sha256**
-(**scripts/check-package-downloads.py --write-sha256** records it). Emu68 Manager
-reads **emu68-releases-v1.json**, the signed export of
-**data/reference/emu68_releases.yaml** that the publish workflow writes next to the
-manifests with the same revision. Both tools verify the **updates-2026** signature
-with AmiSSL.
+No Amiga tool that reads these files ships with Hatcher. The publish workflow
+writes **emu68-releases-v1.json**, the signed export of
+**data/reference/emu68_releases.yaml**, next to the manifests with the same revision.
+The build receipts in **Emu68-Hatcher/Packages/build-receipts.json** record each
+package's MD5 **hash**; no Amiga tool reads them.
 
 ## Package checks
 
 **scripts/check-package-downloads.py** reads the checkout catalog directly, without
 runtime manifests or download overrides. The daily workflow runs it on the branch of
 the latest published release. It downloads remote packages, compares MD5
-checksums, verifies a recorded SHA-256 and checks pinned GitHub tags for newer
-releases. The daily workflow updates its tracking issue and closes it when all checks
-pass.
+checksums and checks pinned GitHub tags for newer releases. The daily workflow updates
+its tracking issue and closes it when all checks pass.
 
 A fixed URL can reveal changed bytes or a broken link, but not a new release at a
 different URL. Set **download.check_latest_release** to false for intentionally

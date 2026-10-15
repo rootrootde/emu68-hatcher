@@ -17,7 +17,6 @@ download:
   source: aminet
   path: mus/play/AmigaAMP3-68k.lha
   hash: B73250E69D852CC12DFC12846B480030
-  sha256: 9128f71ff3f57e440b59e2c47fd26bfedbafe4501657eeacc7431631bc19e4b4
   filename: AmigaAMP3-68k.lha
 install:
 - from: AmigaAMP3.info

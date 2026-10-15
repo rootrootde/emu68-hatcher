@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Check remote package files against their configured checksums.
-
---write-sha256 records the SHA-256 of every unchanged download in its YAML; the Amiga
-package tool installs only downloads that carry one.
-"""
+"""Check remote package files against their configured MD5 checksums."""
 
 from __future__ import annotations
 
@@ -40,7 +36,6 @@ class PackageSpec:
 @dataclass(frozen=True)
 class Digest:
     md5: str
-    sha256: str
     size: int
 
 
@@ -50,7 +45,6 @@ class CheckResult:
     source: str
     status: str
     detail: str
-    sha256: str | None = None  # of the download, when it was read completely
 
     @property
     def ok(self) -> bool:
@@ -125,7 +119,6 @@ def _download_url(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
 
 def _remote_digest(url: str, timeout: float) -> Digest:
     md5 = hashlib.md5()
-    sha256 = hashlib.sha256()
     size = 0
     with _request(url, timeout) as response:
         length = response.headers.get("Content-Length")
@@ -136,8 +129,7 @@ def _remote_digest(url: str, timeout: float) -> Digest:
             if size > _MAX_DOWNLOAD_BYTES:
                 raise ValueError(f"download is larger than {_MAX_DOWNLOAD_BYTES} bytes")
             md5.update(chunk)
-            sha256.update(chunk)
-    return Digest(md5.hexdigest().upper(), sha256.hexdigest(), size)
+    return Digest(md5.hexdigest().upper(), size)
 
 
 def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
@@ -169,13 +161,6 @@ def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
             "content changed",
             f"got {observed_hash} ({size} bytes), expected {expected_hash.upper()}",
         )
-    if spec.download.sha256 and digest.sha256 != spec.download.sha256:
-        return CheckResult(
-            spec.name,
-            source,
-            "content changed",
-            f"MD5 unchanged but SHA-256 is {digest.sha256}, expected {spec.download.sha256}",
-        )
     if latest_tag and latest_tag != spec.download.tag:
         return CheckResult(
             spec.name,
@@ -183,24 +168,7 @@ def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
             "update available",
             f"configured {spec.download.tag}, latest release is {latest_tag}",
         )
-    return CheckResult(spec.name, source, "current", f"MD5 {observed_hash}", digest.sha256)
-
-
-def _write_sha256(packages_dir: Path, result: CheckResult) -> bool:
-    """records the download's SHA-256 in its YAML; True when the file changed"""
-    path = packages_dir / f"{result.name}.yaml"
-    text = path.read_text(encoding="utf-8")
-    if re.search(rf"(?m)^  sha256: {result.sha256}$", text):
-        return False
-    new, count = re.subn(r"(?m)^  sha256: [0-9a-f]*$", f"  sha256: {result.sha256}", text)
-    if count == 0:
-        new, count = re.subn(
-            r"(?m)^(  hash: [0-9A-Fa-f]+)$", rf"\g<1>\n  sha256: {result.sha256}", text
-        )
-    if count != 1:
-        raise ValueError(f"{path}: expected exactly one download hash line")
-    path.write_text(new, encoding="utf-8", newline="\n")
-    return True
+    return CheckResult(spec.name, source, "current", f"MD5 {observed_hash}")
 
 
 def _markdown_cell(value: str) -> str:
@@ -252,11 +220,6 @@ def main() -> int:
         default=ROOT / "src" / "main" / "python" / "emu68hatcher" / "data" / "packages",
     )
     parser.add_argument("--report", type=Path)
-    parser.add_argument(
-        "--write-sha256",
-        action="store_true",
-        help="record the SHA-256 of every download that still matches its MD5",
-    )
     parser.add_argument("--package", action="append", default=[])
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--timeout", type=float, default=60.0)
@@ -278,9 +241,6 @@ def main() -> int:
         results.sort(key=lambda result: result.name)
         counts = Counter(spec.download.source.value for spec in specs)
         report = _report(results, counts)
-        if args.write_sha256:
-            written = [r.name for r in results if r.ok and _write_sha256(args.packages_dir, r)]
-            report += f"\nRecorded SHA-256 for {len(written)} packages.\n"
         status = 1 if any(not result.ok for result in results) else 0
     except Exception as error:
         report = f"# Package download check\n\nChecker failed: {error}\n"

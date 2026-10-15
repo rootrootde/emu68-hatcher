@@ -19,7 +19,6 @@ download:
   tag: MUI-5.0-20210831
   filename: MUI-5.0-20210831-os3.lha
   hash: 4886AB9FA684EDFD8E12F12A6CF9D91F
-  sha256: 8a869a037db465828dbe42fa7854114121280ed2691afa61fe53a25bf427a847
 install:
 - from: MUI.info
   to: Programs/

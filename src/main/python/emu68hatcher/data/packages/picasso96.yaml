@@ -1,6 +1,5 @@
 name: picasso96
 friendly_name: Picasso96
-bundle: picasso96
 group: RTG
 description: 'picasso96 driver (shareware)'
 versions:
@@ -10,14 +9,13 @@ versions:
 - 3.2.3
 - '3.9'
 # mandatory (not a Software-tab choice): the RTG driver is core to the Pi-HDMI display and
-# picasso96settings is already mandatory. the version (free aminet vs full) is chosen on the
+# configure always writes Devs/Picasso96Settings. the version (free aminet vs full) is chosen on the
 # Emu68 tab via the archive picker.
 mandatory: true
 download:
   source: aminet
   path: driver/video/Picasso96.lha
   hash: 16287F92CE6DDEA23F5456CEB4525189
-  sha256: 0146d4a2aaadb82ec454dde6ca4fb33a3f646ca4c0daa46e569c025f4d9728af
   filename: Picasso96.lha
 install:
 - from: Picasso96Install/Classes/DataTypes/picture.datatype

@@ -28,7 +28,6 @@ def _version_sort_key(v: str) -> tuple:
     return tuple(parts)
 
 
-# >>> sync-hashes:KICKSTART_CHECKSUMS
 KICKSTART_CHECKSUMS: dict[str, dict] = {
     "93b2a0f1af4a6ac373d6da2cd4f76c3b": {
         "version": "3.2.2.1",
@@ -93,7 +92,6 @@ KICKSTART_CHECKSUMS: dict[str, dict] = {
         "sequence": 1,
     },
 }
-# <<< sync-hashes:KICKSTART_CHECKSUMS
 
 
 _EXTRA_KICKSTART_CHECKSUMS: dict[str, dict] = {

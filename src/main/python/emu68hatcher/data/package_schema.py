@@ -28,7 +28,6 @@ class DownloadInfo(CatalogModel):
     # for aminet/web sources
     path: str | None = None  # aminet path like "util/libs/mui38usr.lha"
     url: str | None = None  # full URL for web downloads
-    backup_url: str | None = None  # fallback URL
 
     # for GitHub sources
     repo: str | None = None  # format: "owner/repo"
@@ -36,9 +35,8 @@ class DownloadInfo(CatalogModel):
     tag: str | None = Field(default=None, pattern=r"^[\w.\-+]+$")
     check_latest_release: bool = True
 
-    # verification. The Amiga package tool installs only downloads with a sha256.
+    # verification
     hash: str | None = None  # MD5 hash for verification
-    sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     filename: str | None = None  # expected filename after download
 
     @model_validator(mode="after")

@@ -1,8 +1,4 @@
-"""Record which package wrote which staged file, and turn that into build receipts.
-
-Hatcher Packages on the Amiga reads them to know what the build installed; its own
-installs go into installed.json in the same shape.
-"""
+"""Build receipts: which package wrote which staged file. No shipped Amiga tool reads them."""
 
 from __future__ import annotations
 
@@ -139,7 +135,7 @@ def _download_entry(package: Package, packages: dict[str, Package]) -> dict | No
         package = owner
     if package.download is None:
         return None
-    return {"hash": package.download.hash, "sha256": package.download.sha256}
+    return {"hash": package.download.hash}
 
 
 def build_receipts(

@@ -20,6 +20,5 @@ download:
   # rangeops needs custom Emu68 firmware; Hatcher ships official builds
   filename: emu68-drivers-2.2.0.lha
   hash: 83B581A6197B79E8202CF07D346545F3
-  sha256: 69808c8c85cd114eb3c01ea3639a8d343df7233218241a42ffa209e4565e94cf
 # selectable Amiga stacks need the SANA-II genet and Poseidon 4.x xhci variants in Storage/
 # bundled lwIP libraries and commands would overwrite the selected TCP/IP stack

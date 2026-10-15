@@ -14,7 +14,6 @@ download:
   source: aminet
   path: driver/audio/ahiusr_4.18.lha
   hash: 52131E5F771927FF5D5AAAA64FD97ABC
-  sha256: eed8202c5f2b5e6ee71b7aa47cd43040e27b05beb92234e2c11f105d415bd029
   filename: ahiusr_4.18.lha
 install:
 - from: AHI/User/Devs/ahi.device

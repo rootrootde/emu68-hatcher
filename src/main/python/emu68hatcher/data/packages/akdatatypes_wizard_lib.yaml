@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/libs/WizardLibrary.lha
   hash: 44e5084e9cb644940fda9d172d87d91d
-  sha256: 37241f0744c3808a502b5a142b9c62670d5f7b52bd5fbb04fbfcb1f20f363389
   filename: WizardLibrary.lha
 install:
 - from: wizard.library

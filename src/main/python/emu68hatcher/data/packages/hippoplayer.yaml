@@ -14,7 +14,6 @@ download:
   source: aminet
   path: mus/play/hippoplayer.lha
   hash: aa28f29175d968c4f4ccfd5a6c4f7ce4
-  sha256: 837913afd07a68168ee8f6451896268e762cc3542fb28b7e041e70841f53b387
   filename: hippoplayer.lha
 install:
 - from: HippoPlayer/HiP

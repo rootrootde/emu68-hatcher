@@ -14,7 +14,5 @@ download:
 install:
 - from: System/Prefs/Env-Archive/FIRSTTIMEBOOT
   to: Prefs/Env-Archive/
-- from: System/Prefs/Env-Archive/REBOOT
-  to: Prefs/Env-Archive/
 - from: System/S/DST.dat
   to: S/

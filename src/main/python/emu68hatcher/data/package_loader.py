@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from emu68hatcher.data.catalog import get_catalog_snapshot, read_catalog_yaml
+from emu68hatcher.data.catalog import get_catalog_snapshot
 from emu68hatcher.data.package_schema import ADFRule, Bundle, Package, _group_rank
 
 # bundled Amiga files + scripts
@@ -11,14 +11,6 @@ LOCAL_PACKAGES_DIR = Path(__file__).parent / "local_packages"
 
 def get_local_packages_dir() -> Path:
     return LOCAL_PACKAGES_DIR
-
-
-def load_package(yaml_path: Path) -> Package:
-    """load a single package from a YAML file"""
-    data = read_catalog_yaml(yaml_path)
-    if not data:
-        raise ValueError("empty package definition")
-    return Package.model_validate(data)
 
 
 def load_all_packages() -> list[Package]:

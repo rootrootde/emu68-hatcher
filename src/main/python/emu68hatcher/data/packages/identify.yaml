@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/libs/IdentifyUsr.lha
   hash: F8BD9FEB9FA595BEA979755224D08C5C
-  sha256: c3af644607474f4ee8e6f1613f969aae2344c964c835a55c920fabc4a3385e80
   filename: IdentifyUsr.lha
 install:
 - from: Identify/libs/rexxidentify.library

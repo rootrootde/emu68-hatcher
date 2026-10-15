@@ -13,7 +13,6 @@ download:
   source: aminet
   path: comm/net/sntp.lha
   hash: 30409A06905519C006C8E88A771E0C32
-  sha256: 9bf29124034a3620ab6f24aa12134ce311ad290f676a1ae58007b410a43e6f38
   filename: sntp.lha
 install:
 - from: sntp/sntp

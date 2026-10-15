@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/shell/ViNCEd.lha
   hash: CD5C624A0E5C10E211E9E189175F9D31
-  sha256: a0aa00bc4f69d7bbb2bcd5ec32622a65731f364100ddcae70d6fad393583dc51
   filename: Vinced.lha
 install:
 - from: ViNCEd/LIBS/vnc.library

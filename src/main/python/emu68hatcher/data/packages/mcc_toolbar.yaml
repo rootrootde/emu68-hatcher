@@ -15,7 +15,6 @@ download:
   source: aminet
   path: dev/mui/MCC_Toolbar_68k.lha
   hash: 6F30A21696EBED522218AC066BBF9610
-  sha256: eeb235ac7901b7fdd37a7b7998648876ca52e64fc187bc893ffc015d8b69ad2b
   filename: MCC_Toolbar_68k.lha
 install:
 - from: Toolbar.mcc

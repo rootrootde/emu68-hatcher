@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/arc/lzx121r1.lha
   hash: 13A4E1947DBFBBA7728B2DCBAF690FE9
-  sha256: 64d6bb56abea7fdec87dd20654a58fd1f04823bdc4339c5a9fa8edec80a67756
   filename: lzx121r1.lha
 install:
 - from: LZX_68040r

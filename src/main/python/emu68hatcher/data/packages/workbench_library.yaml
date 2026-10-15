@@ -9,7 +9,6 @@ download:
   source: web
   url: http://cdn.cloanto.com/pub/amiga/Workbench-Library-40-5.lha
   hash: 401059CD24DFD9C196BDDA7F2293276C
-  sha256: 9cd8b9ced7e31522f1106c9761b5effe5a0f7d52d851521cc36eea60bf02d7fd
   filename: WorkbenchLibrary.lha
 install:
 - from: Workbench.library

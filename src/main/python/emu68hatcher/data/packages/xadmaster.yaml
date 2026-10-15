@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/arc/xadmaster020.lha
   hash: 38C003269BECBF309108BF1C86E0C688
-  sha256: 23a4e6829e2ed5477b84e4bd36a4e69a8eedce821063c4e7b31056c3eae54c90
   filename: xadmaster020.lha
 install:
 - from: xad/C/*

@@ -115,7 +115,6 @@ def _web_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult:
     url = pkg.download.url
     if not url:
         return None, "web package has no url in its YAML"
-    backup_url = pkg.download.backup_url
     logger.info(f"Queued web download: {pkg_name} from {url}")
     item = DownloadItem(
         name=pkg_name,
@@ -123,7 +122,6 @@ def _web_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult:
         filename=filename,
         expected_hash=expected_hash or None,
         extract=True,
-        mirrors=[backup_url] if backup_url else [],
     )
     return item, ""
 

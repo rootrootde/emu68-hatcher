@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/libs/filesysbox.m68k-amigaos.lha
   hash: 3BC80A8D599504B15B9981FB1B9AC246
-  sha256: 339fe010519ec6c61c6f602a7d255bf9783add095b27ba9159932d28ef55f413
   filename: filesysbox.m68k-amigaos.lha
 install:
 - from: filesysbox/Libs/filesysbox.library.020

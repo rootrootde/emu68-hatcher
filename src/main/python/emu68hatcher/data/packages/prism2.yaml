@@ -13,7 +13,6 @@ download:
   source: aminet
   path: driver/net/prism2v2.lha
   hash: 18EB7E3318659F77042A0C69F8A405FF
-  sha256: 25b400ef25c44af940e1887576106b8312dcd28fe6c8030fcb78804480c07bc5
   filename: prism2v2.lha
 install:
 - from: prism2v2/C/WirelessManager

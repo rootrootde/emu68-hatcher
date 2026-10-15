@@ -9,7 +9,6 @@ download:
   source: web
   url: http://cdn.cloanto.com/pub/amiga/SetPatch-44-38.lha
   hash: B3FCB573BF33987C33E4C9415E3ED0BB
-  sha256: 57de3dafec9505547df7cab30648809cb247d885a19e523c0dc08834cb8dfd84
   filename: SetPatch.lha
 install:
 - from: SetPatch

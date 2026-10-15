@@ -14,7 +14,6 @@ download:
   source: web
   url: http://download.d0.se/pub/SysInfo.lha
   hash: 8384493A31CF4C2A3F03FE51EF0341F7
-  sha256: 9b86be2368b1b0f62977fba9341f8c0c17267a01ffd1ce9acb22707f6908272b
   filename: SysInfo.lha
 install:
 - from: SysInfo.info

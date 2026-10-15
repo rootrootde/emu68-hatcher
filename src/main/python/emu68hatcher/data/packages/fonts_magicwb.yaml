@@ -7,7 +7,6 @@ download:
   source: aminet
   path: util/wb/MagicWB21p.lha
   hash: e425201fbbad65df41b5c683d539d2c1
-  sha256: 3ff085105abf7e1aca7d9b7189931fda7a0f282176ab8f95ccd6f55e7aa15111
   filename: MagicWB21p.lha
 install:
 - from: MagicWB2.1p/Fonts/*

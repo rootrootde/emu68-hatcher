@@ -12,7 +12,6 @@ download:
   source: aminet
   path: util/libs/mpega_library.lha
   hash: A4704A87E8A810978AAE55193631C7DB
-  sha256: 4bf8cc22fe88ce20f85fe400ec670e08e1ef5fc85ae136a04384c0eb72abcc03
   filename: mpega_library.lha
 install:
 # integer build, 68020 baseline. the FPU variants check for a hardware-FPU

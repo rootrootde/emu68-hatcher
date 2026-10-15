@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/boot/skick346.lha
   hash: 745EBF5A39D42E1B352A1FB914CFAB7A
-  sha256: 02b4d01852d12ab391c6469064f917221a0f7319fd0b3ba6c359403ec1d59f96
   filename: skick346.lha
 install:
 - from: Kickstarts/*

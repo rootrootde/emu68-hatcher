@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/dtype/akJFIF-dt.lha
   hash: 7b5fcb7a557c87faaf529110f912f909
-  sha256: 6981badff7b792548ed72431078a15ae79cc2558b92c4ada18366676c3ccf3dd
   filename: akJFIF-dt.lha
 install:
 - from: akJFIF-Datatype/Classes/DataTypes/akJFIF.datatype

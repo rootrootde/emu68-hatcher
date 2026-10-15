@@ -82,11 +82,10 @@ class CatalogData(BaseModel):
                         r"[\w][\w.-]*/[\w][\w.-]*", download.repo or ""
                     ):
                         raise ValueError(f"{key}: invalid GitHub repository")
-                for url in (download.url, download.backup_url):
-                    if url:
-                        from pydantic import AnyHttpUrl, TypeAdapter
+                if download.url:
+                    from pydantic import AnyHttpUrl, TypeAdapter
 
-                        TypeAdapter(AnyHttpUrl).validate_python(url)
+                    TypeAdapter(AnyHttpUrl).validate_python(download.url)
         for key, bundle in self.bundles.items():
             if key != bundle.id:
                 raise ValueError(f"bundle index differs from id: {key}")

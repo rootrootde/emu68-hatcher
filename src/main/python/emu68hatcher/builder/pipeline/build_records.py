@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 INSTALLATION_FILE = "Emu68-Hatcher/Installation.json"
 INSTALLATION_FORMAT = "hatcher-installation-1"
-_SETTINGS_TOOLS = ("hatcher_prefs", "hatcher_packages", "emu68_manager")
+_SETTINGS_TOOLS = ("hatcher_prefs",)
 
 
 def _user_archives(workflow: BuildWorkflow) -> set[str]:

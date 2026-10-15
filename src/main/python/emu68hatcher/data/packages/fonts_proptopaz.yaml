@@ -7,7 +7,6 @@ download:
   source: aminet
   path: text/bfont/proptopaz.lha
   hash: 57041fd97e8f389af94293968ca31e93
-  sha256: 541f546ee8f3214fad00453611321543a7a262473475e17b99f99ce5cdc896f6
   filename: proptopaz.lha
 install:
 - from: Proptopaz/fonts/*

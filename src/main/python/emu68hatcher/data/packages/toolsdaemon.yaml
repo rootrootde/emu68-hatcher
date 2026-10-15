@@ -18,7 +18,6 @@ download:
   source: aminet
   path: util/boot/ToolsDaemon21a.lha
   hash: ac84352f58beb2f564722b87c431dc20
-  sha256: 32e8944006f1e655e11b9223afcf57752b49b4d2b77d38281a426408b0d360da
   filename: ToolsDaemon21a.lha
 install:
 - from: ToolsDaemon/ToolsDaemon

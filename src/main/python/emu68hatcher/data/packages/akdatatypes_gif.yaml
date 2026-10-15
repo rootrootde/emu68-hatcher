@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/dtype/akGIF-dt.lha
   hash: 9b5ae40e92dcb2960c93635f90209f53
-  sha256: 1688c8913cb7eb2b7546ec1dd2aaaa85089a5b8c41b1190347c847aee941d88d
   filename: akGIF-dt.lha
 install:
 - from: akGIF-Datatype/Classes/DataTypes/akGIF.datatype

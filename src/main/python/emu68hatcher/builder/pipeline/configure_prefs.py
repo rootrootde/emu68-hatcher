@@ -39,13 +39,10 @@ def configure_preferences(
         configure_picasso96_settings,
         configure_workbench_screen_mode,
         enable_workbench_backdrop,
-        install_default_prefs,
     )
 
     workflow._update_state(progress=70.0)
     workflow._milestone("Configuring Amiga preferences")
-    install_default_prefs(prefs_dir)
-    workflow.logger.info("Configured Amiga preferences (wbpattern + env vars)")
 
     try:
         enable_workbench_backdrop(prefs_dir)

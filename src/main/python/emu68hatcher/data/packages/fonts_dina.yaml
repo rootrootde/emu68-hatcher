@@ -7,7 +7,6 @@ download:
   source: aminet
   path: text/bfont/Dina.lha
   hash: 5254fb6cf3448c68207d59515c54b850
-  sha256: 5425bd95c5fb09296deb7fb56c0ba34a16ca43bfb0910a7265aa800cf2798b83
   filename: Dina.lha
 install:
 - from: Dina/Dina*

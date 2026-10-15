@@ -12,7 +12,6 @@ download:
   source: aminet
   path: util/boot/StackAttack2.lha
   hash: D1E22C526BAEAA45F04992D6D99A4655
-  sha256: 2574f8751d04adecd2cc9303781da8d2eb17467b0f7aac9fa08c02570cdf080a
   filename: StackAttack2.lha
 install:
 - from: StackAttack

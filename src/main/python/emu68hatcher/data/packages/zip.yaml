@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/arc/ZIP232.lha
   hash: 089E815D495A5A3B374C0E6BF0E80E58
-  sha256: c3a936064a171c5de8c04ee6c38863771d37648f133f398daa1215269305bdec
   filename: Zip232.lha
 install:
 - from: ZIP*/Zip

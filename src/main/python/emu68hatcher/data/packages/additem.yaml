@@ -12,7 +12,6 @@ download:
   source: aminet
   path: util/wb/additem.lha
   hash: e4f43fa5389554083445fd5325799e78
-  sha256: a04d8193eef866a8f0b27692bfa1f4000d936c72f0f96e10f782135969e0ab2e
   filename: additem.lha
 install:
 - from: AddItem/AddItem

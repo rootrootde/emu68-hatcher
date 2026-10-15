@@ -13,7 +13,6 @@ download:
   source: aminet
   path: util/moni/SnoopDos.lha
   hash: 2D214246781EB26B9536628BE9A6A0F9
-  sha256: 0fb51361fe82b125971b190b78a81cb43c0a631c9d075a37b0110a0617612aba
   filename: Snoopdos.lha
 install:
 - from: '*'

@@ -17,7 +17,6 @@ download:
   source: aminet
   path: util/libs/mui38usr.lha
   hash: 04DF2D2C444A112C66D1B2CA593CB71A
-  sha256: f3acb2fe98f74c025daf10ae7df92d08abe787332124963771e2c21a869cca5b
   filename: mui38usr.lha
 install:
 - from: MUI.info
