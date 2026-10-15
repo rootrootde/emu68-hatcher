@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -26,6 +26,7 @@ from emu68hatcher.config.display_models import (
     WorkbenchScreenMode,
 )
 from emu68hatcher.config.schema import DisplayConfig
+from emu68hatcher.data.data_manager import load_yaml_data
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
 from emu68hatcher.gui.widgets.status_row import StatusRow
@@ -34,9 +35,6 @@ from emu68hatcher.gui.work_areas import scroll_to
 
 class DisplayTab(QWidget):
     """HDMI, Workbench RTG, and native-video settings."""
-
-    workbench_mode_changed = Signal(bool)
-    settings_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,27 +45,14 @@ class DisplayTab(QWidget):
         self.setup_ui()
 
     def load_screen_modes(self):
-        try:
-            from emu68hatcher.data.data_manager import load_yaml_data
-
-            modes = load_yaml_data("screen_modes")
-            self.hdmi_modes = [
-                {
-                    "name": r.get("name", ""),
-                    "friendly": r.get("friendly_name", r.get("name", "")),
-                }
-                for r in modes
-            ]
-            self.hdmi_modes.append({"name": "Custom", "friendly": "Custom Resolution"})
-        except Exception:
-            self.hdmi_modes = [
-                {"name": "Auto", "friendly": "Automatic"},
-                {"name": "1280*720-50", "friendly": "720p 50Hz (PAL)"},
-                {"name": "1280*720-60", "friendly": "720p 60Hz (NTSC)"},
-                {"name": "1920*1080-50", "friendly": "1080p 50Hz"},
-                {"name": "1920*1080-60", "friendly": "1080p 60Hz"},
-                {"name": "Custom", "friendly": "Custom Resolution"},
-            ]
+        self.hdmi_modes = [
+            {
+                "name": r.get("name", ""),
+                "friendly": r.get("friendly_name", r.get("name", "")),
+            }
+            for r in load_yaml_data("screen_modes")
+        ]
+        self.hdmi_modes.append({"name": "Custom", "friendly": "Custom Resolution"})
 
     def setup_ui(self):
         outer = QVBoxLayout(self)
@@ -223,8 +208,6 @@ class DisplayTab(QWidget):
         layout.addWidget(self.framethrower_group)
 
         layout.addStretch()
-        self._connect_settings_signals(content)
-        self._connect_settings_signals(self.appearance_content)
         self._update_framethrower_fields()
 
     @staticmethod
@@ -323,18 +306,6 @@ class DisplayTab(QWidget):
         form.addRow(self.framethrower_note)
         return group
 
-    def _connect_settings_signals(self, content: QWidget):
-        for combo in content.findChildren(QComboBox):
-            combo.currentIndexChanged.connect(self._emit_settings_changed)
-        for check in content.findChildren(QCheckBox):
-            check.toggled.connect(self._emit_settings_changed)
-        for spin in content.findChildren(QSpinBox):
-            spin.valueChanged.connect(self._emit_settings_changed)
-        self.picasso96_archive_edit.textChanged.connect(self._emit_settings_changed)
-
-    def _emit_settings_changed(self, _value=None):
-        self.settings_changed.emit()
-
     def navigate(self, section):
         scroll_to(self.appearance_content if section == "appearance" else self.hdmi_mode_combo)
 
@@ -397,7 +368,6 @@ class DisplayTab(QWidget):
 
     def _on_workbench_mode_changed(self, _index=None):
         self._update_framethrower_fields()
-        self.workbench_mode_changed.emit(self.has_rtg_workbench_mode())
 
     def has_rtg_workbench_mode(self) -> bool:
         return self.workbench_mode_combo.currentData() != WorkbenchScreenMode.NATIVE.value

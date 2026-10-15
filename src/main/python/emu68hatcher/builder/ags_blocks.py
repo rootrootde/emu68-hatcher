@@ -14,11 +14,8 @@ from .errors import BuildError
 class AGSBlockPartition:
     index: int
     device: str
-    low_cylinder: int
-    high_cylinder: int
     size: int
     offset: int
-    block_size: int
     dos_type: bytes
     flags: int
 
@@ -85,11 +82,8 @@ def read_source_blocks(path: Path) -> tuple[AGSBlockPartition, ...]:
                 AGSBlockPartition(
                     len(result) + 1,
                     device,
-                    low,
-                    high,
                     length,
                     offset,
-                    filesystem_block,
                     part[192:196],
                     value(part, 20),
                 )

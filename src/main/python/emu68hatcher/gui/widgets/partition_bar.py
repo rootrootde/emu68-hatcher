@@ -4,13 +4,7 @@ from PySide6.QtCore import QPoint, QRect, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPalette, QPen, QPolygon
 from PySide6.QtWidgets import QToolTip, QWidget
 
-from emu68hatcher.config.constants import (
-    CYLINDER_SIZE,
-    MIN_AMIGA_PARTITION_SIZE,
-    PFS3_MAX_PARTITION_SIZE,
-)
 from emu68hatcher.config.partition_helpers import round_to_cylinder
-from emu68hatcher.config.partition_models import Filesystem
 
 BOOT_COLOR = QColor("#65758c")
 AMIGA_COLORS = [
@@ -45,7 +39,8 @@ class PartitionBar(QWidget):
         self.setMouseTracking(True)
         self._segments: list[tuple[str, int, str, QColor, bool]] = []
         self._rects: list[tuple[QRect, str]] = []
-        self._on_resize_callback = None  # callable(left_idx, left_size, right_idx, right_size)
+        # callable(left_idx, left_size, right_idx, right_size) -> True when applied
+        self._on_resize_callback = None
         # drag state
         self._borders: list[tuple[int, int, int]] = []
         self._dragging = False
@@ -341,46 +336,17 @@ class PartitionBar(QWidget):
         right_size = (
             self._amiga_partitions[right_amiga].size if right_is_amiga else self._free_space
         )
-        new_left = left_size + delta_bytes
-        new_right = right_size - delta_bytes
-        left_part = self._amiga_partitions[left_amiga]
-        if left_part.ags_reservation:
+        if self._amiga_partitions[left_amiga].ags_reservation:
             return
-        left_minimum = (
-            left_part.ags_reservation.minimum_size
-            if left_part.ags_reservation
-            else MIN_AMIGA_PARTITION_SIZE
-        )
-        left_minimum = ((left_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
-        right_minimum = 0
-        if right_is_amiga:
-            right_part = self._amiga_partitions[right_amiga]
-            if right_part.ags_reservation:
-                return
-            right_minimum = (
-                right_part.ags_reservation.minimum_size
-                if right_part.ags_reservation
-                else MIN_AMIGA_PARTITION_SIZE
-            )
-            right_minimum = ((right_minimum + CYLINDER_SIZE - 1) // CYLINDER_SIZE) * CYLINDER_SIZE
-        if new_left < left_minimum or new_right < right_minimum:
+        if right_is_amiga and self._amiga_partitions[right_amiga].ags_reservation:
             return
-        if left_part.filesystem == Filesystem.PFS3 and new_left > PFS3_MAX_PARTITION_SIZE:
-            return
-        if (
-            right_is_amiga
-            and right_part.filesystem == Filesystem.PFS3
-            and new_right > PFS3_MAX_PARTITION_SIZE
+        if self._on_resize_callback and self._on_resize_callback(
+            left_amiga,
+            left_size + delta_bytes,
+            right_amiga if right_is_amiga else -1,
+            right_size - delta_bytes,
         ):
-            return
-        self._drag_start_x = pos.x()
-        if self._on_resize_callback:
-            self._on_resize_callback(
-                left_amiga,
-                new_left,
-                right_amiga if right_is_amiga else -1,
-                new_right,
-            )
+            self._drag_start_x = pos.x()
 
     def _update_hover(self, event, pos) -> None:
         bi = self._border_hit(pos)

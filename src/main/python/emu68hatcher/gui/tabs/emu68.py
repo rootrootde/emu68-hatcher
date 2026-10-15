@@ -1,6 +1,6 @@
 """Emu68 release, boot settings, and generated file preview."""
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -36,7 +36,6 @@ from emu68hatcher.gui.widgets import select_combo_by_data
 class Emu68Tab(QWidget):
     """Emu68 boot settings and file preview."""
 
-    settings_changed = Signal()
     emu68_version_changed = Signal(str)
 
     def __init__(
@@ -127,11 +126,6 @@ class Emu68Tab(QWidget):
 
         layout.addWidget(settings_pane)
 
-        self._settings_change_timer = QTimer(self)
-        self._settings_change_timer.setSingleShot(True)
-        self._settings_change_timer.setInterval(80)
-        self._settings_change_timer.timeout.connect(self.settings_changed.emit)
-        self._connect_settings_signals()
         self._set_advanced_visible(False)
         self._normalise_control_widths()
         self._sync_storage_timing_from_details()
@@ -202,19 +196,6 @@ class Emu68Tab(QWidget):
         self.advanced_button.setText(
             "Hide advanced settings" if visible else "Show advanced settings"
         )
-
-    def _connect_settings_signals(self):
-        for combo in self.content.findChildren(QComboBox):
-            combo.currentIndexChanged.connect(self._queue_settings_changed)
-        for check in self.content.findChildren(QCheckBox):
-            check.toggled.connect(self._queue_settings_changed)
-        for spin in self.content.findChildren(QSpinBox):
-            spin.valueChanged.connect(self._queue_settings_changed)
-        self.extra_config_edit.textChanged.connect(self._queue_settings_changed)
-        self.extra_cmdline_edit.textChanged.connect(self._queue_settings_changed)
-
-    def _queue_settings_changed(self, _value=None):
-        self._settings_change_timer.start()
 
     @staticmethod
     def _new_preview_editor() -> QPlainTextEdit:
@@ -353,7 +334,6 @@ class Emu68Tab(QWidget):
         form.addRow(self.rgb2rtg_check)
         self.rgb2rtg_archive = QLineEdit()
         self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.75.7z")
-        self.rgb2rtg_archive.textChanged.connect(self._queue_settings_changed)
         browse = QPushButton("Browse...")
         browse.clicked.connect(self._browse_rgb2rtg)
         form.addRow("Release archive:", self._paired_field(self.rgb2rtg_archive, browse))
@@ -375,7 +355,6 @@ class Emu68Tab(QWidget):
         self.release_radio_alpha.setEnabled(not enabled)
         if enabled:
             self.set_emu68_version(Emu68Version.V1_1_0_BETA_1)
-        self._queue_settings_changed()
 
     def _browse_rgb2rtg(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -845,9 +824,7 @@ class Emu68Tab(QWidget):
         return advanced_group
 
     def _apply_storage_timing_selection(self, _index=None):
-        if getattr(self, "_syncing_storage_timing", False) or not hasattr(
-            self, "sd_low_speed_check"
-        ):
+        if getattr(self, "_syncing_storage_timing", False):
             return
 
         mode = self.storage_timing_combo.currentData()
@@ -868,9 +845,7 @@ class Emu68Tab(QWidget):
         self._update_custom_fields()
 
     def _sync_storage_timing_from_details(self, _value=None):
-        if getattr(self, "_syncing_storage_timing", False) or not hasattr(
-            self, "sd_low_speed_check"
-        ):
+        if getattr(self, "_syncing_storage_timing", False):
             return
 
         if self.sd_low_speed_check.isChecked() and self.emmc_low_speed_check.isChecked():
@@ -913,7 +888,6 @@ class Emu68Tab(QWidget):
         self.antenna_combo.setItemText(0, f"Release default ({antenna})")
         self.bus_test_combo.setItemText(0, f"Release default ({bus_test})")
         self._update_custom_fields()
-        self._queue_settings_changed()
         self.emu68_version_changed.emit(self.emu68_version.value)
 
     def get_emu68_version(self) -> Emu68Version:
@@ -927,8 +901,6 @@ class Emu68Tab(QWidget):
         self.set_emu68_version(self.get_emu68_version())
 
     def _update_custom_fields(self, _value=None):
-        if not hasattr(self, "memory_limit_combo"):
-            return
         self.memory_limit_spin.setEnabled(self.memory_limit_combo.currentData() == "custom")
         self.gpu_memory_spin.setEnabled(self.gpu_memory_combo.currentData() == "custom")
         cpu_custom = self.cpu_turbo_combo.currentData() == "enabled"

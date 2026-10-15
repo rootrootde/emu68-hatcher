@@ -31,7 +31,7 @@ _source_locks: dict[tuple[int, int], threading.RLock] = {}
 _cache: OrderedDict[tuple, AGSInventory] = OrderedDict()
 
 
-def _warnings(profile: str, roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
+def ags_warnings(profile: str, roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
     if "games" not in roles:
         return ()
     warnings = [
@@ -87,7 +87,6 @@ def _lookup(key: tuple, roles: tuple[AGSRole, ...]) -> AGSInventory | None:
             inventory.partitions,
             tuple(component for component in inventory.components if component.role in roles),
             inventory.marker_hashes,
-            _warnings(inventory.profile, roles),
             inventory.source_scripts,
         )
 
@@ -146,14 +145,12 @@ def inspect_ags_source(
                     dict(scripts) | dict(read_ags_scripts(path, whdload, extra_paths, cancel_check))
                 )
             components: dict[AGSRole, AGSComponentInventory] = {}
-            warnings = _warnings(profile.name, selected)
         else:
             partitions = cached.partitions
             marker_hashes = cached.marker_hashes
             scripts = cached.source_scripts
             profile = match_profile(marker_hashes)
             components = {component.role: component for component in cached.components}
-            warnings = _warnings(profile.name, selected)
         for role in selected:
             if role not in components:
                 components[role] = inspect_ags_component(path, partitions, role, cancel_check)
@@ -168,7 +165,6 @@ def inspect_ags_source(
             partitions,
             tuple(components[role] for role in AGS_ROLES if role in components),
             marker_hashes,
-            warnings,
             MappingProxyType(dict(scripts)),
         )
         _publish(key, full)
@@ -180,6 +176,5 @@ def inspect_ags_source(
             full.partitions,
             tuple(components[role] for role in selected),
             full.marker_hashes,
-            full.warnings,
             full.source_scripts,
         )

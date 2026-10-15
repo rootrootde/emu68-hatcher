@@ -99,10 +99,6 @@ class ConfigurationController(QObject):
 
     def load(self, config):
         window = self.window
-        # Validate before touching views, then retain an independent rollback snapshot.
-        data = config.model_dump(mode="python")
-        data["wifi"] = config.wifi
-        config = type(config).model_validate(data)
         previous = self._capture_draft()
         window._loading_config = True
         try:
@@ -415,10 +411,8 @@ class ConfigurationController(QObject):
                 add(message, *rgb2rtg_fields[key])
         for token, names in resolution.unsatisfiable.items():
             add(f"{token}: required by {', '.join(names)}", "software")
-        for tab in (window.kickstart_tab, window.packages_tab):
-            notice = getattr(tab, "catalog_notice", None)
-            if notice and notice.text():
-                add(notice.text(), "software", severity="warning")
+        if window.packages_tab.catalog_notice.text():
+            add(window.packages_tab.catalog_notice.text(), "software", severity="warning")
         if any(issue.severity != "warning" for issue in issues):
             return None, issues
         try:

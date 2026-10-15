@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -30,12 +29,6 @@ AGS_VOLUMES: Mapping[AGSRole, str] = {
     "work": "Work",
     "media": "Media",
 }
-AGS_CONTENT_ROOTS: Mapping[AGSRole, str] = {
-    "whdload": "",
-    "games": "",
-    "work": "",
-    "media": "",
-}
 AGS_ASSIGN_NAMES = frozenset(
     {
         "whd_games",
@@ -58,54 +51,23 @@ class AGSResolvedTarget:
     role: AGSRole
     device: str
     volume: str
-    content_root: str
     partition: AmigaPartition
 
 
 @dataclass(frozen=True, slots=True)
-class AGSSizeChange:
-    device: str
-    old_size: int
-    new_size: int
-
-
-@dataclass(frozen=True, slots=True)
-class AGSLayoutProposal:
-    base_signature: str
-    source_identity: object | None
-    selection_revision: int
-    selected_roles: tuple[AGSRole, ...]
+class AGSLayoutPlan:
+    layout: PartitionConfig | None
     partitions: tuple[AmigaPartition, ...]
-    changes: tuple[AGSSizeChange, ...]
-    released_roles: tuple[AGSRole, ...]
     free_bytes: int
-    capacity_bytes: int
     errors: tuple[str, ...]
-
-
-def layout_signature(layout: PartitionConfig) -> str:
-    payload = layout.model_dump_json(exclude_none=False).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
-
-
-def _requirement_minimum(requirement: object) -> int:
-    if isinstance(requirement, int):
-        return requirement
-    for name in ("minimum_partition_bytes", "minimum_size"):
-        value = getattr(requirement, name, None)
-        if isinstance(value, int):
-            return value
-    raise ValueError("AGS requirement needs minimum_partition_bytes")
 
 
 def plan_ags_layout(
     layout: PartitionConfig,
-    requirements: Mapping[AGSRole, object],
+    requirements: Mapping[AGSRole, int],
     selected_roles: tuple[AGSRole, ...] | list[AGSRole],
-    *,
-    source_identity: object | None = None,
-    selection_revision: int = 0,
-) -> AGSLayoutProposal:
+) -> AGSLayoutPlan:
+    """Reserve the selected AGS partitions; layout is None when errors remain."""
     selected = tuple(role for role in AGS_ROLES if role in selected_roles)
     errors: list[str] = []
     if len(selected_roles) != len(selected) or len(set(selected_roles)) != len(selected_roles):
@@ -113,12 +75,6 @@ def plan_ags_layout(
     if selected and "whdload" not in selected:
         errors.append("AGS requires WHDLoad when import is enabled")
     parts = [part.model_copy(deep=True) for part in layout.iter_amiga_partitions()]
-    old_by_device = {part.device.upper(): part.model_copy(deep=True) for part in parts}
-    released = tuple(
-        part.ags_reservation.role
-        for part in parts
-        if part.ags_reservation and part.ags_reservation.role not in selected
-    )
     parts = [
         part for part in parts if not part.ags_reservation or part.ags_reservation.role in selected
     ]
@@ -140,8 +96,8 @@ def plan_ags_layout(
     devices = [part.device for part in parts]
     for role in selected:
         try:
-            minimum = _requirement_minimum(requirements[role])
-        except (KeyError, ValueError) as exc:
+            minimum = requirements[role]
+        except KeyError as exc:
             errors.append(f"No size requirement for AGS {role}: {exc}")
             continue
         if minimum <= 0 or minimum % CYLINDER_SIZE or minimum > PFS3_MAX_PARTITION_SIZE:
@@ -169,8 +125,7 @@ def plan_ags_layout(
                 ags_reservation=AGSPartitionReservation(role=role, minimum_size=minimum),
             )
         )
-    capacity = layout.layout[1].size
-    free = calculate_free_space(capacity, parts)
+    free = calculate_free_space(layout.layout[1].size, parts)
     if free < 0:
         errors.append(
             f"AGS layout exceeds RDB capacity by {-free} bytes; deselect content, "
@@ -178,56 +133,21 @@ def plan_ags_layout(
         )
     if len(parts) > MAX_AMIGA_PARTITIONS:
         errors.append(f"AGS layout exceeds the {MAX_AMIGA_PARTITIONS}-partition limit")
-    changes = tuple(
-        AGSSizeChange(part.device, old_by_device[part.device.upper()].size, part.size)
-        for part in parts
-        if part.device.upper() in old_by_device
-        and part.size != old_by_device[part.device.upper()].size
-    )
+    planned = None
     if not errors:
         try:
-            _layout_with_parts(layout, parts)
+            planned = _layout_with_parts(layout, parts)
         except ValidationError as exc:
             errors.extend(error["msg"].removeprefix("Value error, ") for error in exc.errors())
         except ValueError as exc:
             errors.append(str(exc))
-    return AGSLayoutProposal(
-        layout_signature(layout),
-        source_identity,
-        selection_revision,
-        selected,
-        tuple(parts),
-        changes,
-        released,
-        free,
-        capacity,
-        tuple(errors),
-    )
+    return AGSLayoutPlan(planned, tuple(parts), free, tuple(errors))
 
 
 def _layout_with_parts(layout: PartitionConfig, parts: list[AmigaPartition]) -> PartitionConfig:
     result = layout.model_copy(deep=True)
     result.layout[1].amiga_partitions = parts
     return PartitionConfig.model_validate(result.model_dump())
-
-
-def apply_ags_layout(
-    layout: PartitionConfig,
-    proposal: AGSLayoutProposal,
-    *,
-    source_identity: object | None = None,
-    selection_revision: int = 0,
-) -> PartitionConfig:
-    if proposal.errors:
-        raise ValueError("Cannot apply AGS layout: " + "; ".join(proposal.errors))
-    if layout_signature(layout) != proposal.base_signature:
-        raise ValueError("AGS layout changed; calculate a new proposal")
-    if (
-        proposal.source_identity != source_identity
-        or proposal.selection_revision != selection_revision
-    ):
-        raise ValueError("AGS source or selection changed; calculate a new proposal")
-    return _layout_with_parts(layout, [part.model_copy(deep=True) for part in proposal.partitions])
 
 
 def resolve_ags_targets(config: BuildConfig) -> tuple[AGSResolvedTarget, ...]:
@@ -239,18 +159,12 @@ def resolve_ags_targets(config: BuildConfig) -> tuple[AGSResolvedTarget, ...]:
             role = part.ags_reservation.role
             if role in targets:
                 raise ValueError(f"AGS role {role} has more than one partition")
-            targets[role] = AGSResolvedTarget(
-                role,
-                part.device,
-                part.volume,
-                AGS_CONTENT_ROOTS[role],
-                part,
-            )
+            targets[role] = AGSResolvedTarget(role, part.device, part.volume, part)
     return tuple(targets[role] for role in AGS_ROLES if role in targets)
 
 
 def validate_ags_layout(
-    config: BuildConfig, requirements: Mapping[AGSRole, object] | None = None
+    config: BuildConfig, requirements: Mapping[AGSRole, int] | None = None
 ) -> tuple[str, ...]:
     selection = config.ags_import
     parts = tuple(config.partitions.iter_amiga_partitions()) if config.partitions else ()
@@ -281,8 +195,8 @@ def validate_ags_layout(
         minimum = reservation.minimum_size
         if requirements is not None:
             try:
-                minimum = _requirement_minimum(requirements[reservation.role])
-            except (KeyError, ValueError):
+                minimum = requirements[reservation.role]
+            except KeyError:
                 errors.append(f"No current size requirement for AGS {reservation.role}")
         if part.size != minimum or reservation.minimum_size != minimum:
             errors.append(

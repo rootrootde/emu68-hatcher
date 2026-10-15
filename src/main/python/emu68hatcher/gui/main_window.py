@@ -231,8 +231,6 @@ class MainWindow(QMainWindow):
         self.output_tab.target_size_changed.connect(self.partitions_tab.set_auto_disk_size)
         self.output_tab.target_size_cleared.connect(self._target_size_cleared)
         self.storage_controller.changed.connect(self.controller.refresh_context)
-        self.emu68_tab.settings_changed.connect(self.controller.invalidate)
-        self.display_tab.settings_changed.connect(self.controller.invalidate)
         self.emu68_tab.rgb2rtg_check.toggled.connect(self._sync_rgb2rtg_display)
         self.emu68_tab.rgb2rtg_video.currentIndexChanged.connect(self._sync_rgb2rtg_display)
         self.packages_tab.selection_changed.connect(self.controller.invalidate)

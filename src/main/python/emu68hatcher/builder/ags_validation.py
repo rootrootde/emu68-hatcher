@@ -8,11 +8,11 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from emu68hatcher.builder.ags_requirements import AGSRoleRequirement, calculate_ags_requirements
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.tree_copy import measure_contained_tree
 from emu68hatcher.config.ags_layout import (
@@ -28,16 +28,19 @@ if TYPE_CHECKING:
     from emu68hatcher.builder.ags_scripts import AGSScriptPlan
     from emu68hatcher.builder.ags_source import AGSInventory
     from emu68hatcher.builder.workflow import BuildWorkflow
+    from emu68hatcher.config.ags_models import AGSRole
     from emu68hatcher.config.partition_models import PartitionConfig
 
 _GIB = 1024**3
+# host staging allowance per imported AGS partition
+_AGS_HOST_ALLOWANCE = 16 * 1024**2
 
 
 @dataclass(frozen=True, slots=True)
 class AGSImportPlan:
     inventory: AGSInventory
     targets: tuple[AGSResolvedTarget, ...]
-    requirements: tuple[AGSRoleRequirement, ...]
+    requirements: Mapping[AGSRole, int]
     script_plan: AGSScriptPlan
 
     def target(self, role: str) -> AGSResolvedTarget:
@@ -172,11 +175,8 @@ def validate_ags_import(workflow: BuildWorkflow) -> AGSImportPlan:
         selected,
         cancel_check=lambda: workflow._cancelled,
     )
-    requirements = calculate_ags_requirements(inventory.components)
-    current_errors = validate_ags_layout(
-        workflow.config,
-        {requirement.role: requirement for requirement in requirements},
-    )
+    requirements = {component.role: component.partition.size for component in inventory.components}
+    current_errors = validate_ags_layout(workflow.config, requirements)
     if current_errors:
         raise BuildError("AGS layout: " + "; ".join(current_errors))
     targets = tuple(
@@ -184,7 +184,6 @@ def validate_ags_import(workflow: BuildWorkflow) -> AGSImportPlan:
             target.role,
             target.device,
             target.volume,
-            target.content_root,
             target.partition.model_copy(deep=True),
         )
         for target in resolve_ags_targets(workflow.config)
@@ -211,7 +210,7 @@ def validate_ags_import(workflow: BuildWorkflow) -> AGSImportPlan:
 
 
 def _sparse_image_bytes(partitions: PartitionConfig, plan: AGSImportPlan, extras_bytes: int) -> int:
-    copied_bytes = sum(requirement.minimum_partition_bytes for requirement in plan.requirements)
+    copied_bytes = sum(plan.requirements.values())
     normal = [part for part in partitions.iter_amiga_partitions() if not part.ags_reservation]
     content_capacity = sum(usable_partition_content_size(part.size) for part in normal)
     metadata_bytes = sum(part.size for part in normal) - content_capacity
@@ -231,7 +230,7 @@ def check_host_capacity(
     assert output is not None and partitions is not None
     staging_fs = _workspace_filesystem()
     # packages, extracted media and the new Workbench also need temporary space
-    ags_bytes = sum(requirement.estimated_host_bytes for requirement in plan.requirements)
+    ags_bytes = _AGS_HOST_ALLOWANCE * len(plan.requirements)
     staging_bytes = ags_bytes + extras_bytes + 2 * _GIB
     requirements = {staging_fs.stat().st_dev: (staging_fs, staging_bytes)}
     if output.type == OutputType.IMG:
@@ -239,7 +238,7 @@ def check_host_capacity(
         image_bytes = partitions.disk_size
         if output.sparse:
             image_bytes = _sparse_image_bytes(partitions, plan, extras_bytes)
-        copied_bytes = sum(requirement.minimum_partition_bytes for requirement in plan.requirements)
+        copied_bytes = sum(plan.requirements.values())
         workflow.logger.info(
             f"AGS space estimate: sparse={output.sparse}, "
             f"logical image={partitions.disk_size / _GIB:.2f} GiB, "

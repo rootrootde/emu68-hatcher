@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -91,28 +90,6 @@ class AGSTab(QWidget):
             return
         enabled = self.enabled_check.isChecked()
         roles = tuple(role for role in AGS_ROLES if self.component_checks[role].isChecked())
-        removed = [
-            part.volume
-            for part in self.controller.model.partitions
-            if part.ags_reservation
-            and part.extra_content_directory
-            and (not enabled or part.ags_reservation.role not in roles)
-        ]
-        if (
-            removed
-            and QMessageBox.question(
-                self,
-                "Remove AGS content",
-                "Removing "
-                + ", ".join(removed)
-                + " also removes their extra-content folder settings. Continue?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No,
-            )
-            != QMessageBox.StandardButton.Yes
-        ):
-            self.render()
-            return
         self.controller.set_selection(enabled, self.source_edit.text(), roles)
 
     def render(self):

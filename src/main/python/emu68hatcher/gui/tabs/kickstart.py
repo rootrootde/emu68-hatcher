@@ -21,6 +21,11 @@ from emu68hatcher.config.schema import (
     KickstartConfig,
     KickstartVersion,
 )
+from emu68hatcher.data.icon_sets import (
+    format_adf_name,
+    get_icon_set_extra_adf,
+    get_icon_sets_for_version,
+)
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets.asset_scan_panel import AssetScanPanel
 
@@ -113,15 +118,12 @@ class KickstartTab(QWidget):
     def on_version_changed(self):
         """re-scan + refresh the icon-set list and language grid when version changes"""
         self.version_changed.emit(self.get_selected_version())
-        if hasattr(self, "icon_set_combo"):
-            self._recognized_adfs.clear()
-            self._requested_icon_set = None
-            self._load_icon_sets(self.get_selected_version())
-            self._populate_icon_set_combo()
-        if hasattr(self, "_lang_grid"):
-            self._build_language_grid()
-        if hasattr(self, "asset_panel"):
-            self.asset_panel.set_version(self.get_selected_version())
+        self._recognized_adfs.clear()
+        self._requested_icon_set = None
+        self._load_icon_sets(self.get_selected_version())
+        self._populate_icon_set_combo()
+        self._build_language_grid()
+        self.asset_panel.set_version(self.get_selected_version())
 
     def _build_language_grid(self, columns: int = 3):
         """(re)build the locale checkbox grid for the selected Workbench version"""
@@ -179,44 +181,19 @@ class KickstartTab(QWidget):
     def _load_icon_sets(self, ks_version: str):
         """load the icon sets available for a Kickstart version"""
         self.icon_sets = []
-        try:
-            from emu68hatcher.data.icon_sets import (
-                get_icon_set_extra_adf,
-                get_icon_sets_for_version,
+        for r in get_icon_sets_for_version(ks_version):
+            name = r.get("name", "Standard")
+            self.icon_sets.append(
+                {
+                    "name": name,
+                    "description": r.get("description", ""),
+                    "default": r.get("default", False),
+                    "required_adf": get_icon_set_extra_adf(name, ks_version),
+                }
             )
-
-            for r in get_icon_sets_for_version(ks_version):
-                name = r.get("name", "Standard")
-                self.icon_sets.append(
-                    {
-                        "name": name,
-                        "description": r.get("description", ""),
-                        "default": r.get("default", False),
-                        "required_adf": get_icon_set_extra_adf(name, ks_version),
-                    }
-                )
-        except Exception:
-            pass
-
-        if not self.icon_sets:
-            self.icon_sets = [
-                {"name": "Standard", "description": "Standard Icon set", "default": True}
-            ]
-            if ks_version.startswith("3.2"):
-                self.icon_sets.append(
-                    {
-                        "name": "GlowIcons",
-                        "description": "Glow Icons for high color modes",
-                        "default": True,
-                        "required_adf": "GlowIcons3_2",
-                    }
-                )
-                self.icon_sets[0]["default"] = False
 
     def _populate_icon_set_combo(self):
         """fill the icon set dropdown from self.icon_sets, picking the default"""
-        from emu68hatcher.data.icon_sets import format_adf_name
-
         self.icon_set_combo.clear()
         available_default = None
         first_available = None

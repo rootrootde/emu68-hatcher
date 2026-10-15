@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -33,8 +33,6 @@ from emu68hatcher.gui.widgets.partition_table import PartitionTable
 
 class PartitionsTab(QWidget):
     """partition layout editor"""
-
-    layout_changed = Signal()
 
     def __init__(self, parent=None, *, controller):
         super().__init__(parent)
@@ -330,10 +328,12 @@ class PartitionsTab(QWidget):
         self._update_status()
         self._emit_layout_changed()
 
-    def _on_bar_resize(self, left_idx, left_size, right_idx, right_size):
+    def _on_bar_resize(self, left_idx, left_size, right_idx, right_size) -> bool:
         """resize from the bar widget drag"""
-        self._model.resize_pair(left_idx, left_size, right_idx, right_size)
+        if not self._model.resize_pair(left_idx, left_size, right_idx, right_size):
+            return False
         self._refresh_table()
+        return True
 
     def _on_selection_changed(self):
         if self._updating:
@@ -470,7 +470,6 @@ class PartitionsTab(QWidget):
     def _emit_layout_changed(self):
         if not self._loading:
             self.controller.replan()
-            self.layout_changed.emit()
 
     def _space(self) -> tuple[int, int, int]:
         return (
