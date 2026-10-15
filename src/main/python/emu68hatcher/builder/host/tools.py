@@ -23,12 +23,11 @@ logger = logging.getLogger(__name__)
 def resolve_tool_download(name: str) -> dict | None:
     """tools.yaml entry -> dict with at least 'url' (+optional filename, hash, extract_method). None if unresolvable"""
     try:
-        tools = load_yaml_data("tools")
+        entry = load_yaml_data("tools").get(name)
     except Exception as e:
         logger.error(f"failed to load tools.yaml: {e}")
         return None
 
-    entry = tools.get(name)
     if not entry:
         return None
 

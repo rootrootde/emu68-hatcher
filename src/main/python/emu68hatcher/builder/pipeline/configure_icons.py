@@ -36,21 +36,15 @@ def _install_icon_set(
     image: CreatedImage,
     boot_staging: Path,
 ) -> None:
-    from emu68hatcher.data.data_manager import load_yaml_data
+    from emu68hatcher.data.icon_sets import get_icon_sets_for_version
 
     name = workflow.config.icon_set
     version = workflow.config.kickstart.version.value
     try:
-        rows = load_yaml_data("icon_sets")
-        selected = next(
-            (row for row in rows if row.get("name") == name and version in row.get("versions", [])),
-            None,
-        )
+        rows = get_icon_sets_for_version(version)
+        selected = next((row for row in rows if row.get("name") == name), None)
         if selected is None:
-            selected = next(
-                (row for row in rows if row.get("default") and version in row.get("versions", [])),
-                None,
-            )
+            selected = next((row for row in rows if row.get("default")), None)
         if selected is None:
             workflow.logger.info(f"No icon set for KS {version}; keeping generic drawer icons")
             return

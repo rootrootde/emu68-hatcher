@@ -7,10 +7,8 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -22,8 +20,12 @@ sys.path.insert(0, str(ROOT / "src" / "main" / "python"))
 
 from emu68hatcher.data.catalog import load_catalog_source  # noqa: E402
 from emu68hatcher.data.package_schema import DownloadInfo, SourceType  # noqa: E402
+from emu68hatcher.data.package_urls import (  # noqa: E402
+    aminet_url,
+    github_api_url,
+    github_repo_valid,
+)
 
-_GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 _MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 
@@ -71,8 +73,7 @@ def _request(url: str, timeout: float, *, github_api: bool = False):
     return urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=timeout)
 
 
-def _github_release(repo: str, selector: str, timeout: float) -> dict:
-    url = f"https://api.github.com/repos/{repo}/releases/{selector}"
+def _github_release(url: str, timeout: float) -> dict:
     with _request(url, timeout, github_api=True) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -80,19 +81,15 @@ def _github_release(repo: str, selector: str, timeout: float) -> dict:
 def _github_asset(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     download = spec.download
     repo = download.repo or ""
-    if not _GITHUB_REPO_RE.fullmatch(repo):
+    if not github_repo_valid(repo):
         raise ValueError(f"invalid GitHub repo: {repo!r}")
     if not download.filename:
         raise ValueError("GitHub package has no filename")
 
     latest_tag = None
-    if download.tag:
-        tag = urllib.parse.quote(download.tag, safe="")
-        release = _github_release(repo, f"tags/{tag}", timeout)
-        if download.check_latest_release:
-            latest_tag = _github_release(repo, "latest", timeout).get("tag_name")
-    else:
-        release = _github_release(repo, "latest", timeout)
+    release = _github_release(github_api_url(repo, download.tag), timeout)
+    if download.tag and download.check_latest_release:
+        latest_tag = _github_release(github_api_url(repo), timeout).get("tag_name")
 
     for asset in release.get("assets", []):
         if asset.get("name", "").lower() == download.filename.lower():
@@ -107,7 +104,7 @@ def _download_url(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     if download.source == SourceType.AMINET:
         if not download.path:
             raise ValueError("Aminet package has no path")
-        return f"https://aminet.net/{download.path.lstrip('/')}", None
+        return aminet_url(download.path), None
     if download.source == SourceType.WEB:
         if not download.url:
             raise ValueError("web package has no URL")

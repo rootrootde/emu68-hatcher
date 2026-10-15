@@ -10,7 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildError
-from emu68hatcher.builder.staging.files import resolve_staging_path
+from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.builder.staging.packages import _merge_tree
 from emu68hatcher.utils.host_tools import find_7z, run_7z
 
@@ -119,8 +119,8 @@ def _apply_one(seven_z, bb_dir: Path, password: str, items, boot_staging: Path) 
 def _apply_item(
     payload: Path, boot_staging: Path, src_rel: str, dest_sub: str, new_name: str | None
 ) -> None:
-    src = resolve_staging_path(payload, src_rel)
-    if not src.exists():
+    src = resolve_source_path(payload, src_rel)
+    if src is None:
         logger.warning(f"boingbag item not in payload, skipping: {src_rel}")
         return
     parent = resolve_staging_path(boot_staging, dest_sub) if dest_sub else boot_staging

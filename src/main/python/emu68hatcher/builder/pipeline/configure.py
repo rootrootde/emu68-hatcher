@@ -40,6 +40,7 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
         s_dir,
         all_packages,
         image.extracted.extracted_paths,
+        image.workspace.validated.user_archives,
     )
 
     # relocate stock OS files per enabled packages (e.g. commodity -> WBStartup)

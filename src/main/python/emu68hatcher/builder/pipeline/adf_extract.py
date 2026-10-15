@@ -36,6 +36,79 @@ def extract_adfs_with_rules(
     return _run_rules(workflow, workspace, _resolve_rules(workflow), mapping, hst_imager)
 
 
+def extract_ffs_handler(workflow: BuildWorkflow, workspace: Workspace) -> Path | None:
+    """extract L/FastFileSystem from the Install ADF if any partition uses FFS"""
+    if not workflow.config.partitions or not workflow.config.partitions.uses_ffs:
+        return None
+
+    from emu68hatcher.utils.host_tools import find_hst_imager, localize_for_hst, run_hst_extract
+    from emu68hatcher.utils.paths import ensure_dir
+
+    install_adf = _find_install_adf(workflow, workspace)
+    if install_adf is None or not install_adf.exists():
+        dirs_str = ", ".join(str(d) for d in workflow.config.asset_directories) or "(none)"
+        raise BuildError(
+            "FFS partition selected but no Install ADF found to extract "
+            f"L/FastFileSystem from. Asset directories: {dirs_str}. "
+            "Place an Install3.x.adf in one of them."
+        )
+
+    hst_imager = find_hst_imager()
+    if not hst_imager:
+        raise BuildError("hst-imager not available; cannot extract FFS handler")
+
+    try:
+        install_adf = localize_for_hst(install_adf, workspace.extracted_dir / "network_media")
+    except OSError as e:
+        raise BuildError(f"Cannot copy {install_adf.name} from network path: {e}") from e
+
+    scratch = ensure_dir(workspace.extracted_dir / "ffs_handler")
+    workflow._milestone("Extracting FFS handler from Install ADF")
+    result = run_hst_extract(
+        hst_imager,
+        f"{install_adf.as_posix()}/L/FastFileSystem",
+        scratch.as_posix() + "/",
+        uaemetadata="UaeFsDb",
+    )
+    handler = scratch / "FastFileSystem"
+    if result.returncode != 0 or not handler.exists():
+        raise BuildError(
+            f"Failed to extract L/FastFileSystem from {install_adf.name}: "
+            f"{result.stderr.strip() or result.stdout.strip() or 'handler not found'}"
+        )
+    workflow.logger.info(f"FFS handler ready: {handler}")
+    return handler
+
+
+def _find_install_adf(workflow: BuildWorkflow, workspace: Workspace) -> Path | None:
+    from emu68hatcher.data.package_loader import get_adf_rules_for_version
+
+    kickstart_version = workflow.config.kickstart.version.value
+    names = sorted(
+        {
+            rule.adf
+            for rule in get_adf_rules_for_version(kickstart_version)
+            if rule.adf.lower().startswith("install")
+        }
+    )
+    mapping = build_adf_name_map(workflow, [], workspace.validated.resolved_install_media)
+    for name in names:
+        path = resolve_adf_path(mapping, name)
+        if path is not None:
+            return path
+
+    # filename fallback for Install ADFs the hash database does not know (sorted for determinism)
+    for directory in (Path(p) for p in workflow.config.asset_directories):
+        if not directory.exists():
+            continue
+        candidates = sorted(
+            p for p in directory.rglob("*.adf") if p.name.lower().startswith("install")
+        )
+        if candidates:
+            return candidates[0]
+    return None
+
+
 def _resolve_rules(workflow: BuildWorkflow) -> list:
     from emu68hatcher.builder.pipeline._selection import get_resolution
     from emu68hatcher.data.package_loader import get_filtered_adf_rules

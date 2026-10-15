@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from emu68hatcher.builder.host.archive import extract_archive
+from emu68hatcher.builder.host.archive import ARCHIVE_EXTENSIONS, extract_archive
 from emu68hatcher.utils.hashing import calculate_hash, calculate_sha256
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import get_cache_dir, get_downloads_dir
@@ -326,7 +326,7 @@ class DownloadManager:
         result.path = cached
 
         # extract if needed (always extract, even for cached files)
-        if item.extract and cached.suffix.lower() in (".lha", ".zip", ".7z"):
+        if item.extract and cached.suffix.lower() in ARCHIVE_EXTENSIONS:
             extract_dir = self.work_dir / "extracted" / item.name
             if extract_dir.exists():
                 shutil.rmtree(extract_dir)

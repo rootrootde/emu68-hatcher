@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
-from emu68hatcher.builder.staging.files import read_info_tooltypes, write_info_tooltypes
+from emu68hatcher.builder.staging.files import (
+    read_info_tooltypes,
+    resolve_source_path,
+    write_info_tooltypes,
+)
 from emu68hatcher.builder.staging.scripts.generator import generate_shell_startup
 from emu68hatcher.builder.staging.scripts.injector import (
     apply_package_scripts,
@@ -88,6 +92,7 @@ def configure_scripts(
     s_dir: Path,
     all_packages: list[str],
     extracted_paths: dict[str, Path],
+    user_archives: frozenset[str],
 ) -> None:
     """inject into or generate Startup-Sequence, User-Startup, Shell-Startup, FirstBoot"""
     workflow._update_state(progress=10.0)
@@ -123,12 +128,6 @@ def configure_scripts(
 
     # user-supplied archives switch when_user_archive-gated script variants (e.g. the full
     # Roadshow auto-runs Network-Startup; the demo timer starts when bsdsocket.library opens)
-    user_archives = set()
-    if workflow.config.roadshow_archive is not None:
-        user_archives.add("roadshow")
-    if workflow.config.display.picasso96_archive is not None:
-        user_archives.add("picasso96")
-
     script_count = apply_package_scripts(boot_staging, all_packages, user_archives)
     workflow.logger.info(f"Applied {script_count} package script blocks to User-Startup")
 
@@ -139,7 +138,9 @@ def configure_scripts(
     workflow.logger.info(f"Generated Shell-Startup ({len(shell_startup)} bytes)")
 
     workflow._update_state(progress=40.0)
-    _configure_toolsdaemon(workflow, boot_staging, s_dir, all_packages, extracted_paths)
+    _configure_toolsdaemon(
+        workflow, boot_staging, s_dir, all_packages, extracted_paths, user_archives
+    )
 
 
 def _collect_app_entries(all_packages: list[str]) -> list[_MenuLauncher]:
@@ -317,8 +318,8 @@ def _configure_native_tools_menu(
     if not entries:
         return 0
 
-    info_path = boot_staging / "WBStartup" / "AddItem.info"
-    if not info_path.is_file():
+    info_path = resolve_source_path(boot_staging, "WBStartup/AddItem.info")
+    if info_path is None or not info_path.is_file():
         raise BuildError("Native Tools menu entries require WBStartup/AddItem.info")
 
     tooltypes = [
@@ -365,6 +366,7 @@ def _configure_toolsdaemon(
     s_dir: Path,
     all_packages: list[str],
     extracted_paths: dict[str, Path],
+    user_archives: frozenset[str],
 ) -> None:
     """configure custom menus and native Tools entries."""
     if "toolsdaemon" not in all_packages:
@@ -373,7 +375,9 @@ def _configure_toolsdaemon(
     patched = patch_toolsdaemon(boot_staging, extracted_paths)
     workflow.logger.info(f"Patched ToolsDaemon 2.2 files: {', '.join(patched)}")
 
-    toolsdaemon_info = boot_staging / "WBStartup" / "ToolsDaemon.info"
+    toolsdaemon_info = resolve_source_path(boot_staging, "WBStartup/ToolsDaemon.info")
+    if toolsdaemon_info is None:
+        toolsdaemon_info = boot_staging / "WBStartup" / "ToolsDaemon.info"
     try:
         existing = read_info_tooltypes(toolsdaemon_info)
     except (ValueError, OSError) as exc:
@@ -389,7 +393,7 @@ def _configure_toolsdaemon(
             [*tooltypes, f"STARTPRI={_TOOLSDAEMON_STARTPRI}", "WAIT=1"],
         )
 
-    p96_modern = workflow.config.display.picasso96_archive is not None
+    p96_modern = "picasso96" in user_archives
     ags = bool(workflow.config.ags_import and workflow.config.ags_import.enabled)
     lines = _build_toolsdaemon_menu(
         workflow.config.network_stack,
@@ -409,8 +413,8 @@ def _configure_toolsdaemon(
         "WBStartup/Disabled/MenuTools",
         "WBStartup/Disabled/MenuTools.info",
     ):
-        path = boot_staging / Path(relative_path)
-        if path.is_file():
+        path = resolve_source_path(boot_staging, relative_path)
+        if path is not None and path.is_file():
             path.unlink()
             removed += 1
     workflow.logger.info(

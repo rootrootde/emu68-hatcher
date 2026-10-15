@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.host.download_catalog import (
-    downloadable_mandatory_names,
     get_emu68_boot_files,
     get_package_downloads,
     get_pfs3aio_download,
@@ -83,81 +82,6 @@ def _download_pfs3aio_if_needed(
     artifacts.extracted_paths["pfs3aio"] = result.extracted_path
     workflow.logger.info(f"PFS3AIO handler ready: {result.extracted_path}")
     return result.extracted_path
-
-
-def _extract_ffs_handler_if_needed(
-    workflow: BuildWorkflow,
-    workspace: Workspace,
-) -> Path | None:
-    """extract L/FastFileSystem from Install ADF if any partition uses FFS (Intl needs a registered RDB handler)"""
-    if not workflow.config.partitions or not workflow.config.partitions.uses_ffs:
-        return None
-
-    from emu68hatcher.utils.host_tools import find_hst_imager, localize_for_hst, run_hst_extract
-
-    # match KS and WB on parsed version tuples (string startswith would treat "3.1" as a prefix of "3.10")
-    ks_version = workflow.config.kickstart.version.value
-    ks_parts = tuple(ks_version.split("."))
-
-    def _versions_match(wbv: str) -> bool:
-        if not wbv:
-            return False
-        wb_parts = tuple(wbv.split("."))
-        prefix_len = min(len(ks_parts), len(wb_parts))
-        return ks_parts[:prefix_len] == wb_parts[:prefix_len]
-
-    install_adf: Path | None = None
-    for m in workspace.validated.resolved_install_media:
-        if "install" not in m.adf_name.lower():
-            continue
-        if _versions_match(m.workbench_version or ""):
-            install_adf = m.path
-            break
-
-    # filename fallback (sorted for determinism across filesystems / repeated runs)
-    if install_adf is None:
-        for d in (Path(p) for p in workflow.config.asset_directories):
-            if not d.exists():
-                continue
-            candidates = sorted(p for p in d.rglob("*.adf") if p.name.lower().startswith("install"))
-            if candidates:
-                install_adf = candidates[0]
-                break
-
-    if install_adf is None or not install_adf.exists():
-        dirs_str = ", ".join(str(d) for d in workflow.config.asset_directories) or "(none)"
-        raise BuildError(
-            "FFS partition selected but no Install ADF found to extract "
-            f"L/FastFileSystem from. Asset directories: {dirs_str}. "
-            "Place an Install3.x.adf in one of them."
-        )
-
-    hst_imager = find_hst_imager()
-    if not hst_imager:
-        raise BuildError("hst-imager not available; cannot extract FFS handler")
-
-    try:
-        install_adf = localize_for_hst(install_adf, workspace.extracted_dir / "network_media")
-    except OSError as e:
-        raise BuildError(f"Cannot copy {install_adf.name} from network path: {e}") from e
-
-    scratch = ensure_dir(workspace.extracted_dir / "ffs_handler")
-    workflow._update_state(progress=3.0)
-    workflow._milestone("Extracting FFS handler from Install ADF")
-    result = run_hst_extract(
-        hst_imager,
-        f"{install_adf.as_posix()}/L/FastFileSystem",
-        scratch.as_posix() + "/",
-        uaemetadata="UaeFsDb",
-    )
-    handler = scratch / "FastFileSystem"
-    if result.returncode != 0 or not handler.exists():
-        raise BuildError(
-            f"Failed to extract L/FastFileSystem from {install_adf.name}: "
-            f"{result.stderr.strip() or result.stdout.strip() or 'handler not found'}"
-        )
-    workflow.logger.info(f"FFS handler ready: {handler}")
-    return handler
 
 
 def _download_boot_files(
@@ -243,16 +167,13 @@ def _download_packages(
     manager: DownloadManager,
     artifacts: DownloadedArtifacts,
     resolution: Resolution,
+    required: set[str],
 ) -> None:
-    kickstart_version = workflow.config.kickstart.version.value
-    emu68_version = workflow.config.emu68_version.value
     package_names = resolution.install_order
     download_names = package_names
     if workspace.validated.picasso96_archive_path is not None:
         download_names = [name for name in package_names if name != "picasso96"]
-    mandatory = set(downloadable_mandatory_names(kickstart_version, emu68_version))
-    mandatory.update(_required_selection_packages(workflow, resolution))
-    artifacts.required_artifacts.update(mandatory)
+    artifacts.required_artifacts.update(required)
     workflow.logger.info(f"Total packages to process: {len(package_names)}")
     if not package_names:
         return
@@ -276,7 +197,7 @@ def _download_packages(
     if items:
         workflow.logger.info(f"Downloading {len(items)} packages...")
         results = manager.download_all(items, progress_callback, file_progress=file_progress)
-    _record_package_results(workflow, artifacts, results, mandatory, unqueued)
+    _record_package_results(workflow, artifacts, results, required, unqueued)
     handled = {name.lower() for name in (*results, *unqueued)}
     for package_name in package_names:
         if package_name.lower() not in handled:
@@ -344,31 +265,15 @@ def stage_download(workflow: BuildWorkflow, workspace: Workspace) -> DownloadedA
     )
 
     from emu68hatcher.builder.pipeline._selection import get_resolution
-    from emu68hatcher.data.package_loader import get_mandatory_packages
 
     resolution = get_resolution(workflow)
-    mandatory_packages = get_mandatory_packages(
-        workflow.config.kickstart.version.value,
-        workflow.config.emu68_version.value,
-    )
-    required_packages = {
-        package.name for package in mandatory_packages if package.name in resolution.selected
-    }
-    required_packages.update(_required_selection_packages(workflow, resolution))
-    artifacts = DownloadedArtifacts(
-        workspace=workspace,
-        required_packages=required_packages,
-    )
+    required = _required_selection_packages(workflow, resolution)
+    artifacts = DownloadedArtifacts(workspace=workspace, required_packages=set(required))
 
     pfs3_handler = _download_pfs3aio_if_needed(workflow, manager, artifacts)
-    ffs_handler = _extract_ffs_handler_if_needed(workflow, workspace)
     _download_boot_files(workflow, manager, artifacts)
-    _download_packages(workflow, workspace, manager, artifacts, resolution)
+    _download_packages(workflow, workspace, manager, artifacts, resolution, required)
 
     workflow._update_state(progress=100.0)
     workflow._milestone(f"Downloaded {len(artifacts.downloaded_files)} items")
-    return replace(
-        artifacts,
-        pfs3_handler_path=pfs3_handler,
-        ffs_handler_path=ffs_handler,
-    )
+    return replace(artifacts, pfs3_handler_path=pfs3_handler)

@@ -141,15 +141,19 @@ def _configure_videocore_tooltypes(workflow: BuildWorkflow, boot_staging: Path) 
 
 
 def _configure_hdtoolbox_tooltypes(workflow: BuildWorkflow, boot_staging: Path) -> None:
-    from emu68hatcher.builder.staging.files import read_info_tooltypes, write_info_tooltypes
+    from emu68hatcher.builder.staging.files import (
+        read_info_tooltypes,
+        resolve_source_path,
+        write_info_tooltypes,
+    )
 
     targets = (
         ("HDToolBoxPi3.info", "brcm-sdhc.device", "brcm-emmc.device"),
         ("HDToolBoxPi4.info", "brcm-emmc.device", "brcm-sdhc.device"),
     )
     for name, active, alternate in targets:
-        path = boot_staging / "Tools" / name
-        if not path.exists():
+        path = resolve_source_path(boot_staging, f"Tools/{name}")
+        if path is None:
             continue
         try:
             patched = [
@@ -166,9 +170,11 @@ def _configure_hdtoolbox_tooltypes(workflow: BuildWorkflow, boot_staging: Path) 
 
 
 def _seed_poseidon_config(workflow: BuildWorkflow, boot_staging: Path) -> None:
-    target = boot_staging / "Prefs" / "Env-Archive" / "PsdStackloader"
+    from emu68hatcher.builder.staging.files import resolve_source_path
+
+    target = resolve_source_path(boot_staging, "Prefs/Env-Archive/PsdStackloader")
     seed = Path(__file__).parent.parent.parent / "data" / "reference" / "poseidon.psdc"
-    if not target.exists() or not seed.exists():
+    if target is None or not seed.exists():
         return
     form = seed.read_bytes()
     data = target.read_bytes()

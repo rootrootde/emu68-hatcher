@@ -52,6 +52,16 @@ class ValidatedInputs:
     ags_plan: "AGSImportPlan | None" = None
     whdload_roms: dict[str, Path] = field(default_factory=dict)
 
+    @property
+    def user_archives(self) -> frozenset[str]:
+        """Packages built from a user-supplied archive instead of the catalog download."""
+        names = set()
+        if self.roadshow_archive_path is not None:
+            names.add("roadshow")
+        if self.picasso96_archive_path is not None:
+            names.add("picasso96")
+        return frozenset(names)
+
 
 @dataclass(frozen=True)
 class Workspace:
@@ -72,7 +82,6 @@ class DownloadedArtifacts:
     required_boot_artifacts: set[str] = field(default_factory=set)
     required_packages: set[str] = field(default_factory=set)
     pfs3_handler_path: Path | None = None
-    ffs_handler_path: Path | None = None
 
 
 @dataclass(frozen=True)

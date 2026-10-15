@@ -28,16 +28,6 @@ INSTALLATION_FORMAT = "hatcher-installation-1"
 _SETTINGS_TOOLS = ("hatcher_prefs",)
 
 
-def _user_archives(workflow: BuildWorkflow) -> set[str]:
-    # same rule as configure_scripts' when_user_archive selection
-    archives = set()
-    if workflow.config.roadshow_archive is not None:
-        archives.add("roadshow")
-    if workflow.config.display.picasso96_archive is not None:
-        archives.add("picasso96")
-    return archives
-
-
 def _boot_files(staging_dir) -> dict[str, str]:
     boot = staging_dir / EMU68_BOOT_PARTITION_NAME
     return {
@@ -62,7 +52,7 @@ def write_build_records(workflow: BuildWorkflow, image: CreatedImage) -> None:
         "source_commit": workflow.catalog.source_commit,
     }
     packages = {p.name: p for p in workflow.catalog.packages()}
-    user_archives = _user_archives(workflow)
+    user_archives = image.workspace.validated.user_archives
     log = workflow.write_log
     if log is None:
         from emu68hatcher.builder.staging.receipts import StagingWriteLog

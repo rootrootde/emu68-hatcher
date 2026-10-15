@@ -41,6 +41,9 @@ def stage_create_image(
         read_source_blocks(workspace.validated.ags_plan.inventory.source_path)
         check_source_destination(workflow)
         check_elevated_source_access(workflow, workspace.validated.ags_plan)
+    from emu68hatcher.builder.pipeline.adf_extract import extract_ffs_handler
+
+    ffs_handler = extract_ffs_handler(workflow, workspace)
     output_type = output.type
     raw_target = output.path
     # device targets are strings on purpose (see OutputConfig.path); re-wrapping in Path
@@ -86,14 +89,8 @@ def stage_create_image(
                 "This should have been downloaded during the DOWNLOAD stage."
             )
         fs_handler_paths[Filesystem.PFS3] = downloaded.pfs3_handler_path
-    if partitions.uses_ffs:
-        if not downloaded.ffs_handler_path:
-            raise BuildError(
-                "FFS filesystem handler not available. L/FastFileSystem "
-                "should have been extracted from Install3.x.adf during the "
-                "DOWNLOAD stage."
-            )
-        fs_handler_paths[Filesystem.FFS] = downloaded.ffs_handler_path
+    if ffs_handler is not None:
+        fs_handler_paths[Filesystem.FFS] = ffs_handler
 
     script = generate_disk_creation_script(
         workflow.config,

@@ -1,8 +1,6 @@
 """download catalog - builds DownloadItems from package defs, GitHub releases, and tools.yaml"""
 
 import json
-import re
-import urllib.parse
 import urllib.request
 from functools import cache
 
@@ -10,17 +8,15 @@ import yaml
 
 from emu68hatcher.builder.host.downloads import DownloadItem
 from emu68hatcher.data.emu68_releases import download_table as emu68_download_table
-from emu68hatcher.data.package_loader import (
-    get_mandatory_packages as get_mandatory_package_objs,
-)
-from emu68hatcher.data.package_loader import (
-    get_package_by_name,
-)
+from emu68hatcher.data.package_loader import get_package_by_name
 from emu68hatcher.data.package_schema import SourceType
+from emu68hatcher.data.package_urls import (
+    aminet_url,
+    github_api_url,
+    github_release_asset_url,
+    github_repo_valid,
+)
 from emu68hatcher.utils.logging import get_logger
-
-# owner/repo with limited punctuation - blocks path-traversal and query-string smuggling from YAML
-_GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 
 
 def get_pfs3aio_download() -> DownloadItem | None:
@@ -46,9 +42,6 @@ def _resolve_github_download(
 ) -> tuple[str | None, str]:
     """resolve GitHub release asset URL by exact filename; returns (url, failure reason)"""
     try:
-        if api_url.endswith("/releases"):
-            api_url = api_url + "/latest"
-
         request = urllib.request.Request(api_url, headers={"User-Agent": "Emu68 Hatcher/1.0"})
         with urllib.request.urlopen(request, timeout=30.0) as response:
             release = json.loads(response.read().decode("utf-8"))
@@ -72,7 +65,7 @@ def _aminet_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult
     aminet_path = pkg.download.path
     if not aminet_path:
         return None, "Aminet package has no download path in its YAML"
-    url = f"https://aminet.net/{aminet_path}"
+    url = aminet_url(aminet_path)
     logger.info(f"Queued Aminet download: {pkg_name} from {url}")
     item = DownloadItem(
         name=pkg_name,
@@ -88,16 +81,13 @@ def _github_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult
     repo = pkg.download.repo
     if not repo:
         return None, "GitHub package has no repo in its YAML"
-    if not _GITHUB_REPO_RE.match(repo):
+    if not github_repo_valid(repo):
         return None, f"GitHub repo {repo!r} in its YAML is not in owner/name form"
     tag = pkg.download.tag
     if tag:
-        download_url = (
-            f"https://github.com/{repo}/releases/download/{tag}/{urllib.parse.quote(filename)}"
-        )
+        download_url = github_release_asset_url(repo, tag, filename)
     else:
-        api_url = f"https://api.github.com/repos/{repo}/releases"
-        download_url, reason = _resolve_github_download(api_url, filename, logger)
+        download_url, reason = _resolve_github_download(github_api_url(repo), filename, logger)
         if not download_url:
             return None, reason
     logger.info(f"Queued GitHub download: {pkg_name} from {download_url}")
@@ -194,35 +184,6 @@ def get_package_downloads(
 
     logger.info(f"Total packages queued for download: {len(items)}")
     return items, unqueued
-
-
-def downloadable_mandatory_names(
-    kickstart_version: str = "3.1", emu68_version: str | None = None
-) -> list[str]:
-    """names of mandatory=true packages with downloadable sources"""
-    import logging
-
-    logger = logging.getLogger("emu68hatcher")
-
-    mandatory = []
-    seen = set()
-
-    mandatory_pkgs = get_mandatory_package_objs(kickstart_version, emu68_version)
-
-    for pkg in mandatory_pkgs:
-        if not pkg.download:
-            continue
-
-        if pkg.download.source == SourceType.LOCAL:
-            continue
-
-        name = pkg.name
-        if name and name.lower() not in seen:
-            seen.add(name.lower())
-            mandatory.append(name)
-            logger.debug(f"Found mandatory package: {name}")
-
-    return mandatory
 
 
 @cache
