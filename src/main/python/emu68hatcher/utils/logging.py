@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 _logger = logging.getLogger("emu68hatcher")
-_logger.setLevel(logging.INFO)
+_logger.setLevel(logging.DEBUG)
 _console_handler = logging.StreamHandler()
 _console_handler.setLevel(logging.INFO)
 _console_handler.setFormatter(logging.Formatter("%(levelname)-7s %(message)s"))

@@ -8,7 +8,7 @@ from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.packages import PackageInstaller
 from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.state import BuildStage, CreatedImage
-from emu68hatcher.data.package_loader import get_local_packages_dir
+from emu68hatcher.data.package_loader import get_local_packages_dir, get_package_by_name
 
 if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
@@ -61,7 +61,15 @@ def stage_install_packages(
         if name in resolution.selected and not installer.has_package_source(name)
     )
     if missing_sources:
-        raise BuildError("Required package source is missing: " + ", ".join(missing_sources))
+        details = "; ".join(
+            f"{name} (nothing at {workspace.extracted_dir / _source_name(name)})"
+            for name in missing_sources
+        )
+        raise BuildError(
+            f"Required package source is missing for {details}. The extract stage builds it "
+            "from the downloaded or local archive; check the [download] and [extract] log "
+            "entries for that package to see which step failed."
+        )
 
     workflow.logger.info(f"Installing {len(all_packages)} packages using YAML rules")
 
@@ -90,3 +98,9 @@ def stage_install_packages(
     workflow._update_state(progress=100.0)
     workflow._milestone(f"Installed {total} packages ({files_installed} files)")
     return image
+
+
+def _source_name(name: str) -> str:
+    """package whose extracted tree holds the files for name"""
+    pkg = get_package_by_name(name)
+    return pkg.archive_package if pkg and pkg.archive_package else name

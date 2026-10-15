@@ -66,14 +66,20 @@ def _run_rules(
     errors: list[str] = []
     processed = 0
     last_adf: str | None = None
+    missing: dict[str, list] = {}
+    for rule in rules:
+        if not resolve_adf_path(mapping, rule.adf):
+            missing.setdefault(rule.adf, []).append(rule)
+    for adf, skipped in missing.items():
+        prefix = "Mandatory " if any(r.mandatory for r in skipped) else ""
+        workflow.logger.warning(f"{prefix}ADF {adf} not found: {len(skipped)} rule(s) skipped")
     for rule in rules:
         workflow._check_cancelled()
         adf_path = resolve_adf_path(mapping, rule.adf)
         if not adf_path:
-            if rule.mandatory:
-                workflow.logger.warning(
-                    f"Missing ADF for mandatory rule: {rule.adf} (need {rule.source})"
-                )
+            workflow.logger.debug(
+                f"skipped {rule.adf}/{rule.source or '/'} -> {rule.dest}: ADF not found"
+            )
             continue
         try:
             adf_path = localize_for_hst(
@@ -106,9 +112,12 @@ def _run_rules(
                     _normalize_rename_case(Path(dest_path))
             elif "not found" not in (result.stdout + result.stderr).lower():
                 errors.append(f"{rule.adf}/{rule.source}: {result.stderr or result.stdout}")
-            elif rule.mandatory:
+            else:
+                kind = "Mandatory ADF rule" if rule.mandatory else "ADF rule"
+                hst_lines = [ln.strip() for ln in (result.stderr + result.stdout).splitlines()]
+                hst_msg = next((ln for ln in hst_lines if "not found" in ln.lower()), "")
                 workflow.logger.warning(
-                    f"Extraction failed for mandatory rule {rule.adf}/{rule.source}"
+                    f"{kind} skipped: {rule.adf}/{rule.source} not in the ADF: {hst_msg}"
                 )
         except subprocess.TimeoutExpired:
             errors.append(f"{rule.adf}/{rule.source}: Timeout")
