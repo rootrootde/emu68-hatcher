@@ -27,7 +27,6 @@ from emu68hatcher.config.partition_helpers import (
 from emu68hatcher.config.schema import PartitionConfig
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.partition_editor_model import PartitionEditorModel
-from emu68hatcher.gui.storage_controller import StorageController
 from emu68hatcher.gui.widgets.partition_bar import PartitionBar
 from emu68hatcher.gui.widgets.partition_table import PartitionTable
 
@@ -37,9 +36,9 @@ class PartitionsTab(QWidget):
 
     layout_changed = Signal()
 
-    def __init__(self, parent=None, *, controller=None):
+    def __init__(self, parent=None, *, controller):
         super().__init__(parent)
-        self.controller = controller or StorageController(self)
+        self.controller = controller
         self._updating = False
         self._loading = False
         self._model = self.controller.model
@@ -566,11 +565,6 @@ class PartitionsTab(QWidget):
         if self.capacity_error:
             raise ValueError(self.capacity_error)
         return self._model.to_config()
-
-    def focus_disk_size(self):
-        self.size_combo.setFocus()
-        if self.size_combo.isEnabled():
-            self.size_combo.showPopup()
 
     def set_config(self, config: PartitionConfig | None, *, update=True):
         """populate tab from a PartitionConfig"""

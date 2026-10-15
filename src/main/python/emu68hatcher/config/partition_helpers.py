@@ -7,7 +7,6 @@ from emu68hatcher.config.constants import (
     DEFAULT_BOOT_DEVICE,
     MBR_OVERHEAD,
     MBR_SECTOR_SIZE,
-    PFS3_MAX_PARTITION_SIZE,
     RDB_OVERHEAD,
 )
 from emu68hatcher.config.partition_models import (
@@ -17,7 +16,6 @@ from emu68hatcher.config.partition_models import (
     PartitionConfig,
 )
 
-PFS3_MAX_CREATE: int = PFS3_MAX_PARTITION_SIZE
 _MIN_CONTENT_HEADROOM = 1024 * 1024
 
 

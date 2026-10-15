@@ -29,7 +29,6 @@ class AGSImportConfig(BaseModel):
     components: AGSComponents = Field(default_factory=AGSComponents)
     allocation_state: Literal["pending", "ready"] = "pending"
     migration_notice: str | None = None
-    legacy_content_device: str | None = Field(default=None, pattern=r"^[A-Z]{2,3}\d+$")
 
     @field_validator("source_image", mode="before")
     @classmethod

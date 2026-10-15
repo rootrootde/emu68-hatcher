@@ -24,7 +24,6 @@ from emu68hatcher.config.boot_models import Emu68BootSettings, UnicamDevice
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODES,
     WorkbenchScreenMode,
-    WorkbenchTheme,
 )
 from emu68hatcher.config.schema import DisplayConfig
 from emu68hatcher.gui.design import page_layout
@@ -44,8 +43,6 @@ class DisplayTab(QWidget):
         self._rgb2rtg_video = None
         self._hdmi_before_rgb2rtg = None
         self.hdmi_modes = []
-        # Retain inactive theme selections when loading and saving older configs.
-        self.workbench_theme = WorkbenchTheme.DEFAULT
         self.load_screen_modes()
         self.setup_ui()
 
@@ -498,7 +495,6 @@ class DisplayTab(QWidget):
         return {
             "hdmi_mode": hdmi_mode_name,
             "workbench_mode": self.workbench_mode_combo.currentData(),
-            "workbench_theme": self.workbench_theme.value,
             "width": self.hdmi_width_spin.value(),
             "height": self.hdmi_height_spin.value(),
             "framerate": self.hdmi_hz_spin.value(),
@@ -522,5 +518,4 @@ class DisplayTab(QWidget):
             select_combo_by_data(self.hdmi_rb_combo, config.custom.reduced_blanking)
         self._rebuild_workbench_modes()
         select_combo_by_data(self.workbench_mode_combo, config.workbench_mode.value)
-        self.workbench_theme = config.workbench_theme
         self._on_workbench_mode_changed()

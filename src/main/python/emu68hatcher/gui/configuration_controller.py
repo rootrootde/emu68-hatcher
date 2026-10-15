@@ -47,7 +47,6 @@ class ConfigurationController(QObject):
     def __init__(self, window):
         super().__init__(window)
         self.window = window
-        self.last_validated = None
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
         self._timer.setInterval(120)
@@ -55,7 +54,6 @@ class ConfigurationController(QObject):
 
     def invalidate(self, *_args):
         if not self.window._loading_config:
-            self.last_validated = None
             self._timer.start()
 
     def set_os_version(self, version):
@@ -175,7 +173,6 @@ class ConfigurationController(QObject):
                     "inventory",
                     "inspection_error",
                     "allocation_state",
-                    "legacy_content_device",
                     "migration_notice",
                     "layout_message",
                 )
@@ -228,9 +225,7 @@ class ConfigurationController(QObject):
         window.packages_tab.refresh_packages()
 
     def snapshot(self):
-        config = self.window.collect_config().model_copy(deep=True)
-        self.last_validated = config.model_copy(deep=True)
-        return config
+        return self.window.collect_config().model_copy(deep=True)
 
     def preflight(self):
         window = self.window

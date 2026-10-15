@@ -118,9 +118,8 @@ class PartitionEditorModel:
             if part.bootable and boot_extra is not None:
                 part.extra_content_directory = boot_extra
 
-    def change_disk_size(self, disk_size: int) -> bool:
+    def change_disk_size(self, disk_size: int) -> None:
         self.disk_size = disk_size
-        return self.free_space < 0
 
     def set_boot_size_mb(self, size_mb: int) -> None:
         self.boot_size = round_to_mbr_sector(size_mb * 1024 * 1024)

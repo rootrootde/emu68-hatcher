@@ -16,14 +16,13 @@ from PySide6.QtWidgets import (
 from emu68hatcher.config.ags_layout import AGS_VOLUMES
 from emu68hatcher.config.ags_models import AGS_ROLES
 from emu68hatcher.gui.design import page_layout
-from emu68hatcher.gui.storage_controller import StorageController
 from emu68hatcher.gui.widgets.status_row import StatusRow
 
 
 class AGSTab(QWidget):
-    def __init__(self, parent=None, *, controller=None):
+    def __init__(self, parent=None, *, controller):
         super().__init__(parent)
-        self.controller = controller or StorageController(self)
+        self.controller = controller
         self._rendering = False
         layout = page_layout(self)
         layout.setSpacing(10)
@@ -153,15 +152,6 @@ class AGSTab(QWidget):
             self.layout_label.setVisible(bool(state.layout_message) and state.inventory is not None)
         finally:
             self._rendering = False
-
-    def set_config(self, config):
-        self.controller.load_ags(config)
-
-    def get_config(self):
-        return self.controller.ags_config()
-
-    def inspection_pending(self):
-        return self.controller.inspection_pending()
 
     def shutdown_workers(self, timeout_ms=500):
         return self.controller.shutdown_workers(timeout_ms)

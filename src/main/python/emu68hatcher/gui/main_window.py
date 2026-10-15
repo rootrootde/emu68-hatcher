@@ -382,7 +382,7 @@ class MainWindow(QMainWindow):
     def _apply_config(self, config):
         self.storage_controller.cancel_inspection()
         self.kickstart_tab.set_config(
-            config.kickstart, config.install_media, asset_directories=list(config.asset_directories)
+            config.kickstart, asset_directories=list(config.asset_directories)
         )
         self.display_tab.set_config(config.display)
         self.display_tab.set_picasso96_archive(config.display.picasso96_archive)
@@ -504,8 +504,7 @@ class MainWindow(QMainWindow):
         network = self.network_tab.get_network_settings()
         data = {
             "version": CURRENT_CONFIG_VERSION,
-            "kickstart": {"version": ks["version"], "rom_directory": None},
-            "install_media": {"directory": None},
+            "kickstart": {"version": ks["version"]},
             "asset_directories": [
                 Path(p) for p in ks.get("asset_directories", []) if str(p).strip()
             ],
@@ -513,7 +512,6 @@ class MainWindow(QMainWindow):
                 "hdmi_mode": hdmi_mode,
                 "custom": custom,
                 "workbench_mode": disp["workbench_mode"],
-                "workbench_theme": disp["workbench_theme"],
                 "picasso96_archive": self.display_tab.get_picasso96_archive(),
             },
             "packages": self.packages_tab.get_config()

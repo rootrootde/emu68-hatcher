@@ -57,7 +57,6 @@ class StorageController(QObject):
         self.allocation_state = "pending"
         self.inspection_error = ""
         self.layout_message = ""
-        self.legacy_content_device = None
         self.migration_notice = None
         self._workers = set()
         self._requested = False
@@ -194,7 +193,7 @@ class StorageController(QObject):
                 selection_revision=self.revision,
             )
             self.allocation_state = "ready"
-            self.legacy_content_device = self.migration_notice = None
+            self.migration_notice = None
         if draft.model_dump() != self.model.to_layout_draft().model_dump():
             self.model.load(draft)
         selected = sum(requirements[role] for role in roles)
@@ -220,7 +219,6 @@ class StorageController(QObject):
         self.inventory = None
         self.inspection_error = ""
         self._refresh = False
-        self.legacy_content_device = config.legacy_content_device if config else None
         self.migration_notice = config.migration_notice if config else None
         self._schedule()
         self.replan()
@@ -238,7 +236,6 @@ class StorageController(QObject):
                 role: role in self.roles for role in ("whdload", "games", "work", "media")
             },
             "allocation_state": self.allocation_state,
-            "legacy_content_device": self.legacy_content_device,
             "migration_notice": self.migration_notice,
         }
 

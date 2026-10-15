@@ -18,7 +18,6 @@ from PySide6.QtWidgets import (
 
 from emu68hatcher.config.schema import (
     SUPPORTED_KICKSTARTS,
-    InstallMediaConfig,
     KickstartConfig,
     KickstartVersion,
 )
@@ -282,25 +281,14 @@ class KickstartTab(QWidget):
     def set_config(
         self,
         ks_config: KickstartConfig,
-        media_config: InstallMediaConfig,
         asset_directories: list[Path] | None = None,
     ):
         """populate the tab from config objects"""
-        # kickstart.version drives the Workbench dropdown; 3.9 maps to 3.1 (same ROM, hidden in UI)
         version_to_set = ks_config.version.value
         if version_to_set not in _SELECTABLE_VERSIONS:
             version_to_set = KickstartVersion.V3_1.value
         idx = _SELECTABLE_VERSIONS.index(version_to_set)
         self.version_combo.setCurrentIndex(idx)
 
-        # asset_directories wins; fall back to merging legacy single-dir fields for round-trips
-        dirs: list[Path | str] = []
-        if asset_directories:
-            dirs.extend(asset_directories)
-        else:
-            if ks_config.rom_directory:
-                dirs.append(ks_config.rom_directory)
-            if media_config.directory and media_config.directory != ks_config.rom_directory:
-                dirs.append(media_config.directory)
-        self.asset_panel.directories = dirs
+        self.asset_panel.directories = list(asset_directories or [])
         self.asset_panel.scan()

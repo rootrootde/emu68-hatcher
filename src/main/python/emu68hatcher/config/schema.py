@@ -62,7 +62,6 @@ __all__ = [
     "Filesystem",
     "FloppySwap",
     "FramethrowerScaling",
-    "InstallMediaConfig",
     "InterfaceIp",
     "IpMode",
     "KickstartConfig",
@@ -156,34 +155,11 @@ class KickstartConfig(_ConfigModel):
     """kickstart ROM config"""
 
     version: KickstartVersion = KickstartVersion.V3_1
-    rom_directory: Path | None = Field(
-        default=None,
-        description="Directory containing Kickstart ROM files. The correct ROM will be auto-detected.",
-    )
 
     @field_validator("version")
     @classmethod
     def _check_supported(cls, v: KickstartVersion) -> KickstartVersion:
         return _check_supported_version("Kickstart", v)
-
-    @field_validator("rom_directory", mode="before")
-    @classmethod
-    def convert_path(cls, v):
-        return _coerce_optional_path(v)
-
-
-class InstallMediaConfig(_ConfigModel):
-    """OS install media config"""
-
-    directory: Path | None = Field(
-        default=None,
-        description="Directory containing installation media (ADFs, ISOs, etc.). Files are auto-detected.",
-    )
-
-    @field_validator("directory", mode="before")
-    @classmethod
-    def convert_path(cls, v):
-        return _coerce_optional_path(v)
 
 
 class PackageConfig(_ConfigModel):
@@ -214,13 +190,13 @@ class OutputConfig(_ConfigModel):
         description="Verify written blocks in a separate pass after flashing (IMG + flash only)",
     )
 
-    @field_validator("path", mode="before")
+    @field_validator("path", mode="after")
     @classmethod
     def convert_path(cls, v):
-        if v is not None and _is_device_path(v):
+        if _is_device_path(v):
             # rstrip also heals values a previous pathlib round-trip already corrupted
             return str(v).rstrip("\\/")
-        return Path(v) if isinstance(v, str) else v
+        return Path(v)
 
     @model_validator(mode="after")
     def validate_output(self):
@@ -259,7 +235,6 @@ class BuildConfig(_ConfigModel):
 
     # core settings
     kickstart: KickstartConfig = Field(default_factory=KickstartConfig)
-    install_media: InstallMediaConfig = Field(default_factory=InstallMediaConfig)
 
     # directories scanned for both ROMs and ADFs/ISOs - the single source of truth
     asset_directories: list[Path] = Field(default_factory=list)
@@ -323,26 +298,6 @@ class BuildConfig(_ConfigModel):
         return [Path(p) if isinstance(p, str) else p for p in v]
 
     @model_validator(mode="after")
-    def _migrate_legacy_asset_paths(self):
-        # fold the old single rom_directory + install_media.directory fields into the new list
-        # so configs from 0.2.x keep loading; dedupe by string identity to preserve order
-        if self.asset_directories:
-            return self
-        merged: list[Path] = []
-        seen: set[str] = set()
-        for legacy in (self.kickstart.rom_directory, self.install_media.directory):
-            if legacy is None:
-                continue
-            key = str(legacy)
-            if key in seen:
-                continue
-            seen.add(key)
-            merged.append(legacy)
-        if merged:
-            self.asset_directories = merged
-        return self
-
-    @model_validator(mode="after")
     def _check_framethrower_screen_mode(self):
         if (
             self.emu68_boot.config_txt.framethrower
@@ -370,50 +325,3 @@ class BuildConfig(_ConfigModel):
         if errors:
             raise ValueError("; ".join(errors))
         return self
-
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={
-            "example": {
-                "version": CURRENT_CONFIG_VERSION,
-                "kickstart": {
-                    "version": "3.1",
-                    "rom_directory": "/path/to/roms/",
-                },
-                "install_media": {
-                    "directory": "/path/to/workbench/",
-                },
-                "display": {
-                    "hdmi_mode": "1280*720-50",
-                    "workbench_mode": "videocore_1280x720",
-                },
-                "packages": [
-                    {"name": "whdload", "enabled": True},
-                    {"name": "dopus418", "enabled": True},
-                ],
-                "icon_set": "GlowIcons",
-                "partitions": {
-                    "disk_size": 7600000000,
-                    "layout": [
-                        {"type": "fat32", "name": "EMU68BOOT", "size": 506000000},
-                        {
-                            "type": "id76",
-                            "name": "AMIGA",
-                            "size": 7093000000,
-                            "amiga_partitions": [
-                                {
-                                    "device": "SDH0",
-                                    "volume": "Workbench",
-                                    "filesystem": "PFS3",
-                                    "size": 506000000,
-                                    "bootable": True,
-                                    "priority": 0,
-                                },
-                            ],
-                        },
-                    ],
-                },
-                "output": {"type": "img", "path": "/home/user/amiga.img"},
-            }
-        },
-    )

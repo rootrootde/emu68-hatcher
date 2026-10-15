@@ -38,9 +38,8 @@ class PartitionBar(QWidget):
     BAND_H = 24  # container caption band inside the frame
     partition_clicked = Signal(int)  # amiga partition index
 
-    def __init__(self, parent=None, *, interactive=True):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self._interactive = interactive
         self.setMinimumHeight(128)
         self.setMaximumHeight(144)
         self.setMouseTracking(True)
@@ -275,8 +274,6 @@ class PartitionBar(QWidget):
             )
 
     def _draw_handles(self, painter, children: QRect) -> None:
-        if not self._interactive:
-            return
         arrow = 6
         gap = 3
         mid_y = children.center().y()
@@ -309,8 +306,6 @@ class PartitionBar(QWidget):
 
     def _border_hit(self, pos) -> int:
         """border index near pos, children row only - strip and band never grab"""
-        if not self._interactive:
-            return -1
         rc = self._children_rect
         if not rc or not (rc.top() <= pos.y() <= rc.bottom()):
             return -1
