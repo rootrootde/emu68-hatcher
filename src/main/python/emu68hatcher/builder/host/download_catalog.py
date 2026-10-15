@@ -226,7 +226,7 @@ def downloadable_mandatory_names(
     return mandatory
 
 
-# per-version asset map: each entry is (state-key, release-asset-name, pinned-url-or-None)
+# per-version asset map: each asset is {role, filename, url, size, sha256}, pins may be None
 EMU68_RELEASES: dict[str, dict] = emu68_download_table()
 
 
@@ -245,17 +245,20 @@ def get_emu68_boot_files(version: str) -> list[DownloadItem]:
 
     items = []
     missing = []
-    for (item_name, asset_filename, url), extract in assets:
-        if not url:
+    for asset, extract in assets:
+        asset_filename = asset["filename"]
+        if not asset["url"]:
             missing.append(asset_filename)
             continue
         # version-prefix to avoid cache collisions between releases
         cached_name = f"emu68-{version}-{asset_filename}"
         items.append(
             DownloadItem(
-                name=item_name,
-                url=url,
+                name=asset["role"],
+                url=asset["url"],
                 filename=cached_name,
+                expected_sha256=asset["sha256"],
+                expected_size=asset["size"],
                 extract=extract,
             )
         )

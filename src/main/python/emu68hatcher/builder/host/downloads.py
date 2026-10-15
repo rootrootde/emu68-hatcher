@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from emu68hatcher.builder.host.archive import extract_archive
-from emu68hatcher.utils.hashing import verify_hash
+from emu68hatcher.utils.hashing import calculate_hash, calculate_sha256
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import get_cache_dir, get_downloads_dir
 
@@ -21,11 +21,18 @@ class DownloadItem:
     name: str
     url: str
     filename: str
-    expected_hash: str | None = None
+    expected_hash: str | None = None  # md5
+    expected_sha256: str | None = None
+    expected_size: int | None = None
     extract: bool = True
     extract_file: str | None = None  # specific file to extract
     mirrors: list[str] = field(default_factory=list)
     optional: bool = False  # if True, download failure is non-fatal
+
+    @property
+    def pinned(self) -> bool:
+        """True when a hash or size is pinned, so the cache needs no origin sidecar"""
+        return bool(self.expected_hash or self.expected_sha256 or self.expected_size)
 
 
 @dataclass
@@ -101,22 +108,39 @@ class DownloadManager:
         cached.unlink(missing_ok=True)
         self._origin_path(cached).unlink(missing_ok=True)
 
-    def _is_cached(
-        self,
-        filename: str,
-        expected_hash: str | None = None,
-        pkg_name: str | None = None,
-        source_url: str | None = None,
-    ) -> bool:
-        """check a cached file's hash or source URL"""
-        cached = self._get_cached_path(filename, pkg_name)
+    @staticmethod
+    def _verify(path: Path, item: DownloadItem) -> str | None:
+        """check size, sha256 and md5 pins of a file; returns the first mismatch or None"""
+        try:
+            size = path.stat().st_size
+        except OSError:
+            size = -1
+        if item.expected_size and size != item.expected_size:
+            return f"Size mismatch: got {size} bytes, expected {item.expected_size}"
+        for expected, calculate in (
+            (item.expected_sha256, calculate_sha256),
+            (item.expected_hash, calculate_hash),
+        ):
+            if not expected:
+                continue
+            try:
+                got = calculate(path)
+            except Exception:
+                got = "(unreadable)"
+            if got.lower() != expected.lower():
+                return f"Hash mismatch: got {got} ({size} bytes), expected {expected}"
+        return None
+
+    def _is_cached(self, item: DownloadItem) -> bool:
+        """check a cached file's pins or source URL"""
+        cached = self._get_cached_path(item.filename, item.name)
         if not cached.exists():
             return False
-        if expected_hash:
-            return verify_hash(cached, expected_hash)
+        if item.pinned:
+            return self._verify(cached, item) is None
         origin = self._origin_path(cached)
         try:
-            matches = bool(source_url) and origin.read_text(encoding="utf-8").strip() == source_url
+            matches = bool(item.url) and origin.read_text(encoding="utf-8").strip() == item.url
         except OSError:
             matches = False
         if not matches:
@@ -188,18 +212,19 @@ class DownloadManager:
         path: str,
         dest: Path,
         mirrors: list[str],
+        item: DownloadItem,
         file_progress: Callable[[str, int, int], None] | None = None,
-        name: str = "",
-        expected_hash: str | None = None,
     ) -> bool:
         """try mirrors in order and keep the most useful failure reason"""
+        name = item.name
+        has_hash = bool(item.expected_hash or item.expected_sha256)
         hash_error = None
         last_error = None
         for mirror in mirrors:
             if self._cancelled():
                 return False
             # without an expected hash, http:// mirrors can serve tampered bytes undetectably; refuse them
-            if not expected_hash and mirror.startswith("http://"):
+            if not has_hash and mirror.startswith("http://"):
                 self.logger.warning(
                     f"skipping {mirror} for {name}: no hash configured, refusing http mirror"
                 )
@@ -209,22 +234,10 @@ class DownloadManager:
             if not self._download_file(url, dest, file_progress=file_progress, name=name):
                 last_error = self._last_error
                 continue
-            if expected_hash and not verify_hash(dest, expected_hash):
-                from emu68hatcher.utils.hashing import calculate_hash
-
-                try:
-                    got = calculate_hash(dest)
-                except Exception:
-                    got = "(unreadable)"
-                try:
-                    size = dest.stat().st_size
-                except OSError:
-                    size = -1
-                hash_error = f"Hash mismatch: got {got} ({size} bytes), expected {expected_hash}"
-                self.logger.warning(
-                    f"hash mismatch from {mirror} for {name}: got {got}, "
-                    f"expected {expected_hash}; trying next mirror"
-                )
+            mismatch = self._verify(dest, item)
+            if mismatch:
+                hash_error = mismatch
+                self.logger.warning(f"{mismatch} from {mirror} for {name}; trying next mirror")
                 self._discard_cache_entry(dest)
                 continue
             return True
@@ -241,7 +254,7 @@ class DownloadManager:
 
         # check cache first; namespace by package name so two pkgs with the same filename never collide
         cached = self._get_cached_path(item.filename, item.name)
-        if self._is_cached(item.filename, item.expected_hash, item.name, item.url):
+        if self._is_cached(item):
             self.logger.info(f"Using cached: {item.name}")
         else:
             # download
@@ -258,9 +271,8 @@ class DownloadManager:
                     parsed.path,
                     cached,
                     mirrors,
+                    item,
                     file_progress=file_progress,
-                    name=item.name,
-                    expected_hash=item.expected_hash,
                 )
             else:
                 success = self._download_file(
@@ -280,10 +292,9 @@ class DownloadManager:
                             mirror, cached, file_progress=file_progress, name=item.name
                         ):
                             continue
-                        if item.expected_hash and not verify_hash(cached, item.expected_hash):
-                            self.logger.warning(
-                                f"hash mismatch from backup {mirror} for {item.name}"
-                            )
+                        mismatch = self._verify(cached, item)
+                        if mismatch:
+                            self.logger.warning(f"{mismatch} from backup {mirror} for {item.name}")
                             self._discard_cache_entry(cached)
                             continue
                         success = True
@@ -296,26 +307,14 @@ class DownloadManager:
                 result.error = f"{detail} ({item.url})"
                 return result
 
-            if item.expected_hash and not verify_hash(cached, item.expected_hash):
-                # log got-hash + size so 'flaky mirror returned an html error page' is
-                # distinguishable from 'upstream actually changed'
-                from emu68hatcher.utils.hashing import calculate_hash
-
-                try:
-                    got = calculate_hash(cached)
-                except Exception:
-                    got = "(unreadable)"
-                try:
-                    size = cached.stat().st_size
-                except OSError:
-                    size = -1
-                result.error = (
-                    f"Hash mismatch: got {got} ({size} bytes), expected {item.expected_hash}"
-                )
+            # got-hash + size tell 'mirror returned an html error page' from 'upstream changed'
+            mismatch = self._verify(cached, item)
+            if mismatch:
+                result.error = mismatch
                 self._discard_cache_entry(cached)
                 return result
 
-            if item.expected_hash:
+            if item.pinned:
                 self._origin_path(cached).unlink(missing_ok=True)
             else:
                 try:
