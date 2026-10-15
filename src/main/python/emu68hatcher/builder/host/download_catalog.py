@@ -2,6 +2,7 @@
 
 import json
 import re
+import urllib.parse
 import urllib.request
 
 from emu68hatcher.builder.host.downloads import DownloadItem
@@ -39,8 +40,10 @@ def get_required_startup_files() -> list[DownloadItem]:
     ]
 
 
-def _resolve_github_download(api_url: str, expected_filename: str, logger) -> str | None:
-    """resolve GitHub release asset URL by exact filename - no substitution (hostile-mirror guard)"""
+def _resolve_github_download(
+    api_url: str, expected_filename: str, logger
+) -> tuple[str | None, str]:
+    """resolve GitHub release asset URL by exact filename; returns (url, failure reason)"""
     try:
         if api_url.endswith("/releases"):
             api_url = api_url + "/latest"
@@ -49,69 +52,71 @@ def _resolve_github_download(api_url: str, expected_filename: str, logger) -> st
         with urllib.request.urlopen(request, timeout=30.0) as response:
             release = json.loads(response.read().decode("utf-8"))
     except Exception as e:
-        # surface, don't whisper - caller expects None on no-match, not on api errors
-        logger.error(f"GitHub API call failed for {api_url}: {e}")
-        return None
+        return None, f"GitHub release lookup failed ({api_url}): {e}"
 
     for asset in release.get("assets", []):
         if asset.get("name", "").lower() == expected_filename.lower():
             download_url = asset.get("browser_download_url")
             if download_url:
                 logger.debug(f"Resolved GitHub asset: {asset['name']} -> {download_url}")
-                return download_url
+                return download_url, ""
 
-    logger.error(f"GitHub release has no asset named {expected_filename!r}; refusing to substitute")
-    return None
+    return None, f"GitHub release {api_url} has no asset named {expected_filename!r}"
 
 
-def _aminet_item(pkg, pkg_name, filename, expected_hash, logger) -> DownloadItem | None:
+_QueueResult = tuple[DownloadItem | None, str]
+
+
+def _aminet_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult:
     aminet_path = pkg.download.path
     if not aminet_path:
-        logger.warning(f"Aminet package {pkg_name} has no download path; skipping")
-        return None
+        return None, "Aminet package has no download path in its YAML"
     url = f"https://aminet.net/{aminet_path}"
     logger.info(f"Queued Aminet download: {pkg_name} from {url}")
-    return DownloadItem(
+    item = DownloadItem(
         name=pkg_name,
         url=url,
         filename=filename,
         expected_hash=expected_hash or None,
         extract=True,
     )
+    return item, ""
 
 
-def _github_item(pkg, pkg_name, filename, expected_hash, logger) -> DownloadItem | None:
+def _github_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult:
     repo = pkg.download.repo
     if not repo:
-        return None
+        return None, "GitHub package has no repo in its YAML"
     if not _GITHUB_REPO_RE.match(repo):
-        logger.error(f"refusing malformed GitHub repo for {pkg_name}: {repo!r}")
-        return None
-    if pkg.download.tag:
-        api_url = f"https://api.github.com/repos/{repo}/releases/tags/{pkg.download.tag}"
+        return None, f"GitHub repo {repo!r} in its YAML is not in owner/name form"
+    tag = pkg.download.tag
+    if tag:
+        download_url = (
+            f"https://github.com/{repo}/releases/download/{tag}/{urllib.parse.quote(filename)}"
+        )
     else:
         api_url = f"https://api.github.com/repos/{repo}/releases"
-    download_url = _resolve_github_download(api_url, filename, logger)
-    if not download_url:
-        logger.warning(f"Failed to resolve GitHub URL for {pkg_name}")
-        return None
+        download_url, reason = _resolve_github_download(api_url, filename, logger)
+        if not download_url:
+            return None, reason
     logger.info(f"Queued GitHub download: {pkg_name} from {download_url}")
-    return DownloadItem(
+    item = DownloadItem(
         name=pkg_name,
         url=download_url,
         filename=filename,
         expected_hash=expected_hash or None,
         extract=True,
     )
+    return item, ""
 
 
-def _web_item(pkg, pkg_name, filename, expected_hash, logger) -> DownloadItem | None:
+def _web_item(pkg, pkg_name, filename, expected_hash, logger) -> _QueueResult:
     url = pkg.download.url
     if not url:
-        return None
+        return None, "web package has no url in its YAML"
     backup_url = pkg.download.backup_url
     logger.info(f"Queued web download: {pkg_name} from {url}")
-    return DownloadItem(
+    item = DownloadItem(
         name=pkg_name,
         url=url,
         filename=filename,
@@ -119,6 +124,7 @@ def _web_item(pkg, pkg_name, filename, expected_hash, logger) -> DownloadItem | 
         extract=True,
         mirrors=[backup_url] if backup_url else [],
     )
+    return item, ""
 
 
 _SOURCE_HANDLERS = {
@@ -128,14 +134,17 @@ _SOURCE_HANDLERS = {
 }
 
 
-def get_package_downloads(package_names: list[str]) -> list[DownloadItem]:
-    """build DownloadItems from package YAML defs - handles aminet, github, web, local sources"""
+def get_package_downloads(
+    package_names: list[str],
+) -> tuple[list[DownloadItem], dict[str, str]]:
+    """DownloadItems from package YAML defs, plus name -> reason for downloadable ones not queued"""
     import logging
     from pathlib import Path
 
     logger = logging.getLogger("emu68hatcher")
 
     items = []
+    unqueued: dict[str, str] = {}
     seen_filenames: set[str] = set()  # avoid duplicate downloads
 
     for pkg_name in package_names:
@@ -173,15 +182,19 @@ def get_package_downloads(package_names: list[str]) -> list[DownloadItem]:
 
         handler = _SOURCE_HANDLERS.get(source)
         if handler is None:
-            logger.debug(f"Unknown source type for {pkg_name}: {source}")
+            unqueued[pkg_name] = f"unsupported download source {source!r}"
+            logger.warning(f"Cannot queue {pkg_name}: {unqueued[pkg_name]}")
             continue
 
-        item = handler(pkg, pkg_name, filename, expected_hash, logger)
+        item, reason = handler(pkg, pkg_name, filename, expected_hash, logger)
         if item:
             items.append(item)
+        else:
+            unqueued[pkg_name] = reason
+            logger.warning(f"Cannot queue {pkg_name}: {reason}")
 
     logger.info(f"Total packages queued for download: {len(items)}")
-    return items
+    return items, unqueued
 
 
 def downloadable_mandatory_names(
@@ -213,7 +226,7 @@ def downloadable_mandatory_names(
     return mandatory
 
 
-# per-version asset map: each entry is (state-key, github-release-asset-name)
+# per-version asset map: each entry is (state-key, release-asset-name, pinned-url-or-None)
 EMU68_RELEASES: dict[str, dict] = emu68_download_table()
 
 
@@ -227,61 +240,33 @@ def get_emu68_boot_files(version: str) -> list[DownloadItem]:
         raise BuildError(f"Unknown Emu68 version '{version}'. Known: {', '.join(EMU68_RELEASES)}")
 
     rel = EMU68_RELEASES[version]
-    api_url = f"https://api.github.com/repos/michalsc/Emu68/releases/tags/{rel['tag']}"
-
-    try:
-        request = urllib.request.Request(api_url, headers={"User-Agent": "Emu68 Hatcher/1.0"})
-        with urllib.request.urlopen(request, timeout=30.0) as response:
-            release = json.loads(response.read().decode("utf-8"))
-    except Exception as e:
-        raise BuildError(f"Could not fetch Emu68 {rel['tag']} release info from GitHub: {e}") from e
-
-    asset_map = {}
-    for asset in release.get("assets", []):
-        asset_name = asset.get("name", "")
-        download_url = asset.get("browser_download_url")
-        if download_url:
-            asset_map[asset_name] = download_url
+    assets = [(entry, True) for entry in rel.get("zips", [])]
+    assets += [(entry, False) for entry in rel.get("extras", [])]
 
     items = []
     missing = []
-    for item_name, zip_filename in rel["zips"]:
-        if zip_filename in asset_map:
-            # version-prefix to avoid cache collisions between releases
-            cached_name = f"emu68-{version}-{zip_filename}"
-            items.append(
-                DownloadItem(
-                    name=item_name,
-                    url=asset_map[zip_filename],
-                    filename=cached_name,
-                    extract=True,
-                )
-            )
-            logger.debug(f"Found Emu68 {version} variant: {zip_filename}")
-        else:
-            missing.append(zip_filename)
-
-    for item_name, asset_filename in rel.get("extras", []):
-        if asset_filename in asset_map:
-            cached_name = f"emu68-{version}-{asset_filename}"
-            items.append(
-                DownloadItem(
-                    name=item_name,
-                    url=asset_map[asset_filename],
-                    filename=cached_name,
-                    extract=False,
-                )
-            )
-            logger.debug(f"Found Emu68 {version} extra asset: {asset_filename}")
-        else:
+    for (item_name, asset_filename, url), extract in assets:
+        if not url:
             missing.append(asset_filename)
+            continue
+        # version-prefix to avoid cache collisions between releases
+        cached_name = f"emu68-{version}-{asset_filename}"
+        items.append(
+            DownloadItem(
+                name=item_name,
+                url=url,
+                filename=cached_name,
+                extract=extract,
+            )
+        )
+        logger.debug(f"Found Emu68 {version} asset: {asset_filename}")
 
     if missing:
         raise BuildError(
-            f"Emu68 {rel['tag']} release is missing required boot variant(s): "
+            f"emu68_releases.yaml has no download url for Emu68 {rel['tag']} asset(s): "
             + ", ".join(missing)
-            + ". both PiStorm variants must be present, otherwise config.txt GPIO branches"
-            " select a kernel that isn't on disk"
+            + ". Add the GitHub release url for each. Both PiStorm variants must be present,"
+            " otherwise config.txt GPIO branches select a kernel that isn't on disk"
         )
 
     return items

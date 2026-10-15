@@ -81,6 +81,7 @@ def _download_pfs3aio_if_needed(
                 artifacts.extracted_paths["pfs3aio"] = result.extracted_path
                 workflow.logger.info(f"PFS3AIO handler ready: {result.extracted_path}")
             else:
+                workflow._check_cancelled()
                 raise BuildError(f"Failed to download PFS3AIO filesystem handler: {result.error}")
             return result.extracted_path
 
@@ -190,6 +191,7 @@ def _download_boot_files(
                 f"Optional Emu68 variant failed (non-fatal): {item.name} - {result.error}"
             )
         else:
+            workflow._check_cancelled()
             raise BuildError(f"Failed to download required {item.name}: {result.error}")
 
 
@@ -211,10 +213,18 @@ def _record_package_results(
     artifacts: DownloadedArtifacts,
     results: dict,
     mandatory_names: set[str],
+    unqueued: dict[str, str],
 ) -> None:
     mandatory = {name.lower() for name in mandatory_names}
     mandatory_failures: list[str] = []
     optional_failures: list[str] = []
+    for name, reason in unqueued.items():
+        if name.lower() in mandatory:
+            mandatory_failures.append(f"{name}: {reason}")
+            workflow.logger.error(f"Mandatory package could not be queued: {name}: {reason}")
+        else:
+            optional_failures.append(f"{name}: {reason}")
+            workflow.logger.warning(f"Optional package could not be queued: {name}: {reason}")
     for name, result in results.items():
         if result.success:
             if result.path:
@@ -255,9 +265,7 @@ def _download_packages(
     workflow.logger.info(f"Total packages to process: {len(package_names)}")
     if not package_names:
         return
-    items = get_package_downloads(download_names)
-    if not items:
-        return
+    items, unqueued = get_package_downloads(download_names)
 
     def progress_callback(name: str, current: int, total: int) -> None:
         workflow._check_cancelled()
@@ -273,12 +281,14 @@ def _download_packages(
                 )
             )
 
-    workflow.logger.info(f"Downloading {len(items)} packages...")
-    results = manager.download_all(items, progress_callback, file_progress=file_progress)
-    _record_package_results(workflow, artifacts, results, mandatory)
-    downloaded = {name.lower() for name in results}
+    results = {}
+    if items:
+        workflow.logger.info(f"Downloading {len(items)} packages...")
+        results = manager.download_all(items, progress_callback, file_progress=file_progress)
+    _record_package_results(workflow, artifacts, results, mandatory, unqueued)
+    handled = {name.lower() for name in (*results, *unqueued)}
     for package_name in package_names:
-        if package_name.lower() not in downloaded:
+        if package_name.lower() not in handled:
             workflow.logger.info(
                 f"Package {package_name} not configured for download (may be local or built-in)"
             )

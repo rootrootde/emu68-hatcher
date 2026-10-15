@@ -45,13 +45,13 @@ def load_emu68_releases() -> dict:
 
 
 def download_table() -> dict[str, dict]:
-    """version -> {"tag", "zips": [(role, filename)], "extras"?: [...]}"""
+    """version -> {"tag", "zips": [(role, filename, url)], "extras"?: [...]}, url may be None"""
     table = {}
     for release in load_emu68_releases()["releases"]:
         entry: dict = {"tag": release["tag"]}
         for asset in release["assets"]:
             key = _ASSET_KINDS[asset["kind"]]
-            entry.setdefault(key, []).append((asset["role"], asset["filename"]))
+            entry.setdefault(key, []).append((asset["role"], asset["filename"], asset.get("url")))
         table[release["version"]] = entry
     return table
 

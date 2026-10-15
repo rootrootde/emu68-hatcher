@@ -69,12 +69,9 @@ class DownloadManager:
         self._cancel_cb = cancel_callback
         # latest failure reason -> DownloadResult.error
         self._last_error: str | None = None
-        self._last_download_url: str | None = None
 
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.work_dir.mkdir(parents=True, exist_ok=True)
-
-        self.results: dict[str, DownloadResult] = {}
 
     def _cancelled(self) -> bool:
         return bool(self._cancel_cb and self._cancel_cb())
@@ -141,7 +138,6 @@ class DownloadManager:
     ) -> bool:
         """download with retries, writes to .tmp file and only renames on success"""
         tmp = dest.with_suffix(dest.suffix + ".tmp")
-        self._last_download_url = None
         for attempt in range(self.max_retries):
             try:
                 request = urllib.request.Request(url, headers={"User-Agent": "Emu68 Hatcher/1.0"})
@@ -168,7 +164,6 @@ class DownloadManager:
                             f"incomplete response: received {downloaded} of {total} bytes"
                         )
                     tmp.replace(dest)
-                    self._last_download_url = url
                     return True
             except urllib.error.HTTPError as e:
                 self._last_error = f"HTTP {e.code} {e.reason}"
@@ -299,7 +294,6 @@ class DownloadManager:
                 # log exact error if possible
                 detail = self._last_error or "download failed"
                 result.error = f"{detail} ({item.url})"
-                self.results[item.name] = result
                 return result
 
             if item.expected_hash and not verify_hash(cached, item.expected_hash):
@@ -319,18 +313,16 @@ class DownloadManager:
                     f"Hash mismatch: got {got} ({size} bytes), expected {item.expected_hash}"
                 )
                 self._discard_cache_entry(cached)
-                self.results[item.name] = result
                 return result
 
             if item.expected_hash:
                 self._origin_path(cached).unlink(missing_ok=True)
             else:
                 try:
-                    self._write_cache_origin(cached, self._last_download_url or item.url)
+                    self._write_cache_origin(cached, item.url)
                 except OSError as e:
                     self._discard_cache_entry(cached)
                     result.error = f"Could not record cache origin: {e}"
-                    self.results[item.name] = result
                     return result
 
         result.success = True
@@ -361,7 +353,6 @@ class DownloadManager:
                 result.error = f"Extraction failed: {extract_result.error}"
                 result.success = False
 
-        self.results[item.name] = result
         return result
 
     def download_all(
@@ -371,15 +362,16 @@ class DownloadManager:
         file_progress: Callable[[str, int, int], None] | None = None,
     ) -> dict[str, DownloadResult]:
         """download all items (cancel between items)"""
+        results: dict[str, DownloadResult] = {}
         total = len(items)
         for i, item in enumerate(items):
             if self._cancelled():
                 break
             if progress_callback:
                 progress_callback(item.name, i, total)
-            self.download(item, file_progress=file_progress)
+            results[item.name] = self.download(item, file_progress=file_progress)
 
         if progress_callback:
             progress_callback("Done", total, total)
 
-        return self.results
+        return results
