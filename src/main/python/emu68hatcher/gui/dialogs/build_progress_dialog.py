@@ -289,7 +289,15 @@ class BuildProgressDialog(QDialog):
         self.status_label.setText(f"Ejecting {device}…")
         self._eject_worker = _EjectWorker(device, self)
         self._eject_worker.done.connect(self._on_eject_done)
+        self._eject_worker.finished.connect(self._eject_worker_finished)
         self._eject_worker.start()
+
+    @Slot()
+    def _eject_worker_finished(self):
+        worker = self.sender()
+        if worker is self._eject_worker:
+            self._eject_worker = None
+        worker.deleteLater()
 
     @Slot(bool, str)
     def _on_eject_done(self, ok: bool, msg: str):

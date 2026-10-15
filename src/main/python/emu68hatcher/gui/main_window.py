@@ -33,6 +33,7 @@ from emu68hatcher.config.display_models import CustomScreenMode
 from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
 from emu68hatcher.data.rom_detection import identify_kickstart
+from emu68hatcher.gui.app_icon import find_app_icon, render_icon
 from emu68hatcher.gui.configuration_controller import ConfigurationController, validation_message
 from emu68hatcher.gui.design import apply_design, style_sections
 from emu68hatcher.gui.dialogs import BuildProgressDialog
@@ -48,7 +49,6 @@ from emu68hatcher.gui.tabs import (
     StartTab,
 )
 from emu68hatcher.gui.tabs.ags_tab import AGSTab
-from emu68hatcher.gui.tabs.start import _find_app_icon, _render_icon
 from emu68hatcher.gui.work_areas import (
     PAGE_DESCRIPTIONS,
     PAGE_LABELS,
@@ -89,10 +89,10 @@ class MainWindow(QMainWindow):
         rail_layout.setSpacing(24)
         brand = QHBoxLayout()
         brand.setContentsMargins(12, 0, 0, 0)
-        icon_path = _find_app_icon()
+        icon_path = find_app_icon()
         if icon_path:
             logo = QLabel()
-            logo.setPixmap(_render_icon(icon_path, 28))
+            logo.setPixmap(render_icon(icon_path, 28))
             brand.addWidget(logo)
         brand_label = QLabel("Emu68 Hatcher")
         brand_label.setProperty("heading", "brand")

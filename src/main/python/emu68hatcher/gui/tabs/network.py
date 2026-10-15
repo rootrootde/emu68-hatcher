@@ -7,14 +7,12 @@ from PySide6.QtCore import QRegularExpression, Qt
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import (
     QFormLayout,
-    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QRadioButton,
-    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -29,6 +27,7 @@ from emu68hatcher.config.schema import (
 from emu68hatcher.data.package_loader import get_package_by_name
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets.status_row import StatusRow
+from emu68hatcher.gui.work_areas import scroll_page
 
 # permissive dotted-quad: lets the field be typed; the schema does the real IPv4 check
 _IP_RE = QRegularExpression(r"^(\d{1,3})(\.\d{1,3}){0,3}$")
@@ -70,12 +69,8 @@ class NetworkTab(QWidget):
         # scroll wrapper so short windows scroll instead of squashing the field rows
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
         content = QWidget()
-        scroll.setWidget(content)
-        outer.addWidget(scroll)
+        outer.addWidget(scroll_page(content))
 
         layout = page_layout(content)
 

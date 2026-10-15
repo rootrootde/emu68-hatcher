@@ -1,12 +1,10 @@
 """Tools and update controls shown directly on Overview."""
 
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from PySide6.QtCore import QSize, QStandardPaths, Qt, QTimer, QUrl, Signal, Slot
-from PySide6.QtGui import QDesktopServices, QIcon, QPainter, QPixmap
-from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtCore import QStandardPaths, Qt, QTimer, QUrl, Signal, Slot
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
     QGroupBox,
@@ -21,52 +19,10 @@ from PySide6.QtWidgets import (
 
 from emu68hatcher.gui.design import set_status_icon
 
-
-def _render_icon(path: Path, size: int) -> QPixmap:
-    """render an svg/png/icns to a square QPixmap of the given size"""
-    screen = QApplication.primaryScreen()
-    pixel_ratio = screen.devicePixelRatio() if screen is not None else 1.0
-    pixel_size = max(size, round(size * pixel_ratio))
-    if path.suffix.lower() == ".svg":
-        renderer = QSvgRenderer(str(path))
-        pixmap = QPixmap(pixel_size, pixel_size)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-        renderer.render(painter)
-        painter.end()
-        pixmap.setDevicePixelRatio(pixel_ratio)
-        return pixmap
-    return QIcon(str(path)).pixmap(QSize(size, size), pixel_ratio)
-
-
-def _find_app_icon() -> Path | None:
-    """locate the app icon - frozen: fbs-emitted Icon.{ico,icns} next to binary; dev: hatcher-icon.svg in src tree"""
-    if getattr(sys, "frozen", False):
-        exe_dir = Path(sys.executable).parent
-        for candidate in (
-            exe_dir / "Icon.ico",  # windows + linux
-            exe_dir.parent / "Resources" / "Icon.icns",  # macos .app
-            exe_dir / "Icon.icns",
-        ):
-            if candidate.is_file():
-                return candidate
-        return None
-    here = Path(__file__).resolve()
-    for parent in here.parents:
-        svg = parent / "src" / "main" / "icons" / "hatcher-icon.svg"
-        if svg.is_file():
-            return svg
-    return None
-
-
 _TOOL_ROWS = [
     ("hst-imager", "Disk image creation and manipulation"),
     ("7z", "Archive extraction (p7zip)"),
 ]
-
-
-def _set_status_icon(label: QLabel, state: str, accessible_name: str) -> None:
-    set_status_icon(label, state, accessible_name)
 
 
 def _installer_action(path: Path) -> tuple[str, bool] | None:
@@ -136,7 +92,7 @@ class StartTab(QWidget):
             row.setSpacing(10)
 
             status_label = QLabel()
-            _set_status_icon(
+            set_status_icon(
                 status_label,
                 "pending",
                 "Checking",
@@ -186,7 +142,7 @@ class StartTab(QWidget):
         layout.addWidget(self.updates_group)
 
         self.hatcher_update_icon = QLabel()
-        _set_status_icon(
+        set_status_icon(
             self.hatcher_update_icon,
             "pending",
             "Checking",
@@ -205,7 +161,7 @@ class StartTab(QWidget):
         tools_layout.insertLayout(0, hatcher_row)
 
         self.manifest_update_icon = QLabel()
-        _set_status_icon(
+        set_status_icon(
             self.manifest_update_icon,
             "pending",
             "Checking",
@@ -274,7 +230,7 @@ class StartTab(QWidget):
             path = finders[name]()
             status_label, path_label = self._row_widgets[name]
             if not path:
-                _set_status_icon(
+                set_status_icon(
                     status_label,
                     "error",
                     "Missing",
@@ -283,7 +239,7 @@ class StartTab(QWidget):
                 path_label.setToolTip("")
                 any_missing = True
             elif tool_needs_download(name):
-                _set_status_icon(
+                set_status_icon(
                     status_label,
                     "warning",
                     "Update available",
@@ -292,7 +248,7 @@ class StartTab(QWidget):
                 path_label.setToolTip(str(path))
                 any_stale = True
             else:
-                _set_status_icon(
+                set_status_icon(
                     status_label,
                     "ok",
                     "Installed",
@@ -322,7 +278,7 @@ class StartTab(QWidget):
         release = selection.manifest.hatcher
         newer = is_newer_version(__version__, release.version)
         if newer:
-            _set_status_icon(
+            set_status_icon(
                 self.hatcher_update_icon,
                 "warning",
                 "Update available",
@@ -331,7 +287,7 @@ class StartTab(QWidget):
                 f"{release.version} available · installed: {__version__}"
             )
         else:
-            _set_status_icon(
+            set_status_icon(
                 self.hatcher_update_icon,
                 "ok",
                 "Current",
@@ -345,7 +301,7 @@ class StartTab(QWidget):
         }[selection.source]
         revision_label = _format_manifest_revision(selection.manifest.revision)
         if selection.error:
-            _set_status_icon(
+            set_status_icon(
                 self.manifest_update_icon,
                 "warning",
                 "Check failed",
@@ -357,13 +313,13 @@ class StartTab(QWidget):
         elif selection.catalog_notice:
             self.manifest_update_label.setText(selection.catalog_notice)
             self.manifest_update_label.setToolTip("")
-            _set_status_icon(
+            set_status_icon(
                 self.manifest_update_icon,
                 "info",
                 "Previous list active",
             )
         elif selection.source == "remote" and selection.changed:
-            _set_status_icon(
+            set_status_icon(
                 self.manifest_update_icon,
                 "ok",
                 "Updated",
@@ -373,7 +329,7 @@ class StartTab(QWidget):
             )
             self.manifest_update_label.setToolTip("")
         elif selection.checked:
-            _set_status_icon(
+            set_status_icon(
                 self.manifest_update_icon,
                 "ok",
                 "Current",
@@ -381,7 +337,7 @@ class StartTab(QWidget):
             self.manifest_update_label.setText(f"Package list is up to date: {revision_label}")
             self.manifest_update_label.setToolTip("")
         else:
-            _set_status_icon(
+            set_status_icon(
                 self.manifest_update_icon,
                 "ok",
                 "Available",
@@ -415,7 +371,7 @@ class StartTab(QWidget):
         if self._update_worker and self._update_worker.isRunning():
             return
         self.check_updates_btn.setEnabled(False)
-        _set_status_icon(
+        set_status_icon(
             self.manifest_update_icon,
             "pending",
             "Checking",
@@ -472,8 +428,12 @@ class StartTab(QWidget):
         self.check_updates_btn.setEnabled(True)
         self.refresh_update_status()
 
+    @Slot()
     def _update_worker_finished(self):
-        self._update_worker = None
+        worker = self.sender()
+        if worker is self._update_worker:
+            self._update_worker = None
+        worker.deleteLater()
         self.status_changed.emit()
 
     @Slot()
@@ -577,8 +537,12 @@ class StartTab(QWidget):
         QMessageBox.warning(self, "Application Update", f"{error_message}\n\n{path}")
         return False
 
+    @Slot()
     def _app_download_worker_finished(self):
-        self._app_download_worker = None
+        worker = self.sender()
+        if worker is self._app_download_worker:
+            self._app_download_worker = None
+        worker.deleteLater()
 
     # --- reset ---
     @Slot()
@@ -650,8 +614,12 @@ class StartTab(QWidget):
         self._worker.finished.connect(self._worker_finished)
         self._worker.start()
 
+    @Slot()
     def _worker_finished(self) -> None:
-        self._worker = None
+        worker = self.sender()
+        if worker is self._worker:
+            self._worker = None
+        worker.deleteLater()
 
     def shutdown_workers(self, timeout_ms: int = 500) -> bool:
         workers = [self._worker, self._update_worker, self._app_download_worker]

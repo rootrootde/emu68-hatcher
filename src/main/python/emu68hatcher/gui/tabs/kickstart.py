@@ -6,12 +6,10 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -28,6 +26,7 @@ from emu68hatcher.data.icon_sets import (
 )
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets.asset_scan_panel import AssetScanPanel
+from emu68hatcher.gui.work_areas import scroll_page
 
 # dropdown order follows schema.SUPPORTED_KICKSTARTS (add a version there to expose it here)
 _SELECTABLE_VERSIONS: tuple[str, ...] = tuple(v.value for v in SUPPORTED_KICKSTARTS)
@@ -54,12 +53,8 @@ class KickstartTab(QWidget):
         # scroll wrapper keeps the language grid reachable on short windows
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
         content = QWidget()
-        scroll.setWidget(content)
-        outer.addWidget(scroll)
+        outer.addWidget(scroll_page(content))
 
         layout = page_layout(content)
 

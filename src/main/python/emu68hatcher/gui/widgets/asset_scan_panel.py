@@ -208,6 +208,7 @@ class AssetScanPanel(QWidget):
     def _worker_finished(self, worker) -> None:
         self._workers.discard(worker)
         self._set_active(-1)
+        worker.deleteLater()
 
     def _set_active(self, delta: int) -> None:
         self._active = max(0, self._active + delta)

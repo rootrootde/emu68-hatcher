@@ -7,8 +7,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
-    QFormLayout,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -17,7 +15,6 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QRadioButton,
-    QScrollArea,
     QSizePolicy,
     QSpinBox,
     QSplitter,
@@ -30,7 +27,9 @@ from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.rgb2rtg_models import RGB2RTGConfig
 from emu68hatcher.config.schema import Emu68Version
 from emu68hatcher.gui.design import page_layout
+from emu68hatcher.gui.forms import add_form_row, form_layout, set_widget_help
 from emu68hatcher.gui.widgets import select_combo_by_data
+from emu68hatcher.gui.work_areas import scroll_page
 
 
 class Emu68Tab(QWidget):
@@ -64,16 +63,10 @@ class Emu68Tab(QWidget):
         settings_header.addWidget(self.advanced_button)
         settings_header.addStretch()
 
-        self.settings_scroll = QScrollArea()
-        self.settings_scroll.setWidgetResizable(True)
-        self.settings_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.content = QWidget()
         self.content_layout = page_layout(self.content)
-        self.settings_scroll.setWidget(self.content)
+        self.settings_scroll = scroll_page(self.content)
         settings_layout.addWidget(self.settings_scroll)
-
-        self._form_label_keys: dict[QFormLayout, object] = {}
-        self._form_label_groups: dict[object, list[QLabel]] = {}
 
         self.release_group = self._create_release_group()
         self.content_layout.addWidget(self.release_group)
@@ -131,47 +124,6 @@ class Emu68Tab(QWidget):
         self._sync_storage_timing_from_details()
         self.set_emu68_version(self.emu68_version)
         self._update_custom_fields()
-
-    def _form_layout(self, parent: QWidget, label_group: str | None = None) -> QFormLayout:
-        form = QFormLayout(parent)
-        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        form.setFormAlignment(Qt.AlignmentFlag.AlignTop)
-        form.setHorizontalSpacing(12)
-        form.setVerticalSpacing(8)
-        key = label_group if label_group is not None else form
-        self._form_label_keys[form] = key
-        self._form_label_groups.setdefault(key, [])
-        return form
-
-    def _add_form_row(
-        self,
-        form: QFormLayout,
-        text: str,
-        field: QWidget,
-        help_text: str | None = None,
-    ):
-        label = QLabel(text)
-        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        if help_text:
-            label.setToolTip(help_text)
-            label.setAccessibleDescription(help_text)
-            self._set_widget_help(field, help_text)
-        labels = self._form_label_groups[self._form_label_keys[form]]
-        labels.append(label)
-        width = max(item.sizeHint().width() for item in labels)
-        for item in labels:
-            item.setFixedWidth(width)
-        form.addRow(label, field)
-
-    @staticmethod
-    def _set_widget_help(widget: QWidget, help_text: str):
-        for item in (widget, *widget.findChildren(QWidget)):
-            if not item.toolTip():
-                item.setToolTip(help_text)
-            if not item.accessibleDescription():
-                item.setAccessibleDescription(help_text)
 
     @staticmethod
     def _paired_field(primary: QWidget, secondary: QWidget) -> QWidget:
@@ -328,7 +280,7 @@ class Emu68Tab(QWidget):
 
     def _create_rgb2rtg_group(self) -> QGroupBox:
         group = QGroupBox("RGB2RTG v0.75 (experimental)")
-        form = self._form_layout(group)
+        form = form_layout(group, top=True)
         self.rgb2rtg_check = QCheckBox("A1200 / PiStorm32-lite with Pi 4 or CM4")
         self.rgb2rtg_check.toggled.connect(self._rgb2rtg_toggled)
         form.addRow(self.rgb2rtg_check)
@@ -378,17 +330,19 @@ class Emu68Tab(QWidget):
 
     def _create_hardware_group(self) -> QGroupBox:
         hardware_group = QGroupBox("Hardware")
-        form = self._form_layout(hardware_group, "summary")
+        form = form_layout(hardware_group, top=True)
+        labels: list[QLabel] = []
 
         self.antenna_combo = QComboBox()
         self.antenna_combo.addItem("Release default", "default")
         self.antenna_combo.addItem("Internal (ant1)", "internal")
         self.antenna_combo.addItem("External (ant2)", "external")
-        self._add_form_row(
+        add_form_row(
             form,
             "CM4 antenna:",
             self.antenna_combo,
             "Selects the internal antenna or external connector on CM4 boards.",
+            labels=labels,
         )
 
         self.storage_timing_combo = QComboBox()
@@ -396,38 +350,42 @@ class Emu68Tab(QWidget):
         self.storage_timing_combo.addItem("Standard", "standard")
         self.storage_timing_combo.addItem("Custom (advanced)", "custom")
         self.storage_timing_combo.currentIndexChanged.connect(self._apply_storage_timing_selection)
-        self._add_form_row(
+        add_form_row(
             form,
             "Storage timing:",
             self.storage_timing_combo,
             "Compatible uses low-speed SD and eMMC timing. Standard uses normal clocks.",
+            labels=labels,
         )
 
         return hardware_group
 
     def _create_boot_group(self) -> QGroupBox:
         boot_group = QGroupBox("Boot and firmware defaults")
-        boot_form = self._form_layout(boot_group, "boot")
+        boot_form = form_layout(boot_group, top=True)
+        labels: list[QLabel] = []
 
         self.boot_delay_spin = QSpinBox()
         self.boot_delay_spin.setRange(0, 10)
         self.boot_delay_spin.setSuffix(" s")
-        self._add_form_row(
+        add_form_row(
             boot_form,
             "start.elf delay:",
             self.boot_delay_spin,
             "Adds a firmware pause before loading the Emu68 kernel.",
+            labels=labels,
         )
 
         self.bootcode_delay_spin = QSpinBox()
         self.bootcode_delay_spin.setRange(0, 10)
         self.bootcode_delay_spin.setValue(1)
         self.bootcode_delay_spin.setSuffix(" s")
-        self._add_form_row(
+        add_form_row(
             boot_form,
             "bootcode.bin delay:",
             self.bootcode_delay_spin,
             "Adds a pause before the firmware loads the boot files.",
+            labels=labels,
         )
 
         self.avoid_warnings_combo = QComboBox()
@@ -435,20 +393,22 @@ class Emu68Tab(QWidget):
         self.avoid_warnings_combo.addItem("0 - show firmware warnings", 0)
         self.avoid_warnings_combo.addItem("1 - hide warning icons", 1)
         self.avoid_warnings_combo.addItem("2 - also ignore undervoltage throttling", 2)
-        self._add_form_row(
+        add_form_row(
             boot_form,
             "Firmware warnings:",
             self.avoid_warnings_combo,
             "Controls Raspberry Pi warning icons and undervoltage throttling.",
+            labels=labels,
         )
 
         self.arm_boost_check = QCheckBox("arm_boost=1 for Pi 4 / CM4")
         self.arm_boost_check.setChecked(True)
-        self._add_form_row(
+        add_form_row(
             boot_form,
             "Pi 4 boost:",
             self.arm_boost_check,
             "Uses the boosted Pi 4 or CM4 ARM clock when supported by the firmware.",
+            labels=labels,
         )
 
         return boot_group
@@ -459,30 +419,33 @@ class Emu68Tab(QWidget):
         self.storage_layout.setHorizontalSpacing(20)
 
         self.storage_sd_fields = QWidget()
-        sd_form = self._form_layout(self.storage_sd_fields, "storage")
+        labels: list[QLabel] = []
+        sd_form = form_layout(self.storage_sd_fields, top=True)
         self.storage_emmc_fields = QWidget()
-        emmc_form = self._form_layout(self.storage_emmc_fields, "storage")
+        emmc_form = form_layout(self.storage_emmc_fields, top=True)
 
         self.sd_unit_combo = QComboBox()
         for label, value in (("Off", "off"), ("Read only", "ro"), ("Read/write", "rw")):
             self.sd_unit_combo.addItem(label, value)
         self.sd_unit_combo.setCurrentIndex(2)
-        self._add_form_row(
+        add_form_row(
             sd_form,
             "SD card unit 0:",
             self.sd_unit_combo,
             "Sets whether Emu68 exposes the whole microSD card and allows writes to it.",
+            labels=labels,
         )
 
         self.sd_low_speed_check = QCheckBox("Low speed")
         self.sd_low_speed_check.setChecked(True)
         self.sd_low_speed_check.toggled.connect(self._update_custom_fields)
         self.sd_low_speed_check.toggled.connect(self._sync_storage_timing_from_details)
-        self._add_form_row(
+        add_form_row(
             sd_form,
             "SD card timing:",
             self.sd_low_speed_check,
             "Disables the 50 MHz high-speed mode for cards that need conservative timing.",
+            labels=labels,
         )
 
         self.sd_clock_spin = QSpinBox()
@@ -490,33 +453,36 @@ class Emu68Tab(QWidget):
         self.sd_clock_spin.setSpecialValueText("Default clock")
         self.sd_clock_spin.setSuffix(" MHz")
         self.sd_clock_spin.valueChanged.connect(self._sync_storage_timing_from_details)
-        self._add_form_row(
+        add_form_row(
             sd_form,
             "SD card clock:",
             self.sd_clock_spin,
             "Overrides the high-speed SD clock when Low speed is off.",
+            labels=labels,
         )
 
         self.emmc_unit_combo = QComboBox()
         for label, value in (("Off", "off"), ("Read only", "ro"), ("Read/write", "rw")):
             self.emmc_unit_combo.addItem(label, value)
         self.emmc_unit_combo.setCurrentIndex(2)
-        self._add_form_row(
+        add_form_row(
             emmc_form,
             "eMMC unit 0:",
             self.emmc_unit_combo,
             "Sets whether Emu68 exposes the whole eMMC device and allows writes to it.",
+            labels=labels,
         )
 
         self.emmc_low_speed_check = QCheckBox("Low speed")
         self.emmc_low_speed_check.setChecked(True)
         self.emmc_low_speed_check.toggled.connect(self._update_custom_fields)
         self.emmc_low_speed_check.toggled.connect(self._sync_storage_timing_from_details)
-        self._add_form_row(
+        add_form_row(
             emmc_form,
             "eMMC timing:",
             self.emmc_low_speed_check,
             "Disables the 50 MHz high-speed mode for eMMC devices that need conservative timing.",
+            labels=labels,
         )
 
         self.emmc_clock_spin = QSpinBox()
@@ -524,11 +490,12 @@ class Emu68Tab(QWidget):
         self.emmc_clock_spin.setSpecialValueText("Default clock")
         self.emmc_clock_spin.setSuffix(" MHz")
         self.emmc_clock_spin.valueChanged.connect(self._sync_storage_timing_from_details)
-        self._add_form_row(
+        add_form_row(
             emmc_form,
             "eMMC clock:",
             self.emmc_clock_spin,
             "Overrides the high-speed eMMC clock when Low speed is off.",
+            labels=labels,
         )
 
         self.swap_df0_combo = QComboBox()
@@ -536,11 +503,12 @@ class Emu68Tab(QWidget):
         self.swap_df0_combo.addItem("Swap DF0 with DF1", "df1")
         self.swap_df0_combo.addItem("Swap DF0 with DF2", "df2")
         self.swap_df0_combo.addItem("Swap DF0 with DF3", "df3")
-        self._add_form_row(
+        add_form_row(
             emmc_form,
             "Floppy drives:",
             self.swap_df0_combo,
             "Swaps DF0 with another floppy drive during Emu68 startup.",
+            labels=labels,
         )
 
         self.storage_layout.addWidget(self.storage_sd_fields, 0, 0)
@@ -555,9 +523,10 @@ class Emu68Tab(QWidget):
         self.cpu_layout.setHorizontalSpacing(20)
 
         self.cpu_left_fields = QWidget()
-        left_form = self._form_layout(self.cpu_left_fields, "cpu-memory")
+        labels: list[QLabel] = []
+        left_form = form_layout(self.cpu_left_fields, top=True)
         self.cpu_right_fields = QWidget()
-        right_form = self._form_layout(self.cpu_right_fields, "cpu-memory")
+        right_form = form_layout(self.cpu_right_fields, top=True)
 
         self.memory_limit_combo = QComboBox()
         self.memory_limit_combo.addItem("Release default", None)
@@ -568,11 +537,12 @@ class Emu68Tab(QWidget):
         self.memory_limit_spin.setRange(128, 8192)
         self.memory_limit_spin.setValue(2048)
         self.memory_limit_spin.setSuffix(" MB")
-        self._add_form_row(
+        add_form_row(
             left_form,
             "Total RAM:",
             self._paired_field(self.memory_limit_combo, self.memory_limit_spin),
             "Limits ARM memory visible to the firmware. Release default follows Emu68.",
+            labels=labels,
         )
 
         self.gpu_memory_combo = QComboBox()
@@ -584,11 +554,12 @@ class Emu68Tab(QWidget):
         self.gpu_memory_spin.setRange(1, 512)
         self.gpu_memory_spin.setValue(32)
         self.gpu_memory_spin.setSuffix(" MB")
-        self._add_form_row(
+        add_form_row(
             left_form,
             "GPU memory:",
             self._paired_field(self.gpu_memory_combo, self.gpu_memory_spin),
             "Reserves general-purpose RAM for the VideoCore firmware.",
+            labels=labels,
         )
 
         self.cpu_turbo_combo = QComboBox()
@@ -596,11 +567,12 @@ class Emu68Tab(QWidget):
         self.cpu_turbo_combo.addItem("Disabled", "disabled")
         self.cpu_turbo_combo.addItem("Enabled", "enabled")
         self.cpu_turbo_combo.currentIndexChanged.connect(self._update_custom_fields)
-        self._add_form_row(
+        add_form_row(
             left_form,
             "CPU tuning:",
             self.cpu_turbo_combo,
             "Applies the custom ARM frequency and voltage settings when enabled.",
+            labels=labels,
         )
 
         compatibility = QWidget()
@@ -611,19 +583,19 @@ class Emu68Tab(QWidget):
         self.no_fpu_check = QCheckBox("Disable FPU")
         self.limit_2g_check = QCheckBox("Limit ARM RAM to 2 GB")
         self.disable_z3_check = QCheckBox("Disable Zorro III")
-        self._set_widget_help(
+        set_widget_help(
             self.vbr_move_check,
             "Moves the exception vector table to Fast RAM. This can break floppy software.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.no_fpu_check,
             "Disables the Emu68 FPU so FPU opcodes raise an exception.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.limit_2g_check,
             "Limits mapped ARM memory to 2 GB for systems that cannot handle more.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.disable_z3_check,
             "Disables all Emu68 Zorro III boards, including SD and Unicam.",
         )
@@ -636,43 +608,47 @@ class Emu68Tab(QWidget):
             )
         ):
             compatibility_grid.addWidget(check, index // 2, index % 2)
-        self._add_form_row(
+        add_form_row(
             left_form,
             "Compatibility:",
             compatibility,
             "Boot-time switches for memory, FPU, and expansion compatibility.",
+            labels=labels,
         )
 
         self.arm_freq_spin = QSpinBox()
         self.arm_freq_spin.setRange(600, 2400)
         self.arm_freq_spin.setValue(1800)
         self.arm_freq_spin.setSuffix(" MHz")
-        self._add_form_row(
+        add_form_row(
             right_form,
             "ARM frequency:",
             self.arm_freq_spin,
             "Sets the ARM processor clock when CPU tuning is enabled.",
+            labels=labels,
         )
 
         self.over_voltage_spin = QSpinBox()
         self.over_voltage_spin.setRange(-16, 8)
         self.over_voltage_spin.setValue(4)
-        self._add_form_row(
+        add_form_row(
             right_form,
             "Over voltage:",
             self.over_voltage_spin,
             "Sets the firmware voltage adjustment when CPU tuning is enabled.",
+            labels=labels,
         )
 
         self.z2_ram_combo = QComboBox()
         self.z2_ram_combo.addItem("Default", None)
         for size in (0, 1, 2, 4, 8):
             self.z2_ram_combo.addItem(f"{size} MB", size)
-        self._add_form_row(
+        add_form_row(
             right_form,
             "Z2 RAM:",
             self.z2_ram_combo,
             "Sets the Zorro II RAM expansion size. Lower it if other Z2 devices need space.",
+            labels=labels,
         )
 
         self.vc4_memory_spin = QSpinBox()
@@ -680,11 +656,12 @@ class Emu68Tab(QWidget):
         self.vc4_memory_spin.setSingleStep(2)
         self.vc4_memory_spin.setSpecialValueText("Default")
         self.vc4_memory_spin.setSuffix(" MB")
-        self._add_form_row(
+        add_form_row(
             right_form,
             "VC4 memory:",
             self.vc4_memory_spin,
             "Sets the VC4 memory reported to P96. This is separate from GPU memory.",
+            labels=labels,
         )
 
         self.cpu_layout.addWidget(self.cpu_left_fields, 0, 0)
@@ -694,7 +671,8 @@ class Emu68Tab(QWidget):
 
     def _create_emu68_compatibility_group(self) -> QGroupBox:
         compatibility_group = QGroupBox("Emu68 compatibility")
-        form = self._form_layout(compatibility_group, "emu68-compatibility")
+        form = form_layout(compatibility_group, top=True)
+        labels: list[QLabel] = []
 
         compatibility = QWidget()
         compatibility_grid = QGridLayout(compatibility)
@@ -705,19 +683,19 @@ class Emu68Tab(QWidget):
         self.chip_slowdown_check.toggled.connect(self._update_custom_fields)
         self.dbf_slowdown_check = QCheckBox("DBF slowdown")
         self.blitwait_check = QCheckBox("Blitter waits")
-        self._set_widget_help(
+        set_widget_help(
             self.fast_page_zero_check,
             "Maps the first 4 KB of RAM to fast ARM memory.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.chip_slowdown_check,
             "Slows code running from CHIP memory for old software with busy-loop delays.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.dbf_slowdown_check,
             "Slows self-branching DBF delay loops used by old games, demos, and replayers.",
         )
-        self._set_widget_help(
+        set_widget_help(
             self.blitwait_check,
             "Waits for the blitter before sensitive register writes in old software.",
         )
@@ -730,21 +708,23 @@ class Emu68Tab(QWidget):
             )
         ):
             compatibility_grid.addWidget(check, index // 2, index % 2)
-        self._add_form_row(
+        add_form_row(
             form,
             "Emu68 options:",
             compatibility,
             "Compatibility fixes for old software that depends on chipset timing.",
+            labels=labels,
         )
 
         self.chip_distance_spin = QSpinBox()
         self.chip_distance_spin.setRange(1, 8)
         self.chip_distance_spin.setSuffix(" instruction(s)")
-        self._add_form_row(
+        add_form_row(
             form,
             "CHIP slowdown distance:",
             self.chip_distance_spin,
             "Applies CHIP slowdown to every nth instruction. Lower values are slower.",
+            labels=labels,
         )
 
         self.bus_test_combo = QComboBox()
@@ -752,39 +732,43 @@ class Emu68Tab(QWidget):
         self.bus_test_combo.addItem("Disabled", "disabled")
         self.bus_test_combo.addItem("First boot", "first_boot")
         self.bus_test_combo.currentIndexChanged.connect(self._update_custom_fields)
-        self._add_form_row(
+        add_form_row(
             form,
             "PiStorm bus test:",
             self.bus_test_combo,
             "Checks the PiStorm bus with randomized CHIP-memory writes and reads.",
+            labels=labels,
         )
 
         self.bus_test_size_spin = QSpinBox()
         self.bus_test_size_spin.setRange(1, 2048)
         self.bus_test_size_spin.setValue(512)
         self.bus_test_size_spin.setSuffix(" KB")
-        self._add_form_row(
+        add_form_row(
             form,
             "Test size:",
             self.bus_test_size_spin,
             "Sets how much CHIP memory the bus test writes and reads.",
+            labels=labels,
         )
 
         self.bus_test_iterations_spin = QSpinBox()
         self.bus_test_iterations_spin.setRange(1, 9)
         self.bus_test_iterations_spin.setValue(1)
-        self._add_form_row(
+        add_form_row(
             form,
             "Test iterations:",
             self.bus_test_iterations_spin,
             "Sets the number of randomized data patterns used by the bus test.",
+            labels=labels,
         )
 
         return compatibility_group
 
     def _create_manual_overrides_group(self) -> QGroupBox:
         advanced_group = QGroupBox("Manual overrides")
-        layout = self._form_layout(advanced_group, "manual-overrides")
+        layout = form_layout(advanced_group, top=True)
+        labels: list[QLabel] = []
 
         self.extra_config_edit = QPlainTextEdit()
         self.extra_config_edit.setPlaceholderText(
@@ -799,11 +783,12 @@ class Emu68Tab(QWidget):
             "Turn off native-video capture in Display before adding a complete unicam overlay."
         )
         self.extra_config_edit.setMaximumHeight(100)
-        self._add_form_row(
+        add_form_row(
             layout,
             "config.txt:",
             self.extra_config_edit,
             "Adds firmware directives that are not covered by the controls above.",
+            labels=labels,
         )
 
         self.extra_cmdline_edit = QLineEdit()
@@ -815,11 +800,12 @@ class Emu68Tab(QWidget):
             "async_log, fast_serial, enable_cache, checksum_rom, copy_rom, enable_c0_slow, "
             "enable_c8_slow, enable_d0_slow, move_slow_to_chip, ICNT, CCRD, and IRNG."
         )
-        self._add_form_row(
+        add_form_row(
             layout,
             "cmdline.txt:",
             self.extra_cmdline_edit,
             "Adds Emu68 boot tokens that are not covered by the controls above.",
+            labels=labels,
         )
         return advanced_group
 

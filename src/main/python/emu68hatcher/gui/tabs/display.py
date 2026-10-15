@@ -2,19 +2,15 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFormLayout,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
-    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -28,9 +24,10 @@ from emu68hatcher.config.display_models import (
 from emu68hatcher.config.schema import DisplayConfig
 from emu68hatcher.data.data_manager import load_yaml_data
 from emu68hatcher.gui.design import page_layout
+from emu68hatcher.gui.forms import add_form_row, form_layout
 from emu68hatcher.gui.widgets import select_combo_by_data
 from emu68hatcher.gui.widgets.status_row import StatusRow
-from emu68hatcher.gui.work_areas import scroll_to
+from emu68hatcher.gui.work_areas import scroll_page, scroll_to
 
 
 class DisplayTab(QWidget):
@@ -57,12 +54,8 @@ class DisplayTab(QWidget):
     def setup_ui(self):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
         content = QWidget()
-        scroll.setWidget(content)
-        outer.addWidget(scroll)
+        outer.addWidget(scroll_page(content))
 
         self.content = content
         layout = page_layout(content)
@@ -210,33 +203,13 @@ class DisplayTab(QWidget):
         layout.addStretch()
         self._update_framethrower_fields()
 
-    @staticmethod
-    def _form_layout(parent: QWidget) -> QFormLayout:
-        form = QFormLayout(parent)
-        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        form.setHorizontalSpacing(12)
-        form.setVerticalSpacing(8)
-        return form
-
-    @staticmethod
-    def _add_form_row(form: QFormLayout, text: str, field: QWidget, help_text: str):
-        label = QLabel(text)
-        label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        label.setToolTip(help_text)
-        label.setAccessibleDescription(help_text)
-        field.setToolTip(help_text)
-        field.setAccessibleDescription(help_text)
-        form.addRow(label, field)
-
     def _create_framethrower_group(self) -> QGroupBox:
         group = QGroupBox("Framethrower / C790 (Unicam)")
-        form = self._form_layout(group)
+        form = form_layout(group)
 
         self.framethrower_check = QCheckBox("Enable native-video capture")
         self.framethrower_check.toggled.connect(self._update_framethrower_fields)
-        self._add_form_row(
+        add_form_row(
             form,
             "Configuration:",
             self.framethrower_check,
@@ -246,7 +219,7 @@ class DisplayTab(QWidget):
         self.unicam_device_combo = QComboBox()
         self.unicam_device_combo.addItem("Framethrower", UnicamDevice.FRAMETHROWER.value)
         self.unicam_device_combo.addItem("C790 (HDMI to CSI)", UnicamDevice.C790.value)
-        self._add_form_row(
+        add_form_row(
             form,
             "Capture device:",
             self.unicam_device_combo,
@@ -255,7 +228,7 @@ class DisplayTab(QWidget):
 
         self.framethrower_boot_check = QCheckBox("Start on boot")
         self.framethrower_boot_check.setChecked(True)
-        self._add_form_row(
+        add_form_row(
             form,
             "Startup:",
             self.framethrower_boot_check,
@@ -270,7 +243,7 @@ class DisplayTab(QWidget):
         self.framethrower_scaling_combo.currentIndexChanged.connect(
             self._update_framethrower_fields
         )
-        self._add_form_row(
+        add_form_row(
             form,
             "Unicam scaling:",
             self.framethrower_scaling_combo,
@@ -280,7 +253,7 @@ class DisplayTab(QWidget):
         self.framethrower_b_spin = QSpinBox()
         self.framethrower_b_spin.setRange(0, 1000)
         self.framethrower_b_spin.setValue(200)
-        self._add_form_row(
+        add_form_row(
             form,
             "Smooth scaling B:",
             self.framethrower_b_spin,
@@ -290,7 +263,7 @@ class DisplayTab(QWidget):
         self.framethrower_c_spin = QSpinBox()
         self.framethrower_c_spin.setRange(0, 1000)
         self.framethrower_c_spin.setValue(400)
-        self._add_form_row(
+        add_form_row(
             form,
             "Smooth scaling C:",
             self.framethrower_c_spin,
