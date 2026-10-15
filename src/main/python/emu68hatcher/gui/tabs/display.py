@@ -9,14 +9,12 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QPushButton,
     QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
-from emu68hatcher.config.boot_models import Emu68BootSettings, UnicamDevice
+from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODES,
     WorkbenchScreenMode,
@@ -24,9 +22,9 @@ from emu68hatcher.config.display_models import (
 from emu68hatcher.config.schema import DisplayConfig
 from emu68hatcher.data.data_manager import load_yaml_data
 from emu68hatcher.gui.design import page_layout
-from emu68hatcher.gui.forms import add_form_row, form_layout
+from emu68hatcher.gui.tabs.framethrower_panel import FramethrowerPanel
+from emu68hatcher.gui.tabs.picasso96_panel import Picasso96Panel
 from emu68hatcher.gui.widgets import select_combo_by_data
-from emu68hatcher.gui.widgets.status_row import StatusRow
 from emu68hatcher.gui.work_areas import scroll_page, scroll_to
 
 
@@ -169,115 +167,31 @@ class DisplayTab(QWidget):
 
         self.hdmi_width_spin.valueChanged.connect(self._rebuild_workbench_modes)
         self.hdmi_height_spin.valueChanged.connect(self._rebuild_workbench_modes)
-        self._rebuild_workbench_modes()
 
         self.appearance_content = QWidget()
         page_layout(self.appearance_content)
         layout.addWidget(self.appearance_content)
 
-        p96_group = QGroupBox("Picasso96 RTG")
-        p96_layout = QVBoxLayout(p96_group)
-        p96_row = QHBoxLayout()
-        p96_row.addWidget(QLabel("Full version archive:"))
-        self.picasso96_archive_edit = QLineEdit()
-        self.picasso96_archive_edit.setPlaceholderText(
-            "Picasso96.lha (leave empty for the default version)"
-        )
-        self.picasso96_archive_edit.setReadOnly(True)
-        p96_row.addWidget(self.picasso96_archive_edit, 1)
-        p96_browse = QPushButton("Browse...")
-        p96_browse.clicked.connect(self._browse_picasso96_archive)
-        p96_row.addWidget(p96_browse)
-        p96_clear = QPushButton("Clear")
-        p96_clear.clicked.connect(self._clear_picasso96_archive)
-        p96_row.addWidget(p96_clear)
-        p96_layout.addLayout(p96_row)
-        self._picasso96_status = StatusRow()
-        p96_layout.addWidget(self._picasso96_status)
-        self._refresh_picasso96_status()
-        layout.addWidget(p96_group)
+        self.picasso96 = Picasso96Panel()
+        layout.addWidget(self.picasso96)
 
-        self.framethrower_group = self._create_framethrower_group()
-        layout.addWidget(self.framethrower_group)
+        self.framethrower = FramethrowerPanel()
+        layout.addWidget(self.framethrower)
 
         layout.addStretch()
-        self._update_framethrower_fields()
+        self._rebuild_workbench_modes()
 
-    def _create_framethrower_group(self) -> QGroupBox:
-        group = QGroupBox("Framethrower / C790 (Unicam)")
-        form = form_layout(group)
+    @property
+    def picasso96_archive_edit(self):
+        return self.picasso96.picasso96_archive_edit
 
-        self.framethrower_check = QCheckBox("Enable native-video capture")
-        self.framethrower_check.toggled.connect(self._update_framethrower_fields)
-        add_form_row(
-            form,
-            "Configuration:",
-            self.framethrower_check,
-            "Captures native Amiga video through Unicam for VideoCore output.",
-        )
+    @property
+    def framethrower_check(self):
+        return self.framethrower.framethrower_check
 
-        self.unicam_device_combo = QComboBox()
-        self.unicam_device_combo.addItem("Framethrower", UnicamDevice.FRAMETHROWER.value)
-        self.unicam_device_combo.addItem("C790 (HDMI to CSI)", UnicamDevice.C790.value)
-        add_form_row(
-            form,
-            "Capture device:",
-            self.unicam_device_combo,
-            "Select the connected capture board. C790 requires Emu68 1.1 or later.",
-        )
-
-        self.framethrower_boot_check = QCheckBox("Start on boot")
-        self.framethrower_boot_check.setChecked(True)
-        add_form_row(
-            form,
-            "Startup:",
-            self.framethrower_boot_check,
-            "Starts native-video capture during Emu68 boot.",
-        )
-
-        self.framethrower_scaling_combo = QComboBox()
-        self.framethrower_scaling_combo.addItem("No scaling flag", "none")
-        self.framethrower_scaling_combo.addItem("Smooth", "smooth")
-        self.framethrower_scaling_combo.addItem("Integer / pixel perfect", "integer")
-        self.framethrower_scaling_combo.setCurrentIndex(1)
-        self.framethrower_scaling_combo.currentIndexChanged.connect(
-            self._update_framethrower_fields
-        )
-        add_form_row(
-            form,
-            "Unicam scaling:",
-            self.framethrower_scaling_combo,
-            "Chooses how captured native video is scaled for HDMI output.",
-        )
-
-        self.framethrower_b_spin = QSpinBox()
-        self.framethrower_b_spin.setRange(0, 1000)
-        self.framethrower_b_spin.setValue(200)
-        add_form_row(
-            form,
-            "Smooth scaling B:",
-            self.framethrower_b_spin,
-            "Sets the B filter coefficient used by smooth scaling.",
-        )
-
-        self.framethrower_c_spin = QSpinBox()
-        self.framethrower_c_spin.setRange(0, 1000)
-        self.framethrower_c_spin.setValue(400)
-        add_form_row(
-            form,
-            "Smooth scaling C:",
-            self.framethrower_c_spin,
-            "Sets the C filter coefficient used by smooth scaling.",
-        )
-
-        self.framethrower_note = QLabel(
-            "Native-video capture requires a VideoCore Workbench mode. "
-            "C790 requires Emu68 1.1 or later. "
-            "For PAL, use a fixed 50 Hz HDMI mode."
-        )
-        self.framethrower_note.setWordWrap(True)
-        form.addRow(self.framethrower_note)
-        return group
+    @property
+    def unicam_device_combo(self):
+        return self.framethrower.unicam_device_combo
 
     def navigate(self, section):
         scroll_to(self.appearance_content if section == "appearance" else self.hdmi_mode_combo)
@@ -340,98 +254,26 @@ class DisplayTab(QWidget):
         self._on_workbench_mode_changed()
 
     def _on_workbench_mode_changed(self, _index=None):
-        self._update_framethrower_fields()
+        self.framethrower.set_rtg_enabled(self.has_rtg_workbench_mode())
 
     def has_rtg_workbench_mode(self) -> bool:
         return self.workbench_mode_combo.currentData() != WorkbenchScreenMode.NATIVE.value
 
-    def _update_framethrower_fields(self, _value=None):
-        if not hasattr(self, "framethrower_check"):
-            return
-        rtg_enabled = self.has_rtg_workbench_mode()
-        if not rtg_enabled and self.framethrower_check.isChecked():
-            self.framethrower_check.setChecked(False)
-        self.framethrower_check.setEnabled(rtg_enabled)
-        framethrower = rtg_enabled and self.framethrower_check.isChecked()
-        self.unicam_device_combo.setEnabled(framethrower)
-        self.framethrower_boot_check.setEnabled(framethrower)
-        self.framethrower_scaling_combo.setEnabled(framethrower)
-        smooth = self.framethrower_scaling_combo.currentData() == "smooth"
-        self.framethrower_b_spin.setEnabled(framethrower and smooth)
-        self.framethrower_c_spin.setEnabled(framethrower and smooth)
-        form = self.framethrower_group.layout()
-        for field in (
-            self.unicam_device_combo,
-            self.framethrower_boot_check,
-            self.framethrower_scaling_combo,
-        ):
-            form.setRowVisible(field, framethrower)
-        for field in (self.framethrower_b_spin, self.framethrower_c_spin):
-            form.setRowVisible(field, framethrower and smooth)
-        self.framethrower_note.setVisible(framethrower)
-
     def get_emu68_boot_settings(self) -> dict:
         return {
             "force_hdmi": self.force_hdmi_check.isChecked(),
-            "framethrower": self.framethrower_check.isChecked(),
-            "unicam_device": self.unicam_device_combo.currentData(),
-            "framethrower_start_on_boot": self.framethrower_boot_check.isChecked(),
-            "framethrower_scaling": self.framethrower_scaling_combo.currentData(),
-            "framethrower_b": self.framethrower_b_spin.value(),
-            "framethrower_c": self.framethrower_c_spin.value(),
+            **self.framethrower.get_settings(),
         }
 
     def set_emu68_boot_settings(self, settings: Emu68BootSettings):
-        config = settings.config_txt
-        self.force_hdmi_check.setChecked(config.force_hdmi)
-        select_combo_by_data(self.unicam_device_combo, config.unicam_device.value)
-        self.framethrower_check.setChecked(config.framethrower)
-        self.framethrower_boot_check.setChecked(config.framethrower_start_on_boot)
-        select_combo_by_data(self.framethrower_scaling_combo, config.framethrower_scaling.value)
-        self.framethrower_b_spin.setValue(config.framethrower_b)
-        self.framethrower_c_spin.setValue(config.framethrower_c)
-        self._update_framethrower_fields()
-
-    def _browse_picasso96_archive(self):
-        from PySide6.QtWidgets import QFileDialog
-
-        start = self.picasso96_archive_edit.text() or str(Path.home())
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Picasso96 archive",
-            start,
-            "Picasso96 archive (*.lha *.LHA);;All files (*.*)",
-        )
-        if path:
-            self.picasso96_archive_edit.setText(path)
-            self._refresh_picasso96_status()
-
-    def _clear_picasso96_archive(self):
-        self.picasso96_archive_edit.clear()
-        self._refresh_picasso96_status()
-
-    def _refresh_picasso96_status(self):
-        path = self.picasso96_archive_edit.text().strip()
-        if not path:
-            self._picasso96_status.set_status(
-                "info",
-                "Free Picasso96 from Aminet",
-                "Add the full version archive to install Picasso96 3.x instead.",
-            )
-            return
-        archive = Path(path)
-        if not archive.is_file():
-            self._picasso96_status.set_status("warning", "Archive not found", path)
-            return
-        self._picasso96_status.set_status("ok", "Picasso96 full version", archive.name)
+        self.force_hdmi_check.setChecked(settings.config_txt.force_hdmi)
+        self.framethrower.set_settings(settings.config_txt)
 
     def get_picasso96_archive(self) -> Path | None:
-        text = self.picasso96_archive_edit.text().strip()
-        return Path(text) if text else None
+        return self.picasso96.get_archive()
 
     def set_picasso96_archive(self, archive):
-        self.picasso96_archive_edit.setText(str(archive) if archive else "")
-        self._refresh_picasso96_status()
+        self.picasso96.set_archive(archive)
 
     def get_config(self) -> dict:
         hdmi_mode_name = self.hdmi_mode_combo.currentData() or "1280*720-50"
