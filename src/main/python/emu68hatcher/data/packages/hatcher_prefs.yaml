@@ -20,7 +20,7 @@ install:
 - from: Hatcher-Prefs
   to: Emu68-Hatcher/Tools/
   recursive: true
-# the Network menu carries the launcher (configure_scripts), so no menu_entry here
+# the Network menu carries the launcher (configure_menus), so no menu_entry here
 default: true
 # MUI draws the window; the Shell entry Hatcher-Prefs CONNECT runs without it
 requires:

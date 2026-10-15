@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.pipeline.configure_boot import configure_boot_partition
+from emu68hatcher.builder.pipeline.configure_menus import configure_menus
 from emu68hatcher.builder.pipeline.configure_prefs import (
     configure_preferences,
     stage_whdload_kickstarts,
@@ -35,6 +36,14 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     # phase 1: Script configuration (0-40%)
     workflow._check_cancelled()
     configure_scripts(
+        workflow,
+        boot_staging,
+        s_dir,
+        all_packages,
+        image.workspace.validated.user_archives,
+    )
+    workflow._check_cancelled()
+    configure_menus(
         workflow,
         boot_staging,
         s_dir,

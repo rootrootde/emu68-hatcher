@@ -13,7 +13,7 @@ download:
 install:
 - from: System/S/WHDLoad-Wrapper/Updater/WHDUpdate.conf
   to: S/WHDLoad-Wrapper/Updater/
-# Games menu entry "WHDLoad wrapper on/off" (configure_scripts); C:WHDLoad becomes
+# Games menu entry "WHDLoad wrapper on/off" (configure_menus); C:WHDLoad becomes
 # C:WHDLoadWrapper or C:WHDLoad.ori
 - from: System/S/WHDLoadWrapper-Switch
   to: S/
