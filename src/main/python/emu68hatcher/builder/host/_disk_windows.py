@@ -13,7 +13,7 @@ $disks = Get-Disk | Where-Object { $_.BusType -in @('USB','SD','MMC') -or $_.IsB
 $out = @()
 foreach ($d in $disks) {
     $partitions = Get-Partition -DiskNumber $d.Number -ErrorAction SilentlyContinue | ForEach-Object { @{ DriveLetter = if ($_.DriveLetter) { "$($_.DriveLetter):\" } else { $null }; Type = $_.Type } }
-    $out += @{ Number = $d.Number; FriendlyName = $d.FriendlyName; Size = [int64]$d.Size; BusType = "$($d.BusType)"; IsBoot = [bool]$d.IsBoot; IsSystem = [bool]$d.IsSystem; Partitions = $partitions }
+    $out += @{ Number = $d.Number; FriendlyName = $d.FriendlyName; Size = [int64]$d.Size; BusType = "$($d.BusType)"; IsBoot = [bool]$d.IsBoot; IsSystem = [bool]$d.IsSystem; IsReadOnly = [bool]$d.IsReadOnly; Partitions = $partitions }
 }
 $out | ConvertTo-Json -Depth 4 -Compress
 """
@@ -66,6 +66,7 @@ def list_disks() -> list[DiskInfo]:
                     for mount in mounted
                 ),
                 mounted_partitions=mounted,
+                is_read_only=bool(item.get("IsReadOnly")),
             )
         )
     return disks

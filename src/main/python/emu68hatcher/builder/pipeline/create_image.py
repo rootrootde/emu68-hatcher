@@ -141,12 +141,11 @@ def _prepare_sparse_image(workflow: BuildWorkflow, path: Path) -> None:
     size = workflow.config.partitions.disk_size
     try:
         allocate_sparse(path, size)
-    except SparseUnsupportedError as e:
-        workflow.logger.warning(
-            f"Sparse allocation unsupported on this filesystem ({e}); "
-            "disable 'Sparse' in the Output tab to silence this."
-        )
-        raise
+    except (SparseUnsupportedError, OSError) as e:
+        raise BuildError(
+            f"Cannot allocate a sparse image at {path}: {e}. Disable 'Sparse' in the Output "
+            "tab or choose a folder on an NTFS, APFS or ext4 volume."
+        ) from e
 
 
 def _prepare_device_target(workflow: BuildWorkflow, image_path: Path | str) -> None:

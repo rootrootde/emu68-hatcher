@@ -41,6 +41,7 @@ class ElevatedHelper:
         self.ipc_dir: Path | None = None
         self.worker_script: Path | None = None
         self._seq = 0
+        self._any_failed = False
 
     def spawn(self) -> bool:
         """one auth prompt, start the worker; True when ready"""
@@ -100,7 +101,8 @@ class ElevatedHelper:
         self.worker_script.write_text(WORKER_SCRIPT)
 
         spawn_log = self.ipc_dir / "_spawn.log"
-        py = "/usr/bin/python3"
+        # frozen builds re-launch their own exe as the worker (main.py dispatch)
+        py = sys.executable if getattr(sys, "frozen", False) else "/usr/bin/python3"
         logger.info(f"elevated helper using python: {py}")
 
         # no nohup - it chokes without a controlling tty inside osascripts shell context
@@ -168,12 +170,29 @@ class ElevatedHelper:
         """send cmd to worker; on_line(stream, line) fires per stdout/stderr line as the subprocess writes"""
         if self.ipc_dir is None:
             raise RuntimeError("ElevatedHelper.run called before spawn() succeeded")
+        try:
+            result = self._exchange(argv, timeout, cancel_check, on_line)
+        except Exception:
+            self._any_failed = True
+            raise
+        if result.returncode != 0 or result.cancelled:
+            self._any_failed = True
+        return result
 
+    def _exchange(
+        self,
+        argv: list[str],
+        timeout: float | None,
+        cancel_check: Callable[[], bool] | None,
+        on_line: Callable[[str, str], None] | None,
+    ) -> HelperResult:
+        """write one cmd file and wait for its result"""
+        assert self.ipc_dir is not None
         self._seq += 1
         cmd_seq = self._seq
         cmd_path = self.ipc_dir / f"cmd-{cmd_seq}.json"
         result_path = self.ipc_dir / f"cmd-{cmd_seq}.result.json"
-        cancel_path = self.ipc_dir / "cancel"
+        cancel_path = self.ipc_dir / f"cancel-{cmd_seq}"
 
         tmp = cmd_path.with_suffix(".tmp")
         tmp.write_text(json.dumps({"argv": argv, "timeout": timeout}))
@@ -287,6 +306,7 @@ class ElevatedHelper:
         for pattern in (f"cmd-{cmd_seq}.out.*", f"cmd-{cmd_seq}.err.*"):
             for path in self.ipc_dir.glob(pattern):
                 path.unlink(missing_ok=True)
+        (self.ipc_dir / f"cancel-{cmd_seq}").unlink(missing_ok=True)
 
     def shutdown(self) -> None:
         if self.ipc_dir is None:
@@ -297,11 +317,11 @@ class ElevatedHelper:
             time.sleep(0.5)
         except OSError:
             pass
-        # keep _trace.log around so a slow run can be diagnosed after the fact
+        # the IPC dir and its _trace.log survive only when some command failed
         trace = self.ipc_dir / "_trace.log"
-        if trace.exists():
+        if self._any_failed and trace.exists():
             logger.info(f"elevated worker trace log: {trace}")
-        self._cleanup_files(keep_ipc_dir=trace.exists())
+        self._cleanup_files(keep_ipc_dir=self._any_failed)
 
     def _cleanup_files(self, keep_ipc_dir: bool = False) -> None:
         if self.ipc_dir is not None and not keep_ipc_dir:
