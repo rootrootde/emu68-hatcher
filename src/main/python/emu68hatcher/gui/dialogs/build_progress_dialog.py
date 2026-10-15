@@ -213,8 +213,10 @@ class BuildProgressDialog(QDialog):
             idx = self._STAGE_ORDER.index(stage)
             overall = (idx + progress / 100.0) / len(self._STAGE_ORDER) * 100.0
             self._overall = max(self._overall, overall)
-            self.overall_bar.setValue(round(self._overall))
-            self.overall_label.setText(f"Overall  {round(self._overall)}%")
+            # floor and hold at 99 - rounding showed 100% while the last stage was still running
+            shown = min(99, int(self._overall))
+            self.overall_bar.setValue(shown)
+            self.overall_label.setText(f"Overall  {shown}%")
 
     @Slot(str, str)
     def on_log_event(self, stage: str, message: str):
