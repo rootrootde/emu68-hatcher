@@ -27,7 +27,6 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher import __version__
-from emu68hatcher.builder.rgb2rtg import rgb2rtg_config
 from emu68hatcher.builder.staging.scripts.generator import render_boot_partition_files
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.defaults import create_default_config
@@ -447,20 +446,16 @@ class MainWindow(QMainWindow):
                     )
                 }
             ).to_cvt_string()
-        files = render_boot_partition_files(
+        rgb = self.emu68_tab.get_rgb2rtg()
+        return render_boot_partition_files(
             screen_mode=screen_mode,
             custom_cvt=custom_cvt,
             rom_filename=self._current_boot_rom_filename(),
             emu68_version=self.emu68_tab.get_emu68_version().value,
             usb_otg="poseidon" in self.packages_tab.resolution.selected,
             boot_settings=self._collect_emu68_boot_settings(),
+            rgb2rtg_video=rgb.video if rgb.enabled else None,
         )
-        rgb = self.emu68_tab.get_rgb2rtg()
-        if rgb.enabled:
-            for name in ("config.txt", "configBAK.txt"):
-                if name in files:
-                    files[name] = rgb2rtg_config(files[name], rgb.video)
-        return files
 
     def _sync_rgb2rtg_display(self, _value=None):
         if self._loading_config:

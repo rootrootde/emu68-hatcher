@@ -267,6 +267,7 @@ def generate_config_txt(
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
     include_diagnostics: bool = True,
+    rgb2rtg_video: str | None = None,
 ) -> str:
     """generate Emu68 boot config.txt with GPIO-based detection for PiStorm variants"""
     # load available screen modes from YAML
@@ -300,6 +301,7 @@ def generate_config_txt(
         storage_overlays=_storage_overlays(boot_settings.cmdline_txt, emu68_version),
         overlays=_config_overlays(boot_settings, emu68_version, include_diagnostics),
         extra_config_lines=boot_settings.config_txt.extra_lines,
+        rgb2rtg_video=rgb2rtg_video,
         **_config_values(boot_settings, emu68_version),
     )
     return re.sub(r"\n{3,}", "\n\n", content)
@@ -313,6 +315,7 @@ def generate_boot_partition_files(
     emu68_version: str = "1.0.7",
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
+    rgb2rtg_video: str | None = None,
 ) -> None:
     """generate files for the EMU68BOOT (FAT32) partition"""
     boot_dir = ensure_dir(staging_dir / "EMU68BOOT")
@@ -324,6 +327,7 @@ def generate_boot_partition_files(
         emu68_version=emu68_version,
         usb_otg=usb_otg,
         boot_settings=boot_settings,
+        rgb2rtg_video=rgb2rtg_video,
     ).items():
         (boot_dir / filename).write_text(content, encoding="utf-8", newline="\n")
 
@@ -335,6 +339,7 @@ def render_boot_partition_files(
     emu68_version: str = "1.0.7",
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
+    rgb2rtg_video: str | None = None,
 ) -> dict[str, str]:
     """Render the boot partition text files without writing them."""
 
@@ -348,6 +353,7 @@ def render_boot_partition_files(
         emu68_version=emu68_version,
         usb_otg=usb_otg,
         boot_settings=boot_settings,
+        rgb2rtg_video=rgb2rtg_video,
     )
 
     base_tokens = _cmdline_tokens(boot_settings, emu68_version, False)
@@ -366,6 +372,7 @@ def render_boot_partition_files(
             usb_otg=usb_otg,
             boot_settings=boot_settings,
             include_diagnostics=False,
+            rgb2rtg_video=rgb2rtg_video,
         )
     elif bus_test:
         files["cmdlineBAK.txt"] = " ".join(base_tokens) + "\n"

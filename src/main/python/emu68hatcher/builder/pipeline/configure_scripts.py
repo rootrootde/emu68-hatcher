@@ -405,15 +405,6 @@ def _configure_toolsdaemon(
         workflow.config.rgb2rtg.enabled,
         ags,
     )
-    if workflow.config.rgb2rtg.enabled:
-        recovery_lines = _build_toolsdaemon_menu(
-            workflow.config.network_stack,
-            all_packages,
-            p96_modern,
-            workflow.config.kickstart.version.value,
-            ags=ags,
-        )
-        write_amiga_script(s_dir / "ToolsDaemon.menu.pre-rgb2rtg", recovery_lines)
     write_amiga_script(s_dir / "ToolsDaemon.menu", lines)
     native_tools = _configure_native_tools_menu(boot_staging, s_dir, all_packages)
 
