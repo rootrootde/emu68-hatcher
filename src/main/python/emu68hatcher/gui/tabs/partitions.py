@@ -74,6 +74,7 @@ class PartitionsTab(QWidget):
         size_layout.addWidget(QLabel("Target capacity"))
         self.size_combo = QComboBox()
         self.size_combo.setEditable(True)
+        self.size_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.size_combo.lineEdit().setPlaceholderText("Capacity in GiB")
         self.size_combo.lineEdit().editingFinished.connect(self._on_capacity_edited)
         self.capacity_error = ""
@@ -252,7 +253,11 @@ class PartitionsTab(QWidget):
             return
         # A selected preset retains its exact byte count, not its rounded label.
         index = self.size_combo.currentIndex()
-        if index >= 0 and self.size_combo.currentText() == self.size_combo.itemText(index):
+        if (
+            index >= 0
+            and self.size_combo.currentText() == self.size_combo.itemText(index)
+            and self.size_combo.itemData(index) is not None
+        ):
             size = self.size_combo.itemData(index)
         self.capacity_error = ""
         self._apply_disk_size_bytes(size)

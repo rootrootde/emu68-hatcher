@@ -93,6 +93,13 @@ class ToolDownloadWorker(QThread):
 
     def run(self):
         """download each missing or stale tool, emit per-tool progress"""
+        try:
+            self._run()
+        except Exception:
+            logger.exception("tool download failed")
+            self.download_finished.emit(False, ["hst-imager", "7z"])
+
+    def _run(self):
         from emu68hatcher.builder.host.tools import (
             download_7zip,
             download_tool,
@@ -139,15 +146,21 @@ class UpdateCheckWorker(QThread):
     check_finished = Signal(object)
 
     def run(self):
-        from emu68hatcher.data.update_manifest import check_remote_manifest
+        from emu68hatcher.data.update_manifest import (
+            ManifestSelection,
+            check_remote_manifest,
+            get_active_selection,
+        )
 
         try:
             result = check_remote_manifest()
         except Exception as error:
             logger.exception("update check failed")
-            from emu68hatcher.data.update_manifest import ManifestSelection, get_active_selection
-
-            active = get_active_selection()
+            try:
+                active = get_active_selection()
+            except Exception:
+                logger.exception("no active manifest to report the failed update check against")
+                return
             result = ManifestSelection(
                 active.manifest,
                 active.source,

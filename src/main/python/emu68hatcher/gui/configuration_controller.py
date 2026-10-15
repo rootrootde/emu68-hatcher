@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher.config.ags_layout import validate_ags_layout
+from emu68hatcher.config.schema import OutputType
 from emu68hatcher.data.icon_sets import get_icon_set_extra_adf
 from emu68hatcher.data.install_media import get_required_install_media
 from emu68hatcher.data.package_loader import get_adf_rules_for_version
@@ -231,7 +232,9 @@ class ConfigurationController(QObject):
             add(storage.layout_message, "storage", "ags", "source_edit")
         if window.output_tab.needs_disk_target():
             add("Select an SD card.", "storage", "", "disk_combo")
-        if not window.output_tab.get_config().get("path"):
+        output = window.output_tab.get_config()
+        # device mode has no output path field; the SD card check above covers it
+        if output["type"] != OutputType.DEVICE.value and not output.get("path"):
             add("Select an output location.", "storage", "", "output_path")
         if window.partitions_tab.capacity_error:
             add(window.partitions_tab.capacity_error, "storage", "", "size_combo")

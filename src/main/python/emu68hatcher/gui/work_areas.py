@@ -26,7 +26,7 @@ PAGE_LABELS = {
     "review": "Review & build",
 }
 PAGE_DESCRIPTIONS = {
-    "overview": "Updates and your current configuration.",
+    "overview": "Tools, updates and build checks.",
     "system": "Hardware, AmigaOS and network settings.",
     "appearance": "Display output and the Workbench desktop.",
     "software": "Applications and drivers. Required packages are included automatically.",

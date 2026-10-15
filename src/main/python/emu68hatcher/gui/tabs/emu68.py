@@ -602,7 +602,7 @@ class Emu68Tab(QWidget):
         self.gpu_memory_combo.addItem("Custom", "custom")
         self.gpu_memory_combo.currentIndexChanged.connect(self._update_custom_fields)
         self.gpu_memory_spin = QSpinBox()
-        self.gpu_memory_spin.setRange(16, 512)
+        self.gpu_memory_spin.setRange(1, 512)
         self.gpu_memory_spin.setValue(32)
         self.gpu_memory_spin.setSuffix(" MB")
         self._add_form_row(

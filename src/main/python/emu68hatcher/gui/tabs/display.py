@@ -33,32 +33,6 @@ from emu68hatcher.gui.widgets.status_row import StatusRow
 from emu68hatcher.gui.work_areas import scroll_to
 
 
-def _read_picasso96_version(archive: Path) -> str | None:
-    """best-effort read of Picasso96Install/Version from inside the .lha"""
-    import subprocess
-
-    from emu68hatcher.utils.host_tools import find_7z
-
-    sevenz = find_7z()
-    if sevenz is None:
-        return None
-    try:
-        result = subprocess.run(
-            [str(sevenz), "e", "-so", str(archive), "Picasso96Install/Version"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=15,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
-    if result.returncode != 0:
-        return None
-    lines = result.stdout.strip().splitlines()
-    return lines[0].strip() if lines else None
-
-
 class DisplayTab(QWidget):
     """HDMI, Workbench RTG, and native-video settings."""
 
@@ -141,17 +115,17 @@ class DisplayTab(QWidget):
         size_row = QHBoxLayout()
         size_row.addWidget(QLabel("Width:"))
         self.hdmi_width_spin = QSpinBox()
-        self.hdmi_width_spin.setRange(640, 1920)
+        self.hdmi_width_spin.setRange(320, 1920)
         self.hdmi_width_spin.setValue(800)
         size_row.addWidget(self.hdmi_width_spin)
         size_row.addWidget(QLabel("Height:"))
         self.hdmi_height_spin = QSpinBox()
-        self.hdmi_height_spin.setRange(480, 1200)
+        self.hdmi_height_spin.setRange(200, 1200)
         self.hdmi_height_spin.setValue(600)
         size_row.addWidget(self.hdmi_height_spin)
         size_row.addWidget(QLabel("Hz:"))
         self.hdmi_hz_spin = QSpinBox()
-        self.hdmi_hz_spin.setRange(50, 75)
+        self.hdmi_hz_spin.setRange(24, 75)
         self.hdmi_hz_spin.setValue(60)
         size_row.addWidget(self.hdmi_hz_spin)
         size_row.addStretch()
@@ -509,9 +483,7 @@ class DisplayTab(QWidget):
         if not archive.is_file():
             self._picasso96_status.set_status("warning", "Archive not found", path)
             return
-        version = _read_picasso96_version(archive)
-        title = f"Picasso96 {version}" if version else "Picasso96 full version"
-        self._picasso96_status.set_status("ok", title, archive.name)
+        self._picasso96_status.set_status("ok", "Picasso96 full version", archive.name)
 
     def get_picasso96_archive(self) -> Path | None:
         text = self.picasso96_archive_edit.text().strip()

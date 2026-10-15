@@ -32,7 +32,11 @@ class _EjectWorker(QThread):
     def run(self):
         from emu68hatcher.builder.host.disk_enum import eject_disk
 
-        ok, msg = eject_disk(self._device)
+        try:
+            ok, msg = eject_disk(self._device)
+        except Exception as e:
+            self.done.emit(False, str(e) or type(e).__name__)
+            return
         self.done.emit(ok, msg)
 
 

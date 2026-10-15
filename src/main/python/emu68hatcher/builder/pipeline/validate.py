@@ -19,8 +19,8 @@ from emu68hatcher.data.install_media import (
     scan_install_media_by_hash,
 )
 from emu68hatcher.data.rom_detection import (
-    ROM_VERSION_ALIAS,
     identify_kickstart,
+    pick_boot_rom,
     scan_for_kickstart_roms,
 )
 
@@ -113,12 +113,8 @@ def _resolve_rom(
         if name and not rom.get("excluded"):
             whdload_roms.setdefault(name, rom["path"])
 
-    # same pick as find_kickstart_for_version, over the single scan
-    version = ROM_VERSION_ALIAS.get(kickstart_version, kickstart_version)
-    matching = [r for r in found if r["version"] == version and not r.get("excluded")]
-    if matching:
-        rom = next((r for r in matching if "1200" in r["model"]), matching[0])
-        rom_path = rom["path"]
+    rom_path = pick_boot_rom(found, kickstart_version)
+    if rom_path is not None:
         workflow.logger.info(f"Auto-detected Kickstart ROM: {rom_path}")
         return rom_path, identify_kickstart(rom_path), whdload_roms
 
