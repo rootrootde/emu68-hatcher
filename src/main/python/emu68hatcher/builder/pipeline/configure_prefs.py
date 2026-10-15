@@ -74,22 +74,25 @@ def configure_preferences(
 
     from emu68hatcher.builder.pipeline._selection import get_resolution
 
+    workflow._check_cancelled()
     if workflow.config.wifi and "emu68_wifi" in get_resolution(workflow).selected:
         workflow._update_state(progress=80.0)
         workflow._milestone("Configuring WiFi")
         sys_dir = ensure_dir(env_archive / "Sys")
+        # UTF-8, not Latin-1: WirelessManager passes the SSID bytes to the AP, which uses UTF-8
         (sys_dir / "wireless.prefs").write_text(
             generate_wireless_prefs(
                 workflow.config.wifi.ssid,
                 workflow.config.wifi.password,
             ),
-            encoding="iso-8859-1",
+            encoding="utf-8",
             newline="\n",
         )
         workflow.logger.info("Generated wireless.prefs")
     if workflow.config.network_stack is not None:
         configure_network(workflow, boot_staging)
 
+    workflow._check_cancelled()
     workflow._update_state(progress=85.0)
     workflow._milestone("Configuring hardware")
     configure_hardware(workflow, image, boot_staging)
@@ -98,10 +101,12 @@ def configure_preferences(
 
         configure_rgb2rtg(workflow, image, boot_staging)
 
+    workflow._check_cancelled()
     workflow._update_state(progress=90.0)
     workflow._milestone("Generating drawer icons")
     configure_icons(workflow, image, boot_staging)
 
+    workflow._check_cancelled()
     workflow._update_state(progress=97.0)
     workflow._milestone("Arranging icons")
     from emu68hatcher.builder.staging.icon_grid import arrange_icons

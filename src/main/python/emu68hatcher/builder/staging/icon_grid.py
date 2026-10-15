@@ -72,6 +72,8 @@ def _png_chunks(data: bytes):
             pos += 8
             continue
         length, ctype = struct.unpack(">I4s", data[pos : pos + 8])
+        if pos + 12 + length > len(data):
+            return  # truncated chunk
         yield pos, 12 + length, ctype, data[pos + 8 : pos + 8 + length]
         pos += 12 + length
 
@@ -118,7 +120,10 @@ def _write_png_position(path: Path, x: int, y: int) -> bool:
     out = bytearray()
     pos = 0
     # peterk icon.library reads metadata from the first image only
-    first_iend = min(off for off, _, ctype, _ in chunks if ctype == b"IEND")
+    iends = [off for off, _, ctype, _ in chunks if ctype == b"IEND"]
+    if not iends:
+        return False
+    first_iend = min(iends)
     first_icon = next((off for off, _, _ in icons if off < first_iend), None)
     for off, total, ctype, body in chunks:
         out += data[pos:off]  # signatures between images
@@ -161,6 +166,14 @@ def _read_icon(path: Path) -> _Icon | None:
         data = path.read_bytes()
     except OSError:
         return None
+    try:
+        return _parse_icon(path, data)
+    except (ValueError, struct.error, IndexError) as exc:
+        logger.warning(f"icon {path}: unreadable ({exc}); not placed")
+        return None
+
+
+def _parse_icon(path: Path, data: bytes) -> _Icon | None:
     if data[:8] == _PNG_MAGIC and data[12:16] == b"IHDR":
         width, height = struct.unpack(">II", data[16:24])
         do_type = 3
@@ -243,6 +256,8 @@ def _write_classic_window(path: Path, dx: int, dy: int, w: int, h: int) -> None:
 
 
 _DDFLAGS_SHOWALL = 2
+
+_ICON_ERRORS = (ValueError, struct.error, IndexError, OSError)
 
 
 def _write_drawer_showall(path: Path) -> bool:
@@ -342,13 +357,19 @@ def arrange_icons(boot_staging: Path) -> int:
             x = col_x[c] + (col_w[c] - icon.width) // 2
             # bottom-aligned so the labels of a row share one baseline
             y = row_y[r] + (row_h[r] - icon.height)
-            if icon.png:
-                if not _write_png_position(icon.path, x, y):
-                    logger.warning(f"png icon {icon.path.name}: icOn chunk unreadable, not placed")
-                    count -= 1
-            else:
-                _write_classic_position(icon.path, x, y)
-        count += len(icons)
+            try:
+                if icon.png:
+                    if not _write_png_position(icon.path, x, y):
+                        logger.warning(
+                            f"png icon {icon.path.name}: PNG chunks unreadable, not placed"
+                        )
+                        continue
+                else:
+                    _write_classic_position(icon.path, x, y)
+            except _ICON_ERRORS as exc:
+                logger.warning(f"icon {icon.path}: unreadable ({exc}); not placed")
+                continue
+            count += 1
 
         # size the window to show the grid; the drawer's own icon holds it.
         # the SYS: window geometry lives in the volume disk.info, left alone.
@@ -358,7 +379,10 @@ def arrange_icons(boot_staging: Path) -> int:
             if own_icon and own_icon.do_type in _CONTAINER_TYPES and not own_icon.png:
                 w = min(col_x[-1] + col_w[-1] + _MARGIN_X + 24, 560)
                 h = min(row_y[-1] + row_h[-1] + _ROW_PAD_Y + 30, 200)
-                _write_classic_window(own, _WINDOW_X, _WINDOW_Y, w, h)
+                try:
+                    _write_classic_window(own, _WINDOW_X, _WINDOW_Y, w, h)
+                except _ICON_ERRORS as exc:
+                    logger.warning(f"icon {own}: window size not written ({exc})")
 
     # package drawers holding only icon-less files (roadshow docs) open as an
     # empty window - flip their icon to show all files. Programs/ only, so
@@ -371,6 +395,9 @@ def arrange_icons(boot_staging: Path) -> int:
         own = d.parent / f"{d.name}.info"
         own_icon = _read_icon(own) if own.exists() else None
         if own_icon and own_icon.do_type in _CONTAINER_TYPES and not own_icon.png:
-            _write_drawer_showall(own)
+            try:
+                _write_drawer_showall(own)
+            except _ICON_ERRORS as exc:
+                logger.warning(f"icon {own}: show-all-files not set ({exc})")
 
     return count

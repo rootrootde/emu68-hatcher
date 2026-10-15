@@ -33,6 +33,7 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     all_packages = _collect_enabled_packages(workflow)
 
     # phase 1: Script configuration (0-40%)
+    workflow._check_cancelled()
     configure_scripts(
         workflow,
         boot_staging,
@@ -42,21 +43,26 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     )
 
     # relocate stock OS files per enabled packages (e.g. commodity -> WBStartup)
+    workflow._check_cancelled()
     moved = apply_relocations(workflow, boot_staging, all_packages)
     if moved:
         workflow.logger.info(f"Relocated {moved} staged file(s)")
 
     from emu68hatcher.builder.pipeline.configure_games import configure_whdload_wrapper
 
+    workflow._check_cancelled()
     configure_whdload_wrapper(workflow, boot_staging, all_packages)
 
     # phase 2: Boot partition setup (40-70%)
+    workflow._check_cancelled()
     configure_boot_partition(workflow, image)
 
     if "whdload" in all_packages:
+        workflow._check_cancelled()
         stage_whdload_kickstarts(workflow, image, boot_staging)
 
     # phase 3: System preferences (70-100%)
+    workflow._check_cancelled()
     configure_preferences(workflow, image, boot_staging, prefs_dir, env_archive)
 
     workflow._update_state(progress=100.0)

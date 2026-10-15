@@ -3,7 +3,14 @@
 import ipaddress
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 
 class NetworkStack(str, Enum):
@@ -17,6 +24,14 @@ class WifiConfig(BaseModel):
     password: str = Field(default="", max_length=63)
 
     model_config = ConfigDict(extra="forbid")
+
+    @field_validator("ssid", "password")
+    @classmethod
+    def _no_control_chars(cls, value: str, info: ValidationInfo) -> str:
+        if any(ord(c) < 32 or c == "\x7f" for c in value):
+            label = "SSID" if info.field_name == "ssid" else "WiFi password"
+            raise ValueError(f"{label} must not contain control characters")
+        return value
 
 
 class IpMode(str, Enum):

@@ -59,6 +59,7 @@ def stage_install_workbench(
         apply_boingbags(
             image.extracted.extracted_paths,
             workspace.staging_dir / workflow.config.boot_device,
+            cancel_check=workflow._check_cancelled,
         )
 
     workflow._update_state(progress=100.0)

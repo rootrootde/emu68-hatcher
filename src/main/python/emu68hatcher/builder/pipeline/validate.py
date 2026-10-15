@@ -19,7 +19,7 @@ from emu68hatcher.data.install_media import (
     scan_install_media_by_hash,
 )
 from emu68hatcher.data.rom_detection import (
-    find_kickstart_for_version,
+    ROM_VERSION_ALIAS,
     identify_kickstart,
     scan_for_kickstart_roms,
 )
@@ -35,7 +35,7 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
     validate_rgb2rtg(workflow)
     existing_dirs = _existing_asset_directories(workflow)
     kickstart_version = workflow.config.kickstart.version.value
-    rom_path, rom_info = _resolve_rom(workflow, existing_dirs, kickstart_version)
+    rom_path, rom_info, whdload_roms = _resolve_rom(workflow, existing_dirs, kickstart_version)
     if workflow.config.rgb2rtg.enabled and rom_info.get("model") != "A1200":
         raise BuildError("RGB2RTG requires an A1200 ROM and A1200/PiStorm32-lite hardware")
     found_media = _resolve_media(workflow, existing_dirs, kickstart_version)
@@ -82,6 +82,7 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
         roadshow_archive_kind=roadshow_kind,
         picasso96_archive_path=picasso96_path,
         ags_plan=ags_plan,
+        whdload_roms=whdload_roms,
     )
 
 
@@ -102,15 +103,25 @@ def _resolve_rom(
     workflow: BuildWorkflow,
     directories: list[Path],
     kickstart_version: str,
-) -> tuple[Path, dict]:
+) -> tuple[Path, dict, dict[str, Path]]:
     workflow._update_state(progress=20.0)
     workflow._milestone(f"Scanning {len(directories)} asset directories for Kickstart ROM")
-    rom_path = find_kickstart_for_version(directories, kickstart_version)
-    if rom_path:
-        workflow.logger.info(f"Auto-detected Kickstart ROM: {rom_path}")
-        return rom_path, identify_kickstart(rom_path)
-
     found, truncated = scan_for_kickstart_roms(directories)
+    whdload_roms: dict[str, Path] = {}
+    for rom in found:
+        name = rom.get("whdload_name")
+        if name and not rom.get("excluded"):
+            whdload_roms.setdefault(name, rom["path"])
+
+    # same pick as find_kickstart_for_version, over the single scan
+    version = ROM_VERSION_ALIAS.get(kickstart_version, kickstart_version)
+    matching = [r for r in found if r["version"] == version and not r.get("excluded")]
+    if matching:
+        rom = next((r for r in matching if "1200" in r["model"]), matching[0])
+        rom_path = rom["path"]
+        workflow.logger.info(f"Auto-detected Kickstart ROM: {rom_path}")
+        return rom_path, identify_kickstart(rom_path), whdload_roms
+
     cap_hint = (
         " A scanned directory hit the 5000-file limit, so the ROM may have been skipped."
         if truncated

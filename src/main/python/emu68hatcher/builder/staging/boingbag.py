@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import logging
 import shutil
+import subprocess
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildError
@@ -15,6 +17,7 @@ from emu68hatcher.utils.host_tools import find_7z, run_7z
 logger = logging.getLogger(__name__)
 
 _INNER_ARCHIVE = "AmigaOS-Update"
+_EXTRACT_TIMEOUT = 600
 
 # the curated per-item install list the original imager applies from each
 # boingbag's password-locked AmigaOS-Update payload (from its ListofPackagestoInstall
@@ -66,13 +69,20 @@ _BOINGBAGS = (
 )
 
 
-def apply_boingbags(extracted_paths: dict, boot_staging: Path) -> None:
+def apply_boingbags(
+    extracted_paths: dict,
+    boot_staging: Path,
+    *,
+    cancel_check: Callable[[], None] | None = None,
+) -> None:
     """apply BoingBag 1 then 2 onto boot_staging from the downloaded, extracted archives"""
     seven_z = find_7z()
     if not seven_z:
         raise BuildError("7z not found; cannot apply the AmigaOS 3.9 BoingBags")
 
     for bb in _BOINGBAGS:
+        if cancel_check:
+            cancel_check()
         bb_dir = extracted_paths.get(bb["package"])
         if not bb_dir:
             raise BuildError(f"{bb['package']} was not downloaded; cannot apply the 3.9 update")
@@ -86,7 +96,18 @@ def _apply_one(seven_z, bb_dir: Path, password: str, items, boot_staging: Path) 
 
     with tempfile.TemporaryDirectory() as td:
         payload = Path(td)
-        r = run_7z(seven_z, ["x", "-y", f"-p{password}", f"-o{td}", str(inner)])
+        try:
+            r = run_7z(
+                seven_z,
+                ["x", "-y", f"-p{password}", f"-o{td}", str(inner)],
+                timeout=_EXTRACT_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise BuildError(
+                f"BoingBag payload extraction timed out after {_EXTRACT_TIMEOUT} s; "
+                f"7z did not finish unpacking {inner}. Check that the BoingBag download "
+                "is complete and the disk is not full, then build again."
+            ) from exc
         if r.returncode != 0:
             raise BuildError(
                 f"failed to open BoingBag payload: {(r.stderr or r.stdout).strip()[:300]}"

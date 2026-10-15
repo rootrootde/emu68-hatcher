@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -54,7 +55,7 @@ def _install_icon_set(
             workflow.logger.info(f"No icon set for KS {version}; keeping generic drawer icons")
             return
         _apply_new_folder(workflow, image, boot_staging, selected.get("new_folder_icon", {}))
-    except (OSError, ValueError, KeyError):
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         workflow.logger.exception("Failed to install icon set")
 
 

@@ -380,15 +380,20 @@ def _configure_toolsdaemon(
     workflow.logger.info(f"Patched ToolsDaemon 2.2 files: {', '.join(patched)}")
 
     toolsdaemon_info = boot_staging / "WBStartup" / "ToolsDaemon.info"
-    tooltypes = [
-        entry
-        for entry in read_info_tooltypes(toolsdaemon_info)
-        if not entry.upper().startswith(("STARTPRI=", "WAIT="))
-    ]
-    write_info_tooltypes(
-        toolsdaemon_info,
-        [*tooltypes, f"STARTPRI={_TOOLSDAEMON_STARTPRI}", "WAIT=1"],
-    )
+    try:
+        existing = read_info_tooltypes(toolsdaemon_info)
+    except (ValueError, OSError) as exc:
+        workflow.logger.warning(
+            f"Cannot read {toolsdaemon_info.name} ({exc}); STARTPRI/WAIT tooltypes not set"
+        )
+    else:
+        tooltypes = [
+            entry for entry in existing if not entry.upper().startswith(("STARTPRI=", "WAIT="))
+        ]
+        write_info_tooltypes(
+            toolsdaemon_info,
+            [*tooltypes, f"STARTPRI={_TOOLSDAEMON_STARTPRI}", "WAIT=1"],
+        )
 
     p96_modern = workflow.config.display.picasso96_archive is not None
     ags = bool(workflow.config.ags_import and workflow.config.ags_import.enabled)

@@ -48,14 +48,10 @@ def stage_whdload_kickstarts(
     image: CreatedImage,
     boot_staging: Path,
 ) -> None:
-    from emu68hatcher.data.rom_detection import WHDLOAD_ROM_NAMES, find_whdload_kickstarts
+    from emu68hatcher.data.rom_detection import WHDLOAD_ROM_NAMES
 
-    directories = [Path(path) for path in workflow.config.asset_directories if Path(path).exists()]
-    matched: dict[str, Path] = {}
-    for directory in directories:
-        for name, source in find_whdload_kickstarts(directory).items():
-            matched.setdefault(name, source)
     validated = image.workspace.validated
+    matched: dict[str, Path] = dict(validated.whdload_roms)
     boot_name = validated.resolved_rom_info.get("whdload_name")
     if boot_name and boot_name not in matched:
         matched[boot_name] = validated.resolved_rom_path

@@ -50,6 +50,7 @@ class ValidatedInputs:
     roadshow_archive_kind: str | None = None
     picasso96_archive_path: Path | None = None
     ags_plan: "AGSImportPlan | None" = None
+    whdload_roms: dict[str, Path] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
