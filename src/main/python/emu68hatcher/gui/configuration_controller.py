@@ -251,16 +251,18 @@ class ConfigurationController(QObject):
         else:
             for error in window.partitions_tab.extra_content_errors():
                 add(error, "storage", "extras", "extras_partition_combo")
-        if (
-            window.network_tab.wifi_ssid.text().strip()
-            and window.network_tab.get_wifi_config() is None
-        ):
-            add(
-                "Enter a WiFi password of 8–63 characters, or leave it empty for an open network.",
-                "system",
-                "network",
-                "wifi_password",
-            )
+        try:
+            wifi = window.network_tab.get_wifi_config()
+        except ValueError as error:
+            add(validation_message(error), "system", "network", "wifi_ssid")
+        else:
+            if window.network_tab.wifi_ssid.text().strip() and wifi is None:
+                add(
+                    "Enter a WiFi password of 8–63 characters, or leave it empty for an open network.",
+                    "system",
+                    "network",
+                    "wifi_password",
+                )
         try:
             window.network_tab.get_network_settings()
         except ValueError as error:
