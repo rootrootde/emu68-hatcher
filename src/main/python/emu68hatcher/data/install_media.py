@@ -107,7 +107,7 @@ def scan_install_media_by_hash(
 
 
 def get_required_install_media(workbench_version: str) -> list[str]:
-    """required ADF_Names for a Workbench version (locale disks excluded)"""
+    """required ADF_Names for a Workbench version, including the English locale disks"""
     requirements = {
         "3.1": [
             "Workbench3_1",
@@ -125,6 +125,8 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Classes3_2",
             "DiskDoctor3_2",
             "Backdrops3_2",
+            "Locale3_2",
+            "LocaleEN3_2",
         ],
         "3.2.2.1": [
             # base 3.2 disks
@@ -140,6 +142,9 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Update3_2_2_1",
             "Classes3_2_2",
             "DiskDoctor3_2_2",
+            "Locale3_2",
+            "LocaleEN3_2",
+            "LocaleEN3_2_2",
         ],
         "3.2.3": [
             # base 3.2 disks
@@ -155,6 +160,9 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Extras3_2_3",
             "Classes3_2_3",
             "DiskDoctor3_2_3",
+            "Locale3_2",
+            "LocaleEN3_2",
+            "LocaleEN3_2_3",
         ],
         "3.9": [
             # 3.9 installs from a single CD volume, not floppies

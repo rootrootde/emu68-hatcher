@@ -13,7 +13,6 @@ from emu68hatcher.builder.staging.files import (
     resolve_staging_path,
     write_info_tooltypes,
 )
-from emu68hatcher.config.schema import Emu68Version, Unit0Mode, WorkbenchScreenMode
 
 _CHECKSUMS = {
     "Amiga/RGB2RTG.info": "dd03d5812540909b825397b16ee4a912",
@@ -62,30 +61,21 @@ def extract_rgb2rtg(archive: Path, destination: Path) -> Path:
 
 
 def validate_rgb2rtg(workflow) -> None:
+    from emu68hatcher.builder.pipeline._selection import rgb2rtg_problems
+
     config = workflow.config
     if not config.rgb2rtg.enabled:
         return
-    if config.emu68_version != Emu68Version.V1_1_0_BETA_1:
-        raise BuildError("RGB2RTG v0.75 requires the Emu68 1.1.0-beta.1 baseline")
-    if config.display.workbench_mode == WorkbenchScreenMode.NATIVE:
-        raise BuildError("RGB2RTG requires a VideoCore Workbench screen mode")
-    if config.emu68_boot.config_txt.framethrower:
-        raise BuildError("Disable Framethrower/C790 capture before selecting RGB2RTG")
-    if config.emu68_boot.cmdline_txt.emmc_unit0 != Unit0Mode.READ_WRITE:
-        raise BuildError("RGB2RTG on Pi 4 requires read/write eMMC unit 0 boot access")
-    for line in config.emu68_boot.config_txt.extra_lines:
-        key = line.split("=", 1)[0].lower()
-        if (
-            key.startswith("hdmi_")
-            or key in {"max_framebuffer_width", "max_framebuffer_height", "disable_overscan"}
-            or (
-                key == "dtoverlay"
-                and any(token in line.lower() for token in ("unicam", "pal", "ntsc"))
-            )
-        ):
-            raise BuildError(f"Remove the additional RGB2RTG display override: {line}")
-    if config.rgb2rtg.archive is None or not config.rgb2rtg.archive.expanduser().is_file():
-        raise BuildError("Select the local RGB2RTG_A1200_v0.75.7z release archive")
+    problems = rgb2rtg_problems(
+        config.emu68_version.value,
+        config.display.workbench_mode.value,
+        config.emu68_boot.config_txt.framethrower,
+        config.emu68_boot.cmdline_txt.emmc_unit0.value,
+        config.emu68_boot.config_txt.extra_lines,
+        config.rgb2rtg.archive,
+    )
+    if problems:
+        raise BuildError(problems[0][1])
     workflow._check_cancelled()
     with TemporaryDirectory(prefix="hatcher-rgb2rtg-") as scratch:
         extract_rgb2rtg(config.rgb2rtg.archive, Path(scratch))

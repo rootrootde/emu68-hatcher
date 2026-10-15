@@ -36,6 +36,8 @@ class PackagesTab(QWidget):
         self.kickstart_version = kickstart_version
         self.emu68_version = emu68_version
         self.network_stack = None
+        self.ags_enabled = False
+        self.rgb2rtg_enabled = False
         self._requests = software_defaults()
         self._updating = False
         self.checkboxes: dict[str, QTreeWidgetItem] = {}
@@ -96,6 +98,8 @@ class PackagesTab(QWidget):
             self.kickstart_version,
             self.emu68_version,
             self.network_stack,
+            ags_enabled=self.ags_enabled,
+            rgb2rtg_enabled=self.rgb2rtg_enabled,
         )
         selected = self.resolution.selected
         groups = {}
@@ -124,22 +128,13 @@ class PackagesTab(QWidget):
                 for n in names
                 if n in self.resolution.selection_reasons
             }
-            recommendations = {
-                n for name in names for n in self.resolution.recommended_by.get(name, [])
-            }
             if reasons:
                 consumers = ", ".join(by_name[n].friendly_name for n in sorted(reasons))
                 description += f" (Required by {consumers})"
             elif forced:
                 description += f" (Required by {', '.join(sorted(forced))})"
-            elif recommendations and auto:
-                description += (
-                    " (Recommended by "
-                    + ", ".join(by_name[n].friendly_name for n in sorted(recommendations))
-                    + ")"
-                )
             elif auto:
-                description += " (Selected by network or recommendation)"
+                description += " (Selected automatically)"
             if auto and key not in {"mui38", "mui5"}:
                 category = "Required packages"
             item = QTreeWidgetItem(group(category), [label, description])
@@ -213,8 +208,11 @@ class PackagesTab(QWidget):
         self.refresh_packages()
         self.selection_changed.emit()
 
-    def set_context(self, network_stack):
-        self.network_stack = network_stack
+    def set_context(self, network_stack, *, ags_enabled=False, rgb2rtg_enabled=False):
+        context = (network_stack, ags_enabled, rgb2rtg_enabled)
+        if context == (self.network_stack, self.ags_enabled, self.rgb2rtg_enabled):
+            return
+        self.network_stack, self.ags_enabled, self.rgb2rtg_enabled = context
         self.refresh_packages()
 
     def set_kickstart_version(self, version):

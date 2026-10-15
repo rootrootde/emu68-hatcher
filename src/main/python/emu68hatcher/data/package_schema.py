@@ -129,7 +129,6 @@ class Package(CatalogModel):
     # dependency resolution. names may be a concrete package name or a virtual token
     # declared by some package's provides (a package implicitly provides its own name).
     requires: list[str] = Field(default_factory=list)  # hard deps, pulled in + locked
-    recommends: list[str] = Field(default_factory=list)  # soft deps, pre-ticked but removable
     conflicts: list[str] = Field(default_factory=list)  # cannot coexist (symmetric at resolve)
     provides: list[str] = Field(default_factory=list)  # virtual capability tokens, e.g. "mui"
 
@@ -151,7 +150,7 @@ class Package(CatalogModel):
     menu_entry: MenuEntry | None = None
     menu_entries: list[MenuEntry] = Field(default_factory=list)
 
-    @field_validator("requires", "recommends", "conflicts", "provides")
+    @field_validator("requires", "conflicts", "provides")
     @classmethod
     def _validate_tokens(cls, values: list[str]) -> list[str]:
         import re

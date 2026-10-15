@@ -1,4 +1,4 @@
-"""dependency resolution for amiga packages: requires/recommends/conflicts/provides"""
+"""dependency resolution for amiga packages: requires/conflicts/provides"""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ class Resolution:
     dropped: dict[str, str] = field(default_factory=dict)  # name -> reason (lost conflict / orphan)
     unsatisfiable: dict[str, list[str]] = field(default_factory=dict)  # token -> requirers
     required_by: dict[str, list[str]] = field(default_factory=dict)
-    recommended_by: dict[str, list[str]] = field(default_factory=dict)
     selection_reasons: dict[str, str] = field(default_factory=dict)
     requested: set[str] = field(default_factory=set)  # selected because asked for, not pulled in
 
@@ -37,13 +36,11 @@ class _ResolverContext:
     providers: dict[str, list[str]]
     mandatory: set[str]
     requested: set[str]
-    disabled: set[str]
 
     @classmethod
     def create(
         cls,
         requested: set[str],
-        disabled: set[str],
         kickstart_version: str,
         emu68_version: str | None,
         packages: list[Package] | None = None,
@@ -56,7 +53,7 @@ class _ResolverContext:
         for pkg in packages:
             for token in _provides_of(pkg):
                 providers.setdefault(token, []).append(pkg.name.lower())
-        return cls(packages, by_name, providers, mandatory, requested, disabled)
+        return cls(packages, by_name, providers, mandatory, requested)
 
     def pick_provider(
         self,
@@ -107,13 +104,6 @@ class _ResolverContext:
                 requirers.setdefault(provider, set()).add(name)
                 if provider not in selected:
                     work.append(provider)
-            for recommendation in package.recommends:
-                token = recommendation.lower()
-                if token in self.disabled:
-                    continue
-                provider = self.pick_provider(token, selected, excluded | self.disabled)
-                if provider and provider not in selected:
-                    work.append(provider)
         return selected, requirers, unsatisfiable
 
     def conflict_losers(self, selected: set[str]) -> tuple[set[str], dict[str, str]]:
@@ -155,7 +145,6 @@ class _ResolverContext:
 
 def resolve(
     requested: set[str],
-    deselected: set[str],
     kickstart_version: str,
     emu68_version: str | None = None,
     *,
@@ -164,10 +153,8 @@ def resolve(
 ) -> Resolution:
     """resolve a user selection into a complete, conflict-free, ordered install set."""
     requested = {n.lower() for n in requested}
-    deselected = {n.lower() for n in deselected}
     context = _ResolverContext.create(
         requested,
-        deselected,
         kickstart_version,
         emu68_version,
         packages,
@@ -190,22 +177,12 @@ def resolve(
 
     install_order = _topological_order(selected, context.by_name, requirers, order_hint)
 
-    recommended_by: dict[str, list[str]] = {}
-    for name in sorted(selected):
-        for token in context.by_name[name].recommends:
-            if token in deselected:
-                continue
-            provider = context.pick_provider(token, selected, excluded | deselected)
-            if provider in selected:
-                recommended_by.setdefault(provider, []).append(name)
-
     return Resolution(
         selected=selected,
         install_order=install_order,
         dropped=dropped,
         unsatisfiable={key: sorted(set(value)) for key, value in unsatisfiable.items()},
         required_by={key: sorted(value) for key, value in requirers.items()},
-        recommended_by=recommended_by,
         requested=requested & selected,
     )
 

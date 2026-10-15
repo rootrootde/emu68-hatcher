@@ -141,9 +141,7 @@ def validate_client_catalog(snapshot: CatalogSnapshot) -> None:
                         f"{sorted(required_names - available_names)}"
                     )
                 for package in available:
-                    result = resolve(
-                        {package.name}, set(), version, emu_version, packages=available
-                    )
+                    result = resolve({package.name}, version, emu_version, packages=available)
                     if result.unsatisfiable:
                         raise ValueError(
                             f"{version}/{emu_version}: {package.name}: {result.unsatisfiable}"

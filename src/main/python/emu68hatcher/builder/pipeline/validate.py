@@ -164,29 +164,23 @@ def _check_optional_package_adfs(
 ) -> None:
     from emu68hatcher.builder.pipeline._selection import get_resolution
     from emu68hatcher.data.package_loader import get_adf_rules_for_version
+    from emu68hatcher.data.package_selection import missing_optional_adfs
 
-    enabled = get_resolution(workflow).selected
-    core_required = set(get_required_install_media(kickstart_version))
-    found_names = {media.adf_name for media in found_media}
-    missing: dict[str, list[str]] = {}
-    for rule in get_adf_rules_for_version(kickstart_version):
-        if rule.mandatory or not rule.package:
-            continue
-        if rule.package.lower() not in enabled:
-            continue
-        if rule.adf in core_required or rule.adf in found_names:
-            continue
-        missing.setdefault(rule.adf, []).append(rule.package)
+    missing = missing_optional_adfs(
+        get_adf_rules_for_version(kickstart_version),
+        get_resolution(workflow).selected,
+        workflow.config.icon_set,
+        {media.adf_name for media in found_media},
+        set(get_required_install_media(kickstart_version)),
+    )
     if not missing:
         return
-    lines = [
-        f"  {adf}  (required by: {', '.join(sorted(set(packages)))})"
-        for adf, packages in sorted(missing.items())
-    ]
+    lines = [f"  {adf}  (required by: {', '.join(packages)})" for adf, packages in missing.items()]
     raise BuildError(
         "Enabled package(s) need install media that wasn't found:\n"
         + "\n".join(lines)
-        + "\n\nAdd the missing ADFs or disable the packages in the Software tab."
+        + "\n\nAdd the missing ADFs, or untick the packages on the Software page or the "
+        "languages under System > AmigaOS & files > Languages."
     )
 
 

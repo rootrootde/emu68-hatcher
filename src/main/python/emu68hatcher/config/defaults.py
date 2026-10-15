@@ -30,15 +30,4 @@ __all__ = [
     "MIN_BOOT_PARTITION_SIZE",
     "PFS3_MAX_PARTITION_SIZE",
     "RDB_OVERHEAD",
-    "create_default_config",
 ]
-
-
-def create_default_config():
-    from emu68hatcher.config.partition_helpers import create_default_partition_layout
-    from emu68hatcher.config.schema import BuildConfig, KickstartConfig, KickstartVersion
-
-    return BuildConfig(
-        kickstart=KickstartConfig(version=KickstartVersion.V3_1),
-        partitions=create_default_partition_layout(8),
-    )

@@ -29,7 +29,6 @@ from PySide6.QtWidgets import (
 from emu68hatcher import __version__
 from emu68hatcher.builder.staging.scripts.generator import render_boot_partition_files
 from emu68hatcher.config.boot_models import Emu68BootSettings
-from emu68hatcher.config.defaults import create_default_config
 from emu68hatcher.config.display_models import CustomScreenMode
 from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
@@ -65,7 +64,6 @@ from emu68hatcher.gui.work_areas import (
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.config = create_default_config()
         self._loading_config = False
         self._build_active = False
         self.controller = ConfigurationController(self)
@@ -232,7 +230,7 @@ class MainWindow(QMainWindow):
         self.controller.refresh_context()
         self.output_tab.target_size_changed.connect(self.partitions_tab.set_auto_disk_size)
         self.output_tab.target_size_cleared.connect(self._target_size_cleared)
-        self.storage_controller.changed.connect(self.controller.invalidate)
+        self.storage_controller.changed.connect(self.controller.refresh_context)
         self.emu68_tab.settings_changed.connect(self.controller.invalidate)
         self.display_tab.settings_changed.connect(self.controller.invalidate)
         self.emu68_tab.rgb2rtg_check.toggled.connect(self._sync_rgb2rtg_display)
@@ -462,7 +460,7 @@ class MainWindow(QMainWindow):
             return
         settings = self.emu68_tab.get_rgb2rtg()
         self.display_tab.set_rgb2rtg_video(settings.video if settings.enabled else None)
-        self.controller.invalidate()
+        self.controller.refresh_context()
 
     def _collect_emu68_boot_settings(self):
         settings = self.emu68_tab.get_settings()
@@ -534,9 +532,7 @@ class MainWindow(QMainWindow):
             "emu68_version": self.emu68_tab.get_emu68_version(),
             "emu68_boot": self._collect_emu68_boot_settings().model_dump(mode="python"),
         }
-        config = BuildConfig.model_validate(data)
-        self.config = config
-        return config
+        return BuildConfig.model_validate(data)
 
     def _refresh_catalog(self):
         self.packages_tab.refresh_catalog()

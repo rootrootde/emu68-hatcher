@@ -13,8 +13,6 @@ default: false
 requires:
 - asyncio_library
 - mpega_library
-recommends:
-- ahi
 download:
   source: aminet
   path: mus/play/AmigaAMP3-68k.lha

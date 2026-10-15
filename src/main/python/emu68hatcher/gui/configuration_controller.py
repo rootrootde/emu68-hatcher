@@ -13,11 +13,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from emu68hatcher.builder.pipeline._selection import rgb2rtg_problems
 from emu68hatcher.config.ags_layout import validate_ags_layout
 from emu68hatcher.config.schema import OutputType
 from emu68hatcher.data.icon_sets import get_icon_set_extra_adf
 from emu68hatcher.data.install_media import get_required_install_media
 from emu68hatcher.data.package_loader import get_adf_rules_for_version
+from emu68hatcher.data.package_selection import missing_optional_adfs, resolve_choices
 from emu68hatcher.utils.host_tools import find_7z, find_hst_imager
 
 
@@ -69,8 +71,33 @@ class ConfigurationController(QObject):
         window = self.window
         if window._loading_config:
             return
-        window.packages_tab.set_context(window.network_tab.get_network_stack())
+        self._apply_context()
         self.invalidate()
+
+    def _apply_context(self):
+        window = self.window
+        window.packages_tab.set_context(
+            window.network_tab.get_network_stack(),
+            ags_enabled=window.storage_controller.enabled,
+            rgb2rtg_enabled=window.emu68_tab.get_rgb2rtg().enabled,
+        )
+
+    def resolution(self):
+        """Resolve the same package entries collect_config hands to the build."""
+        window = self.window
+        entries = (
+            window.packages_tab.get_config()
+            + window.network_tab.extra_package_entries()
+            + window.kickstart_tab.get_locale_entries()
+        )
+        return resolve_choices(
+            {entry["name"].lower(): entry["enabled"] for entry in entries},
+            window.kickstart_tab.get_selected_version(),
+            window.emu68_tab.get_emu68_version().value,
+            window.network_tab.get_network_stack(),
+            ags_enabled=window.storage_controller.enabled,
+            rgb2rtg_enabled=window.emu68_tab.get_rgb2rtg().enabled,
+        )
 
     def load(self, config):
         window = self.window
@@ -93,7 +120,6 @@ class ConfigurationController(QObject):
             window.storage_controller.changed.emit()
             self.refresh_context()
             window._sync_rgb2rtg_display()
-        window.config = config
         self.invalidate()
 
     def _capture_draft(self):
@@ -198,7 +224,8 @@ class ConfigurationController(QObject):
         window.partitions_tab.size_combo.setEnabled(draft["capacity_enabled"])
         window.storage_controller._schedule()
         window.storage_controller.set_output(window.output_tab.get_config())
-        window.packages_tab.set_context(window.network_tab.get_network_stack())
+        self._apply_context()
+        window.packages_tab.refresh_packages()
 
     def snapshot(self):
         config = self.window.collect_config().model_copy(deep=True)
@@ -208,6 +235,8 @@ class ConfigurationController(QObject):
     def preflight(self):
         window = self.window
         storage = window.storage_controller
+        rgb2rtg = window.emu68_tab.get_rgb2rtg()
+        resolution = self.resolution()
         issues = []
 
         def add(message, page, subpage="", field="", severity="error"):
@@ -286,15 +315,25 @@ class ConfigurationController(QObject):
                 "pending",
             )
         else:
-            if not any(row[0] == "boot" for row in panel.results["roms"]):
+            boot_roms = [row for row in panel.results["roms"] if row[0] == "boot"]
+            if not boot_roms:
                 add(
                     "No matching boot ROM found. Rescan your asset directories.",
                     "system",
                     "amiga",
                     "dir_list",
                 )
+            elif rgb2rtg.enabled and boot_roms[0][3] != "A1200":
+                add(
+                    "RGB2RTG requires an A1200 ROM and A1200/PiStorm32-lite hardware.",
+                    "system",
+                    "amiga",
+                    "dir_list",
+                )
+            version = window.kickstart_tab.get_selected_version()
+            icon_set = window.kickstart_tab.get_icon_set()
             found = {row[1] for row in panel.results["media"] if row[0] == "found"}
-            required = set(get_required_install_media(window.kickstart_tab.get_selected_version()))
+            required = set(get_required_install_media(version))
             missing = required - found
             if missing:
                 add(
@@ -303,9 +342,7 @@ class ConfigurationController(QObject):
                     "amiga",
                     "dir_list",
                 )
-            icon_adf = get_icon_set_extra_adf(
-                window.kickstart_tab.get_icon_set(), window.kickstart_tab.get_selected_version()
-            )
+            icon_adf = get_icon_set_extra_adf(icon_set, version)
             if icon_adf and icon_adf not in found:
                 add(
                     f"The selected icons require {icon_adf}. Add its media or choose another icon set.",
@@ -313,18 +350,19 @@ class ConfigurationController(QObject):
                     "appearance",
                     "icon_set_combo",
                 )
-            optional_missing = {
-                rule.adf
-                for rule in get_adf_rules_for_version(window.kickstart_tab.get_selected_version())
-                if rule.package
-                and not rule.mandatory
-                and rule.package.lower() in window.packages_tab.resolution.selected
-                and rule.adf not in required
-                and rule.adf not in found
-            }
+            optional_missing = missing_optional_adfs(
+                get_adf_rules_for_version(version),
+                resolution.selected,
+                icon_set,
+                found,
+                required | {icon_adf} if icon_adf else required,
+            )
             if optional_missing:
                 add(
-                    "Selected software requires media: " + ", ".join(sorted(optional_missing)),
+                    "Selected software or languages require media: "
+                    + ", ".join(optional_missing)
+                    + ". Add the ADFs, or untick the packages on the Software page or the "
+                    "languages under System > AmigaOS & files > Languages.",
                     "system",
                     "amiga",
                     "dir_list",
@@ -361,7 +399,25 @@ class ConfigurationController(QObject):
         ):
             if path is not None and not path.exists():
                 add(f"{label} was not found: {path}", page, section, field)
-        resolution = window.packages_tab.resolution
+        if rgb2rtg.enabled:
+            rgb2rtg_fields = {
+                "emu68_version": ("system", "hardware", ""),
+                "workbench_mode": ("appearance", "display", "workbench_mode_combo"),
+                "framethrower": ("appearance", "display", "framethrower_check"),
+                "emmc_unit0": ("system", "hardware", "emmc_unit_combo"),
+                "extra_lines": ("system", "hardware", "extra_config_edit"),
+                "archive": ("system", "hardware", "rgb2rtg_archive"),
+            }
+            boot = window.emu68_tab.get_settings()
+            for key, message in rgb2rtg_problems(
+                window.emu68_tab.get_emu68_version().value,
+                window.display_tab.workbench_mode_combo.currentData(),
+                window.display_tab.framethrower_check.isChecked(),
+                boot["cmdline_txt"]["emmc_unit0"],
+                [line.strip() for line in boot["config_txt"]["extra_lines"] if line.strip()],
+                rgb2rtg.archive,
+            ):
+                add(message, *rgb2rtg_fields[key])
         for token, names in resolution.unsatisfiable.items():
             add(f"{token}: required by {', '.join(names)}", "software")
         for tab in (window.kickstart_tab, window.packages_tab):
