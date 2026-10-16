@@ -1,45 +1,13 @@
 """Coordinate view adapters, validated snapshots and side-effect-free GUI preflight."""
 
-from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import ValidationError
 from PySide6.QtCore import QObject, QSignalBlocker, QTimer, Signal
-from PySide6.QtWidgets import (
-    QAbstractButton,
-    QComboBox,
-    QLineEdit,
-    QPlainTextEdit,
-    QSpinBox,
-    QWidget,
-)
 
-from emu68hatcher.builder.pipeline._selection import rgb2rtg_problems
-from emu68hatcher.config.ags_layout import validate_ags_layout
-from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
-from emu68hatcher.data.icon_sets import get_icon_set_extra_adf
-from emu68hatcher.data.install_media import get_required_install_media
-from emu68hatcher.data.package_loader import get_adf_rules_for_version
-from emu68hatcher.data.package_selection import missing_optional_adfs, resolve_choices
-from emu68hatcher.utils.host_tools import find_7z, find_hst_imager
-
-
-@dataclass(frozen=True)
-class ConfigurationIssue:
-    message: str
-    page: str
-    subpage: str = ""
-    field: str = ""
-    severity: str = "error"
-
-
-def validation_message(error):
-    if isinstance(error, ValidationError):
-        return "\n".join(
-            f"{'.'.join(str(part) for part in item['loc'])}: {item['msg']}"
-            for item in error.errors(include_input=False)
-        )
-    return str(error)
+from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig
+from emu68hatcher.data.package_selection import resolve_choices
+from emu68hatcher.gui.draft import capture_draft, restore_draft
+from emu68hatcher.gui.preflight import run_preflight
 
 
 class ConfigurationController(QObject):
@@ -100,14 +68,14 @@ class ConfigurationController(QObject):
 
     def load(self, config):
         window = self.window
-        previous = self._capture_draft()
+        previous = capture_draft(window)
         window._loading_config = True
         try:
             with QSignalBlocker(window.storage_controller):
                 try:
                     self._apply_config(config)
                 except Exception:
-                    self._restore_draft(previous)
+                    restore_draft(self, previous)
                     raise
         finally:
             window._loading_config = False
@@ -142,110 +110,6 @@ class ConfigurationController(QObject):
         window.partitions_tab.set_config(config.partitions, update=False)
         window.storage_controller.load_ags(config.ags_import)
         window.storage_controller.set_output(window.output_tab.get_config())
-
-    def _capture_draft(self):
-        window = self.window
-        values = []
-        for owner in (
-            window.kickstart_tab,
-            window.emu68_tab,
-            window.display_tab,
-            window.display_tab.appearance_content,
-            window.kickstart_tab.icons_group,
-            window.network_tab,
-            window.output_tab,
-            window.partitions_tab.capacity_row,
-        ):
-            for widget in owner.findChildren(QWidget):
-                if isinstance(widget, QComboBox):
-                    value = widget.currentData(), widget.currentText()
-                elif isinstance(widget, QSpinBox):
-                    value = widget.value()
-                elif isinstance(widget, QLineEdit):
-                    value = widget.text()
-                elif isinstance(widget, QPlainTextEdit):
-                    value = widget.toPlainText()
-                elif isinstance(widget, QAbstractButton) and widget.isCheckable():
-                    value = widget.isChecked()
-                else:
-                    continue
-                values.append((widget, value))
-        storage = window.storage_controller
-        return {
-            "values": values,
-            "directories": window.kickstart_tab.asset_panel.directories,
-            "packages": dict(window.packages_tab._requests),
-            "locales": {
-                name: check.isChecked()
-                for name, check in window.kickstart_tab._locale_checks.items()
-            },
-            "icon_set": window.kickstart_tab.get_icon_set(),
-            "layout": storage.model.to_layout_draft(),
-            "partition_ids": list(storage.model.partition_ids),
-            "selected_id": storage.model.selected_id,
-            "capacity_text": window.partitions_tab.size_combo.currentText(),
-            "capacity_error": window.partitions_tab.capacity_error,
-            "capacity_enabled": window.partitions_tab.size_combo.isEnabled(),
-            "storage": {
-                name: getattr(storage, name)
-                for name in (
-                    "_ags_configured",
-                    "enabled",
-                    "source",
-                    "roles",
-                    "inventory",
-                    "inspection_error",
-                    "allocation_state",
-                    "migration_notice",
-                    "layout_message",
-                )
-            },
-        }
-
-    def _restore_draft(self, draft):
-        from shiboken6 import isValid
-
-        window = self.window
-        for widget, value in draft["values"]:
-            if not isValid(widget):
-                continue
-            if isinstance(widget, QComboBox):
-                index = (
-                    widget.findData(value[0]) if value[0] is not None else widget.findText(value[1])
-                )
-                widget.setCurrentIndex(index)
-            elif isinstance(widget, QSpinBox):
-                widget.setValue(value)
-            elif isinstance(widget, QLineEdit):
-                widget.setText(value)
-            elif isinstance(widget, QPlainTextEdit):
-                widget.setPlainText(value)
-            else:
-                widget.setChecked(value)
-        window.emu68_tab.set_emu68_version(window.emu68_tab.get_emu68_version())
-        window.network_tab._update_net_visibility()
-        window.output_tab._on_mode_changed()
-        window.kickstart_tab.asset_panel.directories = draft["directories"]
-        window.kickstart_tab.asset_panel.scan()
-        window.kickstart_tab.set_icon_set(draft["icon_set"])
-        window.packages_tab.set_kickstart_version(window.kickstart_tab.get_selected_version())
-        window.packages_tab._requests = draft["packages"]
-        for name, value in draft["locales"].items():
-            if name in window.kickstart_tab._locale_checks:
-                window.kickstart_tab._locale_checks[name].setChecked(value)
-        window.storage_controller.cancel_inspection()
-        for name, value in draft["storage"].items():
-            setattr(window.storage_controller, name, value)
-        window.partitions_tab.set_config(draft["layout"], update=False)
-        window.storage_controller.model.partition_ids = draft["partition_ids"]
-        window.storage_controller.model.selected_id = draft["selected_id"]
-        window.partitions_tab.size_combo.setEditText(draft["capacity_text"])
-        window.partitions_tab.capacity_error = draft["capacity_error"]
-        window.partitions_tab.size_combo.setEnabled(draft["capacity_enabled"])
-        window.storage_controller._schedule()
-        window.storage_controller.set_output(window.output_tab.get_config())
-        self._apply_context()
-        window.packages_tab.refresh_packages()
 
     def collect_config(self):
         """Read adapters without editing the draft; validate at save/build boundaries."""
@@ -306,215 +170,7 @@ class ConfigurationController(QObject):
         return self.collect_config().model_copy(deep=True)
 
     def preflight(self):
-        window = self.window
-        storage = window.storage_controller
-        rgb2rtg = window.emu68_tab.get_rgb2rtg()
-        resolution = self.resolution()
-        issues = []
-
-        def add(message, page, subpage="", field="", severity="error"):
-            issues.append(ConfigurationIssue(message, page, subpage, field, severity))
-
-        if storage.enabled and storage.inspection_pending():
-            add(
-                "Wait for the AGS source check to finish.",
-                "storage",
-                "ags",
-                "source_edit",
-                "pending",
-            )
-        elif storage.enabled and storage.inspection_error:
-            add(
-                f"AGS source is unreadable: {storage.inspection_error}",
-                "storage",
-                "ags",
-                "source_edit",
-            )
-        elif storage.enabled and storage.allocation_state != "ready":
-            add(storage.layout_message, "storage", "ags", "source_edit")
-        if window.output_tab.needs_disk_target():
-            add("Select an SD card.", "storage", "", "disk_combo")
-        output = window.output_tab.get_config()
-        # device mode has no output path field; the SD card check above covers it
-        if output["type"] != OutputType.DEVICE.value and not output.get("path"):
-            add("Select an output location.", "storage", "", "output_path")
-        if window.partitions_tab.capacity_error:
-            add(window.partitions_tab.capacity_error, "storage", "", "size_combo")
-        for error in storage.model.errors:
-            add(error, "storage", "partitions", "part_table")
-        if window.partitions_tab.extra_content_scan_pending():
-            add(
-                "Extra-file folder sizes are still being checked.",
-                "storage",
-                "extras",
-                "extras_partition_combo",
-                "pending",
-            )
-        else:
-            for error in window.partitions_tab.extra_content_errors():
-                add(error, "storage", "extras", "extras_partition_combo")
-        try:
-            wifi = window.network_tab.get_wifi_config()
-        except ValueError as error:
-            add(validation_message(error), "system", "network", "wifi_ssid")
-        else:
-            if window.network_tab.wifi_ssid.text().strip() and wifi is None:
-                add(
-                    "Enter a WiFi password of 8–63 characters, or leave it empty for an open network.",
-                    "system",
-                    "network",
-                    "wifi_password",
-                )
-        try:
-            window.network_tab.get_network_settings()
-        except ValueError as error:
-            add(validation_message(error), "system", "network", "eth_addr")
-        panel = window.kickstart_tab.asset_panel
-        if not panel.directories:
-            add(
-                "Add ROMs and installation media.",
-                "system",
-                "amiga",
-                "dir_list",
-            )
-        elif not panel.scan_directories:
-            add("None of the asset directories are available.", "system", "amiga", "dir_list")
-        elif panel._active:
-            add(
-                "Wait for the ROM and media scans to finish.",
-                "system",
-                "amiga",
-                "dir_list",
-                "pending",
-            )
-        else:
-            boot_roms = [row for row in panel.results["roms"] if row[0] == "boot"]
-            if not boot_roms:
-                add(
-                    "No matching boot ROM found. Rescan your asset directories.",
-                    "system",
-                    "amiga",
-                    "dir_list",
-                )
-            elif rgb2rtg.enabled and boot_roms[0][3] != "A1200":
-                add(
-                    "RGB2RTG requires an A1200 ROM and A1200/PiStorm32-lite hardware.",
-                    "system",
-                    "amiga",
-                    "dir_list",
-                )
-            version = window.kickstart_tab.get_selected_version()
-            icon_set = window.kickstart_tab.get_icon_set()
-            found = {row[1] for row in panel.results["media"] if row[0] == "found"}
-            required = set(get_required_install_media(version))
-            missing = required - found
-            if missing:
-                add(
-                    "Missing installation media: " + ", ".join(sorted(missing)),
-                    "system",
-                    "amiga",
-                    "dir_list",
-                )
-            icon_adf = get_icon_set_extra_adf(icon_set, version)
-            if icon_adf and icon_adf not in found:
-                add(
-                    f"The selected icons require {icon_adf}. Add its media or choose another icon set.",
-                    "appearance",
-                    "appearance",
-                    "icon_set_combo",
-                )
-            optional_missing = missing_optional_adfs(
-                get_adf_rules_for_version(version),
-                resolution.selected,
-                icon_set,
-                found,
-                required | {icon_adf} if icon_adf else required,
-            )
-            if optional_missing:
-                add(
-                    "Selected software or languages require media: "
-                    + ", ".join(optional_missing)
-                    + ". Add the ADFs, or untick the packages on the Software page or the "
-                    "languages under System > AmigaOS & files > Languages.",
-                    "system",
-                    "amiga",
-                    "dir_list",
-                )
-        for label, finder in (("HST Imager", find_hst_imager), ("7-Zip", find_7z)):
-            if not finder():
-                add(f"Install {label}.", "overview", "tools")
-        for label, path, page, section, field in (
-            (
-                "Roadshow archive",
-                window.network_tab.get_roadshow_archive()
-                if window.network_tab.radio_roadshow.isChecked()
-                else None,
-                "system",
-                "network",
-                "roadshow_archive_edit",
-            ),
-            (
-                "MiamiDX keys",
-                window.network_tab.get_miamidx_key_directory()
-                if window.network_tab.radio_miamidx.isChecked()
-                else None,
-                "system",
-                "network",
-                "miamidx_key_directory_edit",
-            ),
-            (
-                "Picasso96 archive",
-                window.display_tab.get_picasso96_archive(),
-                "appearance",
-                "display",
-                "picasso96_archive_edit",
-            ),
-        ):
-            if path is not None and not path.exists():
-                add(f"{label} was not found: {path}", page, section, field)
-        if rgb2rtg.enabled:
-            rgb2rtg_fields = {
-                "emu68_version": ("system", "hardware", ""),
-                "workbench_mode": ("appearance", "display", "workbench_mode_combo"),
-                "framethrower": ("appearance", "display", "framethrower_check"),
-                "emmc_unit0": ("system", "hardware", "emmc_unit_combo"),
-                "extra_lines": ("system", "hardware", "extra_config_edit"),
-                "archive": ("system", "hardware", "rgb2rtg_archive"),
-            }
-            boot = window.emu68_tab.get_settings()
-            for key, message in rgb2rtg_problems(
-                window.emu68_tab.get_emu68_version().value,
-                window.display_tab.workbench_mode_combo.currentData(),
-                window.display_tab.framethrower_check.isChecked(),
-                boot["cmdline_txt"]["emmc_unit0"],
-                [line.strip() for line in boot["config_txt"]["extra_lines"] if line.strip()],
-                rgb2rtg.archive,
-            ):
-                add(message, *rgb2rtg_fields[key])
-        for token, names in resolution.unsatisfiable.items():
-            add(f"{token}: required by {', '.join(names)}", "software")
-        if window.packages_tab.catalog_notice.text():
-            add(window.packages_tab.catalog_notice.text(), "software", severity="warning")
-        if any(issue.severity != "warning" for issue in issues):
-            return None, issues
-        try:
-            config = self.snapshot()
-        except ValueError as error:
-            message = validation_message(error)
-            if "C790" in message or "Native-video capture" in message:
-                add(message, "appearance", "display", "unicam_device_combo")
-            elif "output" in message:
-                add(message, "storage", "", "output_path")
-            elif "AGS" in message or "source_image" in message:
-                add(message, "storage", "ags", "source_edit")
-            else:
-                add(message, "system", "hardware")
-            return None, issues
-        for error in (
-            validate_ags_layout(config) if config.ags_import and config.ags_import.enabled else ()
-        ):
-            add(error, "storage", "ags", "source_edit")
-        return (None if any(issue.severity != "warning" for issue in issues) else config), issues
+        return run_preflight(self)
 
     def summary(self):
         window = self.window

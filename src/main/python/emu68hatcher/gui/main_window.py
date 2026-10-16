@@ -32,9 +32,10 @@ from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import OutputType
 from emu68hatcher.data.rom_detection import identify_kickstart
 from emu68hatcher.gui.boot_preview import BootPreviewPane
-from emu68hatcher.gui.configuration_controller import ConfigurationController, validation_message
+from emu68hatcher.gui.configuration_controller import ConfigurationController
 from emu68hatcher.gui.design import apply_design, style_sections
 from emu68hatcher.gui.dialogs import BuildProgressDialog
+from emu68hatcher.gui.preflight import validation_message
 from emu68hatcher.gui.storage_controller import StorageController
 from emu68hatcher.gui.tabs import (
     DisplayTab,
