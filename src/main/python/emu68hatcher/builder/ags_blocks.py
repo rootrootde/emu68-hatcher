@@ -159,12 +159,25 @@ def verify_target_partitions(workflow, runner, plan, image_path) -> None:
         except (ValueError, KeyError) as error:
             raise BuildError("Cannot verify AGS target volume names") from error
         expected = [(part.device, part.volume, part.size) for part in mbr.amiga_partitions]
+        # a volume hst-imager cannot read has no Volume Name in its properties
         actual = [
-            (entry["properties"]["Device Name"], entry["properties"]["Volume Name"], entry["size"])
+            (
+                entry.get("properties", {}).get("Device Name"),
+                entry.get("properties", {}).get("Volume Name"),
+                entry.get("size"),
+            )
             for entry in entries
         ]
         if not listing.success or actual != expected:
-            raise BuildError("AGS target volumes differ from the applied layout")
+            differing = [
+                f"{found[0] or '?'}: volume {found[1] or 'unreadable'}, {found[2]} bytes"
+                for found in actual
+                if found not in expected
+            ]
+            raise BuildError(
+                "AGS target volumes differ from the applied layout: "
+                + ("; ".join(differing) or "partition count differs")
+            )
 
 
 def _format_copy_progress(done: int, total: int) -> str:
