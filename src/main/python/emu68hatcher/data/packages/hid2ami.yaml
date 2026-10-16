@@ -17,6 +17,16 @@ download:
 install:
 - from: Hid2Ami/HID2AmiDriver
   to: C/
+  # the driver signals wheel-up by letting the adapter pull the left button line low inside
+  # its vblank server (priority 0, behind gameport.device's). lowlevel.library 47 replaces
+  # gameport's server with its own at the end of the priority-0 group as soon as a program
+  # calls SetJoyPortAttrs (AGS2 does), so the buttons are then sampled right after the pulse
+  # and every wheel-up becomes a left click until reboot. ln_Pri of the driver's Interrupt
+  # (symbol _vertblankint, data hunk 2 offset 17) set to -10 keeps it behind both.
+  patch:
+  - offset: 0x11b1
+    expect: 0x00
+    value: 0xf6
 
 # the vendor Installer emits Run" <>NIL:" (InstallerGen escaping artifact) and
 # wrong filename case; the script below uses the corrected form

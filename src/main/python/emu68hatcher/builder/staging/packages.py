@@ -16,7 +16,7 @@ from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.staging.tree_copy import FileCopied, copy_contained_tree
 from emu68hatcher.config.defaults import DEFAULT_BOOT_DEVICE
 from emu68hatcher.data.package_loader import get_package_by_name
-from emu68hatcher.data.package_schema import InstallRule, Package, SourceType
+from emu68hatcher.data.package_schema import BytePatch, InstallRule, Package, SourceType
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import ensure_dir
 
@@ -39,6 +39,22 @@ def _set_icon_stack(info_path: Path, size: int) -> None:
     if len(data) >= 78 and data[0] == 0xE3 and data[1] == 0x10:
         struct.pack_into(">i", data, 74, size)
         info_path.write_bytes(data)
+
+
+def _apply_byte_patches(path: Path, patches: list[BytePatch], logger) -> None:
+    """write each patch byte; a byte that is not the expected one leaves the file as copied"""
+    data = bytearray(path.read_bytes())
+    for patch in patches:
+        if patch.offset >= len(data) or data[patch.offset] != patch.expect:
+            found = f"{data[patch.offset]:#04x}" if patch.offset < len(data) else "past the end"
+            logger.warning(
+                f"{path.name}: byte at {patch.offset:#x} is {found}, not {patch.expect:#04x}; "
+                "patch skipped"
+            )
+            return
+    for patch in patches:
+        data[patch.offset] = patch.value
+    path.write_bytes(data)
 
 
 def _merge_tree(source: Path, dest: Path, on_file: FileCopied | None = None) -> int:
@@ -238,8 +254,7 @@ class PackageInstaller:
             installed += self._copy_item(
                 source_item,
                 destination,
-                rule.stack,
-                rule.xor_byte,
+                rule,
                 merge_dirs=True,
             )
         return installed
@@ -263,8 +278,7 @@ class PackageInstaller:
         return self._copy_item(
             source,
             destination,
-            rule.stack,
-            rule.xor_byte,
+            rule,
             merge_dirs=rule.recursive or is_dir,
         )
 
@@ -272,8 +286,7 @@ class PackageInstaller:
         self,
         source: Path,
         destination: Path,
-        stack: int | None,
-        xor_byte: int | None,
+        rule: InstallRule,
         merge_dirs: bool,
     ) -> int:
         if not source.is_file() and not source.is_dir():
@@ -282,9 +295,13 @@ class PackageInstaller:
         if source.is_dir() and merge_dirs:
             return _merge_tree(source, destination, self._wrote)
         shutil.copy2(source, destination)
-        if xor_byte is not None:
-            destination.write_bytes(bytes(value ^ xor_byte for value in destination.read_bytes()))
-        if stack:
-            _set_icon_stack(destination, stack)
+        if rule.xor_byte is not None:
+            destination.write_bytes(
+                bytes(value ^ rule.xor_byte for value in destination.read_bytes())
+            )
+        if rule.stack:
+            _set_icon_stack(destination, rule.stack)
+        if rule.patch:
+            _apply_byte_patches(destination, rule.patch, self.logger)
         self._wrote(destination)
         return 1

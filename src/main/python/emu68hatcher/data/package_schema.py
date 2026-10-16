@@ -51,6 +51,14 @@ class DownloadInfo(CatalogModel):
         return self
 
 
+class BytePatch(CatalogModel):
+    """one byte of the installed file replaced; expect guards against a changed download"""
+
+    offset: int = Field(ge=0)
+    expect: int = Field(ge=0, le=255)
+    value: int = Field(ge=0, le=255)
+
+
 class InstallRule(CatalogModel):
     """rule for installing files from an extracted package"""
 
@@ -65,6 +73,7 @@ class InstallRule(CatalogModel):
     rename: str | None = None  # rename file on install
     stack: int | None = None  # patch a .info icon's do_StackSize (workbench launch stack)
     xor_byte: int | None = Field(default=None, alias="xor", ge=0, le=255)
+    patch: list[BytePatch] = Field(default_factory=list)  # byte patches on the copied file
 
     model_config = ConfigDict(populate_by_name=True)
 
