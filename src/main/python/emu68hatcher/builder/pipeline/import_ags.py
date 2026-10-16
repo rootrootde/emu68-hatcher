@@ -44,16 +44,14 @@ def stage_import_ags(workflow, image):
             run_hst_to_file(
                 ["fs", "copy", source, str(destination.parent), "--uaemetadata", "UaeFsDb"],
                 Path(temporary) / f"helper-{name}.log",
-                lambda: workflow._cancelled,
+                workflow.is_cancelled,
             )
             if not resolve_staging_path(boot, f"C/{name}").is_file():
                 raise BuildError(f"AGS source is missing helper {name}")
-    launcher = prepare_ags_launcher(plan, boot, cancel_check=lambda: workflow._cancelled)
+    launcher = prepare_ags_launcher(plan, boot, cancel_check=workflow.is_cancelled)
     rtg = workflow.config.display.workbench_mode != WorkbenchScreenMode.NATIVE
     workflow._milestone("Configuring AGS for VideoCore RTG" if rtg else "Keeping AGS native modes")
-    display_files = prepare_ags_display(
-        plan, staging, rtg=rtg, cancel_check=lambda: workflow._cancelled
-    )
+    display_files = prepare_ags_display(plan, staging, rtg=rtg, cancel_check=workflow.is_cancelled)
     # AGS puts AGS2/OS/C in front of C:, so its own WHDLoad would shadow the one Hatcher
     # installs (wrapper or plain); every launcher is meant to end up at C:WHDLoad
     whd = plan.target("whdload")
@@ -99,7 +97,7 @@ def remove_ags_files(workflow, image) -> None:
     from emu68hatcher.builder.host.hst_runner import HSTRunner
     from emu68hatcher.builder.pipeline.finalize import _build_device_map
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
     mapping = _build_device_map(workflow)
     with tempfile.TemporaryDirectory(prefix="ags-remove-") as temporary:
         for number, (device, relative) in enumerate(image.ags_launcher.removed_files):
@@ -134,7 +132,7 @@ def verify_ags_target(workflow, image) -> None:
     from emu68hatcher.builder.host.hst_runner import HSTRunner
     from emu68hatcher.builder.pipeline.finalize import _build_device_map
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
     verify_target_partitions(workflow, runner, plan, image.image_path)
     mapping = _build_device_map(workflow)
     batches = defaultdict(list)

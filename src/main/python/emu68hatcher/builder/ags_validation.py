@@ -141,7 +141,7 @@ def check_elevated_source_access(workflow: BuildWorkflow, plan: AGSImportPlan) -
     if workflow.state.elevation is None:
         return
     workflow._check_cancelled()
-    result = HSTRunner(cancel_check=lambda: workflow._cancelled).run_command(
+    result = HSTRunner(cancel_check=workflow.is_cancelled).run_command(
         HSTCommandLine(HSTCommand.RDB_INFO, [hst_path(plan.inventory.source_path)]),
         elevation=workflow.state.elevation,
     )
@@ -173,7 +173,7 @@ def validate_ags_import(workflow: BuildWorkflow) -> AGSImportPlan:
     inventory = inspect_ags_source(
         selection.source_image,
         selected,
-        cancel_check=lambda: workflow._cancelled,
+        cancel_check=workflow.is_cancelled,
     )
     requirements = {component.role: component.partition.size for component in inventory.components}
     current_errors = validate_ags_layout(workflow.config, requirements)
@@ -196,7 +196,7 @@ def validate_ags_import(workflow: BuildWorkflow) -> AGSImportPlan:
         extra = part.extra_content_directory
         if extra is not None and extra.is_dir():
             try:
-                usage = measure_contained_tree(extra, cancel_check=lambda: workflow._cancelled)
+                usage = measure_contained_tree(extra, cancel_check=workflow.is_cancelled)
             except InterruptedError:
                 workflow._check_cancelled()
                 raise

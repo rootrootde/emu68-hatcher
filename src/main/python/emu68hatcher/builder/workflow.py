@@ -66,6 +66,22 @@ class BuildWorkflow:
         """request build cancellation"""
         self._cancelled = True
 
+    def is_cancelled(self) -> bool:
+        return self._cancelled
+
+    @property
+    def resolution(self) -> Resolution:
+        """package resolution, computed once per build"""
+        if self._resolution is None:
+            from emu68hatcher.builder.pipeline._selection import resolve_selection
+
+            self._resolution = resolve_selection(
+                self.config,
+                self.config.kickstart.version.value,
+                self.config.emu68_version.value,
+            )
+        return self._resolution
+
     def _update_state(
         self,
         stage: BuildStage | None = None,
@@ -137,15 +153,16 @@ class BuildWorkflow:
 
     def _check_cancelled(self) -> None:
         """raise BuildCancelledError if cancelled"""
-        if self._cancelled:
+        if self.is_cancelled():
             raise BuildCancelledError("Build was cancelled by user")
 
     def _bring_target_disk_online(self) -> None:
         """windows: undo the Set-Disk -IsOffline applied at unmount"""
         from emu68hatcher.builder.host.disk_enum import find_disk, online_disk
         from emu68hatcher.config.schema import OutputType
+        from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
 
-        if self.config.output is None:
+        if get_platform_info().os != OperatingSystem.WINDOWS or self.config.output is None:
             return
         targets: list[str] = []
         if self.config.output.type == OutputType.DEVICE:

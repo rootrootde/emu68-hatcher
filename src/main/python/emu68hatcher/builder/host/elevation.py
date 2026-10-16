@@ -52,7 +52,7 @@ def acquire_elevation() -> ElevationToken:
     platform = get_platform_info().os
     if is_root():
         logger.info("already root - skipping interactive elevation")
-        return ElevationToken(os=platform, method="noop")
+        return ElevationToken(method="noop")
     if platform == OperatingSystem.MACOS:
         from emu68hatcher.builder.host._elevation_unix import acquire_macos
 

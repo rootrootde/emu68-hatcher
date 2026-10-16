@@ -100,7 +100,7 @@ def stage_create_image(
         ags_plan=workspace.validated.ags_plan,
     )
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
 
     def progress_cb(current: int, total: int, desc: str, status):
         progress = (current / total) * 100

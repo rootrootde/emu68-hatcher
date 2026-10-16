@@ -16,13 +16,7 @@ if TYPE_CHECKING:
 
 
 def get_resolution(workflow: BuildWorkflow) -> Resolution:
-    if workflow._resolution is None:
-        workflow._resolution = resolve_selection(
-            workflow.config,
-            workflow.config.kickstart.version.value,
-            workflow.config.emu68_version.value,
-        )
-    return workflow._resolution
+    return workflow.resolution
 
 
 def resolve_selection(
