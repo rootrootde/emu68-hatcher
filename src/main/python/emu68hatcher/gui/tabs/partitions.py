@@ -133,6 +133,16 @@ class PartitionsTab(QWidget):
         if self.capacity_row.clear_auto():
             self.reset_btn.setEnabled(True)
 
+    def clear_target_size(self, image_mode) -> None:
+        """Unlock in image mode; in card mode keep the combo locked until a card is chosen."""
+        if image_mode:
+            self.clear_auto_disk_size()
+        else:
+            self.size_combo.setEnabled(False)
+            self.reset_btn.setEnabled(False)
+            self.auto_size_label.setText("Select an SD card to read its actual capacity.")
+            self.auto_size_label.show()
+
     # ── Event handlers ──────────────────────────────────────────────────
 
     def _apply_disk_size_bytes(self, disk_size_bytes: int) -> None:

@@ -1,6 +1,7 @@
 """Coordinate view adapters, validated snapshots and side-effect-free GUI preflight."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from pydantic import ValidationError
 from PySide6.QtCore import QObject, QSignalBlocker, QTimer, Signal
@@ -15,7 +16,7 @@ from PySide6.QtWidgets import (
 
 from emu68hatcher.builder.pipeline._selection import rgb2rtg_problems
 from emu68hatcher.config.ags_layout import validate_ags_layout
-from emu68hatcher.config.schema import OutputType
+from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
 from emu68hatcher.data.icon_sets import get_icon_set_extra_adf
 from emu68hatcher.data.install_media import get_required_install_media
 from emu68hatcher.data.package_loader import get_adf_rules_for_version
@@ -104,7 +105,7 @@ class ConfigurationController(QObject):
         try:
             with QSignalBlocker(window.storage_controller):
                 try:
-                    window._apply_config(config)
+                    self._apply_config(config)
                 except Exception:
                     self._restore_draft(previous)
                     raise
@@ -115,6 +116,32 @@ class ConfigurationController(QObject):
             self.refresh_context()
             window._sync_rgb2rtg_display()
         self.invalidate()
+
+    def _apply_config(self, config):
+        window = self.window
+        window.storage_controller.cancel_inspection()
+        window.kickstart_tab.set_config(
+            config.kickstart, asset_directories=list(config.asset_directories)
+        )
+        window.display_tab.set_config(config.display)
+        window.display_tab.set_picasso96_archive(config.display.picasso96_archive)
+        window.emu68_tab.set_emu68_version(config.emu68_version)
+        window.emu68_tab.set_settings(config.emu68_boot)
+        window.emu68_tab.set_rgb2rtg(config.rgb2rtg)
+        window.display_tab.set_emu68_boot_settings(config.emu68_boot)
+        window.packages_tab.set_kickstart_version(config.kickstart.version.value)
+        window.kickstart_tab.set_icon_set(config.icon_set)
+        window.network_tab.set_network_stack(config.network_stack)
+        window.network_tab.set_wifi_config(config.wifi)
+        window.network_tab.set_roadshow_archive(config.roadshow_archive)
+        window.network_tab.set_miamidx_key_directory(config.miamidx_key_directory)
+        window.network_tab.set_network_settings(config.network)
+        window.packages_tab.set_config(config.packages)
+        window.kickstart_tab.set_locale(config.packages)
+        window.output_tab.set_config(config.output)
+        window.partitions_tab.set_config(config.partitions, update=False)
+        window.storage_controller.load_ags(config.ags_import)
+        window.storage_controller.set_output(window.output_tab.get_config())
 
     def _capture_draft(self):
         window = self.window
@@ -220,8 +247,63 @@ class ConfigurationController(QObject):
         self._apply_context()
         window.packages_tab.refresh_packages()
 
+    def collect_config(self):
+        """Read adapters without editing the draft; validate at save/build boundaries."""
+        window = self.window
+        ks = window.kickstart_tab.get_config()
+        disp = window.display_tab.get_config()
+        hdmi_mode = disp.get("hdmi_mode", "1280*720-50")
+        custom = (
+            {
+                key: disp[key]
+                for key in (
+                    "width",
+                    "height",
+                    "framerate",
+                    "aspect_ratio",
+                    "margins",
+                    "interlace",
+                    "reduced_blanking",
+                )
+            }
+            if hdmi_mode == "Custom"
+            else None
+        )
+        out = window.storage_controller.output
+        wifi = window.network_tab.get_wifi_config()
+        network = window.network_tab.get_network_settings()
+        data = {
+            "version": CURRENT_CONFIG_VERSION,
+            "kickstart": {"version": ks["version"]},
+            "asset_directories": [
+                Path(p) for p in ks.get("asset_directories", []) if str(p).strip()
+            ],
+            "display": {
+                "hdmi_mode": hdmi_mode,
+                "custom": custom,
+                "workbench_mode": disp["workbench_mode"],
+                "picasso96_archive": window.display_tab.get_picasso96_archive(),
+            },
+            "packages": window.packages_tab.get_config()
+            + window.network_tab.extra_package_entries()
+            + window.kickstart_tab.get_locale_entries(),
+            "icon_set": window.kickstart_tab.get_icon_set(),
+            "partitions": window.partitions_tab.get_config().model_dump(mode="python"),
+            "ags_import": window.storage_controller.ags_config(),
+            "output": out if out.get("path") else None,
+            "network_stack": window.network_tab.get_network_stack(),
+            "roadshow_archive": window.network_tab.get_roadshow_archive(),
+            "miamidx_key_directory": window.network_tab.get_miamidx_key_directory(),
+            "wifi": wifi.model_dump(mode="python") if wifi else None,
+            "network": network.model_dump(mode="python"),
+            "rgb2rtg": window.emu68_tab.get_rgb2rtg().model_dump(mode="python"),
+            "emu68_version": window.emu68_tab.get_emu68_version(),
+            "emu68_boot": window._collect_emu68_boot_settings().model_dump(mode="python"),
+        }
+        return BuildConfig.model_validate(data)
+
     def snapshot(self):
-        return self.window.collect_config().model_copy(deep=True)
+        return self.collect_config().model_copy(deep=True)
 
     def preflight(self):
         window = self.window

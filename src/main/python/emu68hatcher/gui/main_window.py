@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt, QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QAbstractButton,
@@ -14,8 +14,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
@@ -31,9 +29,8 @@ from emu68hatcher.builder.staging.scripts.generator import render_boot_partition
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.display_models import CustomScreenMode
 from emu68hatcher.config.loader import load_config, save_config
-from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
+from emu68hatcher.config.schema import OutputType
 from emu68hatcher.data.rom_detection import identify_kickstart
-from emu68hatcher.gui.app_icon import find_app_icon, render_icon
 from emu68hatcher.gui.boot_preview import BootPreviewPane
 from emu68hatcher.gui.configuration_controller import ConfigurationController, validation_message
 from emu68hatcher.gui.design import apply_design, style_sections
@@ -57,6 +54,7 @@ from emu68hatcher.gui.work_areas import (
     SectionPage,
     StoragePage,
     SummaryPage,
+    build_rail,
     scroll_page,
     scroll_to,
 )
@@ -83,37 +81,7 @@ class MainWindow(QMainWindow):
         body = QHBoxLayout(central)
         body.setContentsMargins(12, 12, 12, 0)
         body.setSpacing(0)
-        rail = QWidget()
-        rail.setFixedWidth(196)
-        rail_layout = QVBoxLayout(rail)
-        rail_layout.setContentsMargins(0, 12, 0, 0)
-        rail_layout.setSpacing(24)
-        brand = QHBoxLayout()
-        brand.setContentsMargins(12, 0, 0, 0)
-        icon_path = find_app_icon()
-        if icon_path:
-            logo = QLabel()
-            logo.setPixmap(render_icon(icon_path, 28))
-            brand.addWidget(logo)
-        brand_label = QLabel("Emu68 Hatcher")
-        brand_label.setProperty("heading", "brand")
-        brand.addWidget(brand_label)
-        brand.addStretch()
-        rail_layout.addLayout(brand)
-        self.sidebar = QListWidget()
-        self.sidebar.setObjectName("navigation")
-        self.sidebar.setIconSize(QSize(22, 22))
-        self.sidebar.setSpacing(4)
-        font = self.sidebar.font()
-        font.setPointSize(13)
-        self.sidebar.setFont(font)
-        self.sidebar.setAccessibleName("Work areas")
-        self.sidebar.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        rail_layout.addWidget(self.sidebar, 1)
-        version = QLabel(f"Version {__version__}")
-        version.setProperty("tone", "muted")
-        version.setContentsMargins(12, 0, 0, 12)
-        rail_layout.addWidget(version)
+        rail, self.sidebar = build_rail()
         body.addWidget(rail)
         content = QWidget()
         layout = QVBoxLayout(content)
@@ -168,10 +136,6 @@ class MainWindow(QMainWindow):
         }
         self.page_widgets = {}
         for key, page in self.pages.items():
-            item = QListWidgetItem(PAGE_LABELS[key])
-            item.setSizeHint(QSize(0, 48))
-            item.setData(Qt.ItemDataRole.UserRole, key)
-            self.sidebar.addItem(item)
             widget = scroll_page(page) if key in {"overview", "storage", "review"} else page
             self.page_widgets[key] = widget
             self.stack.addWidget(widget)
@@ -232,7 +196,10 @@ class MainWindow(QMainWindow):
             radio.toggled.connect(self.controller.refresh_context)
         self.controller.refresh_context()
         self.output_tab.target_size_changed.connect(self.partitions_tab.set_auto_disk_size)
-        self.output_tab.target_size_cleared.connect(self._target_size_cleared)
+        self.output_tab.target_size_cleared.connect(
+            lambda: self.partitions_tab.clear_target_size(self.output_tab.mode_img.isChecked())
+        )
+        self.output_tab.target_size_cleared.connect(self.controller.invalidate)
         self.storage_controller.changed.connect(self.controller.refresh_context)
         self.emu68_tab.rgb2rtg_check.toggled.connect(self._sync_rgb2rtg_display)
         self.emu68_tab.rgb2rtg_video.currentIndexChanged.connect(self._sync_rgb2rtg_display)
@@ -264,18 +231,6 @@ class MainWindow(QMainWindow):
         apply_design(central, self.sidebar)
         self.navigate("overview")
         self.statusBar().showMessage("Ready")
-
-    def _target_size_cleared(self):
-        if self.output_tab.mode_img.isChecked():
-            self.partitions_tab.clear_auto_disk_size()
-        else:
-            self.partitions_tab.size_combo.setEnabled(False)
-            self.partitions_tab.reset_btn.setEnabled(False)
-            self.partitions_tab.auto_size_label.setText(
-                "Select an SD card to read its actual capacity."
-            )
-            self.partitions_tab.auto_size_label.show()
-        self.controller.invalidate()
 
     def _output_changed(self, *_args):
         if not self._loading_config:
@@ -380,31 +335,6 @@ class MainWindow(QMainWindow):
                 self, "Error", f"Failed to load config: {validation_message(error)}"
             )
 
-    def _apply_config(self, config):
-        self.storage_controller.cancel_inspection()
-        self.kickstart_tab.set_config(
-            config.kickstart, asset_directories=list(config.asset_directories)
-        )
-        self.display_tab.set_config(config.display)
-        self.display_tab.set_picasso96_archive(config.display.picasso96_archive)
-        self.emu68_tab.set_emu68_version(config.emu68_version)
-        self.emu68_tab.set_settings(config.emu68_boot)
-        self.emu68_tab.set_rgb2rtg(config.rgb2rtg)
-        self.display_tab.set_emu68_boot_settings(config.emu68_boot)
-        self.packages_tab.set_kickstart_version(config.kickstart.version.value)
-        self.kickstart_tab.set_icon_set(config.icon_set)
-        self.network_tab.set_network_stack(config.network_stack)
-        self.network_tab.set_wifi_config(config.wifi)
-        self.network_tab.set_roadshow_archive(config.roadshow_archive)
-        self.network_tab.set_miamidx_key_directory(config.miamidx_key_directory)
-        self.network_tab.set_network_settings(config.network)
-        self.packages_tab.set_config(config.packages)
-        self.kickstart_tab.set_locale(config.packages)
-        self.output_tab.set_config(config.output)
-        self.partitions_tab.set_config(config.partitions, update=False)
-        self.storage_controller.load_ags(config.ags_import)
-        self.storage_controller.set_output(self.output_tab.get_config())
-
     def save_config_file(self):
         path, _ = QFileDialog.getSaveFileName(
             self, "Save Configuration", "emu68-config.json", "JSON Files (*.json);;All Files (*)"
@@ -478,60 +408,6 @@ class MainWindow(QMainWindow):
         self._refresh_boot_files_preview()
         self.preview_dialog.show()
         self.preview_dialog.raise_()
-
-    def collect_config(self):
-        """Read adapters without editing the draft; validate at save/build boundaries."""
-        ks = self.kickstart_tab.get_config()
-        disp = self.display_tab.get_config()
-        hdmi_mode = disp.get("hdmi_mode", "1280*720-50")
-        custom = (
-            {
-                key: disp[key]
-                for key in (
-                    "width",
-                    "height",
-                    "framerate",
-                    "aspect_ratio",
-                    "margins",
-                    "interlace",
-                    "reduced_blanking",
-                )
-            }
-            if hdmi_mode == "Custom"
-            else None
-        )
-        out = self.storage_controller.output
-        wifi = self.network_tab.get_wifi_config()
-        network = self.network_tab.get_network_settings()
-        data = {
-            "version": CURRENT_CONFIG_VERSION,
-            "kickstart": {"version": ks["version"]},
-            "asset_directories": [
-                Path(p) for p in ks.get("asset_directories", []) if str(p).strip()
-            ],
-            "display": {
-                "hdmi_mode": hdmi_mode,
-                "custom": custom,
-                "workbench_mode": disp["workbench_mode"],
-                "picasso96_archive": self.display_tab.get_picasso96_archive(),
-            },
-            "packages": self.packages_tab.get_config()
-            + self.network_tab.extra_package_entries()
-            + self.kickstart_tab.get_locale_entries(),
-            "icon_set": self.kickstart_tab.get_icon_set(),
-            "partitions": self.partitions_tab.get_config().model_dump(mode="python"),
-            "ags_import": self.storage_controller.ags_config(),
-            "output": out if out.get("path") else None,
-            "network_stack": self.network_tab.get_network_stack(),
-            "roadshow_archive": self.network_tab.get_roadshow_archive(),
-            "miamidx_key_directory": self.network_tab.get_miamidx_key_directory(),
-            "wifi": wifi.model_dump(mode="python") if wifi else None,
-            "network": network.model_dump(mode="python"),
-            "rgb2rtg": self.emu68_tab.get_rgb2rtg().model_dump(mode="python"),
-            "emu68_version": self.emu68_tab.get_emu68_version(),
-            "emu68_boot": self._collect_emu68_boot_settings().model_dump(mode="python"),
-        }
-        return BuildConfig.model_validate(data)
 
     def _refresh_catalog(self):
         self.packages_tab.refresh_catalog()

@@ -1,11 +1,12 @@
 """Page containers and compact configuration summaries."""
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QGroupBox,
+    QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -15,6 +16,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from emu68hatcher import __version__
+from emu68hatcher.gui.app_icon import find_app_icon, render_icon
 from emu68hatcher.gui.design import FIELD_GAP, page_layout, status_pixmap
 
 PAGE_LABELS = {
@@ -33,6 +36,47 @@ PAGE_DESCRIPTIONS = {
     "storage": "Output target, imported content and partition layout.",
     "review": "Check your settings before building.",
 }
+
+
+def build_rail():
+    """Return the navigation rail and its work-area list, one row per PAGE_LABELS key."""
+    rail = QWidget()
+    rail.setFixedWidth(196)
+    rail_layout = QVBoxLayout(rail)
+    rail_layout.setContentsMargins(0, 12, 0, 0)
+    rail_layout.setSpacing(24)
+    brand = QHBoxLayout()
+    brand.setContentsMargins(12, 0, 0, 0)
+    icon_path = find_app_icon()
+    if icon_path:
+        logo = QLabel()
+        logo.setPixmap(render_icon(icon_path, 28))
+        brand.addWidget(logo)
+    brand_label = QLabel("Emu68 Hatcher")
+    brand_label.setProperty("heading", "brand")
+    brand.addWidget(brand_label)
+    brand.addStretch()
+    rail_layout.addLayout(brand)
+    sidebar = QListWidget()
+    sidebar.setObjectName("navigation")
+    sidebar.setIconSize(QSize(22, 22))
+    sidebar.setSpacing(4)
+    font = sidebar.font()
+    font.setPointSize(13)
+    sidebar.setFont(font)
+    sidebar.setAccessibleName("Work areas")
+    sidebar.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    rail_layout.addWidget(sidebar, 1)
+    version = QLabel(f"Version {__version__}")
+    version.setProperty("tone", "muted")
+    version.setContentsMargins(12, 0, 0, 12)
+    rail_layout.addWidget(version)
+    for key, label in PAGE_LABELS.items():
+        item = QListWidgetItem(label)
+        item.setSizeHint(QSize(0, 48))
+        item.setData(Qt.ItemDataRole.UserRole, key)
+        sidebar.addItem(item)
+    return rail, sidebar
 
 
 def scroll_page(widget):
