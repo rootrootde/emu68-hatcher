@@ -34,6 +34,7 @@ from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import CURRENT_CONFIG_VERSION, BuildConfig, OutputType
 from emu68hatcher.data.rom_detection import identify_kickstart
 from emu68hatcher.gui.app_icon import find_app_icon, render_icon
+from emu68hatcher.gui.boot_preview import BootPreviewPane
 from emu68hatcher.gui.configuration_controller import ConfigurationController, validation_message
 from emu68hatcher.gui.design import apply_design, style_sections
 from emu68hatcher.gui.dialogs import BuildProgressDialog
@@ -202,11 +203,13 @@ class MainWindow(QMainWindow):
         review_actions.addWidget(self.build_btn)
         self.review.content_layout.addLayout(review_actions)
         self.review.content_layout.addStretch()
+        self.boot_preview = BootPreviewPane()
+        self.boot_preview.hide()
         self.preview_dialog = QDialog(self)
         self.preview_dialog.setWindowTitle("Generated boot files")
         self.preview_dialog.resize(800, 650)
-        QVBoxLayout(self.preview_dialog).addWidget(self.emu68_tab.preview_pane)
-        self.emu68_tab.preview_pane.show()
+        QVBoxLayout(self.preview_dialog).addWidget(self.boot_preview)
+        self.boot_preview.show()
         self.review_btn = QPushButton("Review && build")
         self.review_btn.setProperty("primary", True)
         self.review_btn.clicked.connect(lambda: self.navigate("review"))
@@ -467,9 +470,9 @@ class MainWindow(QMainWindow):
 
     def _refresh_boot_files_preview(self):
         try:
-            self.emu68_tab.set_preview_files(self._render_boot_files_preview())
+            self.boot_preview.set_files(self._render_boot_files_preview())
         except Exception as error:
-            self.emu68_tab.set_preview_error(f"Preview unavailable:\n{validation_message(error)}")
+            self.boot_preview.set_error(f"Preview unavailable:\n{validation_message(error)}")
 
     def show_boot_preview(self):
         self._refresh_boot_files_preview()
