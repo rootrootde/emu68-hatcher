@@ -36,7 +36,7 @@ def _wait_for_update_check(app, window, timeout):
     end = time.monotonic() + timeout
     while time.monotonic() < end:
         app.processEvents()
-        worker = window.start_tab._update_worker
+        worker = window.start_tab.update_panel._update_worker
         if worker is None or worker.isFinished():
             return
         time.sleep(0.05)
