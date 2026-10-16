@@ -50,7 +50,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
         workflow._update_state(progress=pct, message=msg)
 
     def cancel_predicate() -> bool:
-        return workflow._cancelled
+        return workflow.is_cancelled()
 
     # size-derived cap, same 1 MB/s floor finalize uses for fs copy. without it the timeout
     # defaults to None, which the elevated helper caps at 630s - a multi-GB write+verify blows

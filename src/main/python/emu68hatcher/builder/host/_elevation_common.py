@@ -1,8 +1,11 @@
 """Shared elevation data, command wrapping, and process execution."""
 
 import logging
+import os
+import queue
 import re
 import shlex
+import signal
 import subprocess
 import threading
 import time
@@ -23,7 +26,6 @@ class ElevationDenied(RuntimeError):
 
 @dataclass
 class ElevationToken:
-    os: OperatingSystem
     method: str
     helper: object | None = None
     askpass_path: Path | None = None
@@ -42,9 +44,6 @@ def _dotnet_env_prefix() -> str:
 def wrap_for_elevation(cmd: list[str], token: ElevationToken | None) -> list[str]:
     if token is None or token.method == "noop":
         return cmd
-    if token.method == "pkexec":
-        inner = f"{_dotnet_env_prefix()} exec " + " ".join(shlex.quote(arg) for arg in cmd)
-        return ["pkexec", "/bin/sh", "-c", inner]
     if token.method == "sudo":
         return _wrap_sudo(cmd)
     return cmd
@@ -147,9 +146,11 @@ def stop_sudo_keepalive(token: ElevationToken) -> None:
 @dataclass
 class ElevatedResult:
     returncode: int
-    stdout: str
-    stderr: str
+    stdout: str = ""
+    stderr: str = ""
     cancelled: bool = False
+    timed_out: bool = False
+    stop_failed: bool = False
 
 
 def run_elevated(
@@ -163,15 +164,25 @@ def run_elevated(
     errors: str = "replace",
     cancel_check: Callable[[], bool] | None = None,
     on_line: Callable[[str, str], None] | None = None,
-) -> object:
+) -> ElevatedResult:
     if token is not None and token.method.endswith("-helper") and token.helper is not None:
         return token.helper.run(cmd, timeout=timeout, cancel_check=cancel_check, on_line=on_line)
     if token is not None:
         refresh_sudo_timestamp(token)
     wrapped = wrap_for_elevation(cmd, token)
     if cancel_check is not None:
-        return _run_cancellable(wrapped, timeout, encoding, errors, cancel_check, on_line)
-    result = subprocess.run(
+        result = run_process(
+            wrapped,
+            timeout=timeout,
+            cancel_check=cancel_check,
+            on_line=on_line,
+            encoding=encoding,
+            errors=errors,
+        )
+        if result.timed_out:
+            raise subprocess.TimeoutExpired(wrapped, timeout)
+        return result
+    completed = subprocess.run(
         wrapped,
         capture_output=capture_output,
         text=text,
@@ -181,90 +192,139 @@ def run_elevated(
         env=get_hst_imager_env(),
     )
     if on_line is not None:
-        for stream, output in (("out", result.stdout or ""), ("err", result.stderr or "")):
+        for stream, output in (("out", completed.stdout or ""), ("err", completed.stderr or "")):
             for line in output.splitlines():
                 try:
                     on_line(stream, line)
                 except Exception:
                     pass
-    return result
+    return ElevatedResult(completed.returncode, completed.stdout or "", completed.stderr or "")
 
 
-def _terminate(process: subprocess.Popen) -> None:
+def _stop(proc: subprocess.Popen, isolated_group: bool) -> bool:
     try:
-        process.terminate()
-        process.wait(timeout=5)
+        if os.name == "nt":
+            proc.terminate()
+        elif isolated_group:
+            os.killpg(proc.pid, signal.SIGTERM)
+        else:
+            proc.terminate()
+        proc.wait(timeout=5)
+        return True
+    except (OSError, ProcessLookupError):
+        return proc.poll() is not None
     except subprocess.TimeoutExpired:
+        if os.name != "nt" and not isolated_group:
+            try:
+                proc.send_signal(signal.SIGHUP)
+                proc.wait(timeout=5)
+                return True
+            except (OSError, subprocess.TimeoutExpired):
+                return proc.poll() is not None
         try:
-            process.kill()
-        except OSError:
-            pass
-    except OSError:
-        pass
+            if os.name == "nt":
+                proc.kill()
+            else:
+                os.killpg(proc.pid, signal.SIGKILL)
+            proc.wait(timeout=5)
+            return True
+        except (OSError, ProcessLookupError, subprocess.TimeoutExpired):
+            return proc.poll() is not None
 
 
-def _run_cancellable(
-    wrapped: list[str],
-    timeout: float | None,
-    encoding: str,
-    errors: str,
-    cancel_check: Callable[[], bool],
-    on_line: Callable[[str, str], None] | None,
+def run_process(
+    cmd: list[str],
+    *,
+    timeout: float | None = None,
+    cancel_check: Callable[[], bool] | None = None,
+    on_line: Callable[[str, str], None] | None = None,
+    merge_stderr: bool = False,
+    isolated_group: bool | None = None,
+    encoding: str = "utf-8",
+    errors: str = "replace",
 ) -> ElevatedResult:
-    process = subprocess.Popen(
-        wrapped,
+    """run cmd, polling cancel and timeout; on_line fires on the calling thread"""
+    if isolated_group is None:
+        # macos sudo timestamps are tty-bound; setsid makes a fresh sudo -n fail
+        isolated_group = os.name != "nt" and Path(cmd[0]).name != "sudo"
+    proc = subprocess.Popen(
+        cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.STDOUT if merge_stderr else subprocess.PIPE,
         text=True,
         encoding=encoding,
         errors=errors,
+        bufsize=1,
         env=get_hst_imager_env(),
+        start_new_session=isolated_group and os.name != "nt",
+        creationflags=(subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0),
     )
-    stdout: list[str] = []
-    stderr: list[str] = []
+    lines: queue.Queue[tuple[str, str] | None] = queue.Queue()
+    collected: dict[str, list[str]] = {"out": [], "err": []}
 
-    def drain(pipe, sink: list[str], stream: str) -> None:
+    def read(pipe, stream: str) -> None:
         try:
             for line in pipe:
-                sink.append(line)
-                if on_line is not None:
-                    try:
-                        on_line(stream, line.rstrip("\n"))
-                    except Exception:
-                        pass
+                collected[stream].append(line)
+                lines.put((stream, line.rstrip("\n")))
         finally:
-            pipe.close()
+            lines.put(None)
 
-    stdout_thread = threading.Thread(
-        target=drain,
-        args=(process.stdout, stdout, "out"),
-        daemon=True,
-    )
-    stderr_thread = threading.Thread(
-        target=drain,
-        args=(process.stderr, stderr, "err"),
-        daemon=True,
-    )
-    stdout_thread.start()
-    stderr_thread.start()
-    deadline = time.time() + timeout if timeout else None
-    cancelled = False
-    while process.poll() is None:
-        if cancel_check():
+    pipes = [(proc.stdout, "out")] if merge_stderr else [(proc.stdout, "out"), (proc.stderr, "err")]
+    readers = [threading.Thread(target=read, args=pipe, daemon=True) for pipe in pipes]
+    for reader in readers:
+        reader.start()
+
+    def dispatch(item: tuple[str, str]) -> None:
+        if on_line is not None:
+            try:
+                on_line(*item)
+            except Exception:
+                pass
+
+    deadline = time.monotonic() + timeout if timeout else None
+    exited_at: float | None = None
+    eof = 0
+    cancelled = timed_out = False
+    stopped = True
+    while True:
+        try:
+            item = lines.get(timeout=0.1)
+            if item is None:
+                eof += 1
+            else:
+                dispatch(item)
+        except queue.Empty:
+            pass
+        if proc.poll() is not None:
+            if eof == len(readers) and lines.empty():
+                break
+            # a grandchild holding the pipe open must not stall the caller forever
+            exited_at = exited_at or time.monotonic()
+            if time.monotonic() - exited_at > 5:
+                break
+        if cancel_check is not None and cancel_check():
             cancelled = True
-            _terminate(process)
+            stopped = _stop(proc, isolated_group)
             break
-        if deadline is not None and time.time() > deadline:
-            _terminate(process)
-            stdout_thread.join(timeout=2)
-            stderr_thread.join(timeout=2)
-            raise subprocess.TimeoutExpired(wrapped, timeout)
-        time.sleep(0.1)
-    stdout_thread.join(timeout=5)
-    stderr_thread.join(timeout=5)
+        if deadline is not None and time.monotonic() >= deadline:
+            timed_out = True
+            stopped = _stop(proc, isolated_group)
+            break
+    for reader in readers:
+        reader.join(timeout=1)
+    while True:
+        try:
+            item = lines.get_nowait()
+        except queue.Empty:
+            break
+        if item is not None:
+            dispatch(item)
     return ElevatedResult(
-        returncode=process.returncode if process.returncode is not None else -1,
-        stdout="".join(stdout),
-        stderr="".join(stderr),
+        returncode=proc.returncode if proc.returncode is not None else -1,
+        stdout="".join(collected["out"]),
+        stderr="".join(collected["err"]),
         cancelled=cancelled,
+        timed_out=timed_out,
+        stop_failed=not stopped,
     )

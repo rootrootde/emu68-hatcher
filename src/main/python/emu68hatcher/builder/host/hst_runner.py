@@ -125,7 +125,7 @@ class HSTRunner:
 
             duration = time.time() - start_time
 
-            if getattr(result, "cancelled", False):
+            if result.cancelled:
                 _logger.info(f"hst-imager: cancelled after {duration:.2f}s")
                 raise BuildCancelledError("Build was cancelled by user")
 

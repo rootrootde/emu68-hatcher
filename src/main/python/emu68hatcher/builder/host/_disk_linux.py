@@ -78,12 +78,9 @@ def unmount(
                 success = result.returncode == 0
         if success:
             continue
-        command = ["umount", mountpoint]
-        if elevation is not None:
-            from emu68hatcher.builder.host.elevation import wrap_for_elevation
+        from emu68hatcher.builder.host.elevation import run_elevated
 
-            command = wrap_for_elevation(command, elevation)
-        result = subprocess.run(command, capture_output=True, text=True, timeout=15)
+        result = run_elevated(["umount", mountpoint], elevation, timeout=15)
         if result.returncode != 0:
             failures.append(
                 f"umount {mountpoint} failed (rc={result.returncode}): "

@@ -129,9 +129,9 @@ def _acquire_for_workflow(workflow: BuildWorkflow) -> None:
             command,
             workflow.state.elevation,
             timeout=30,
-            cancel_check=lambda: workflow._cancelled,
+            cancel_check=workflow.is_cancelled,
         )
-        if getattr(result, "cancelled", False):
+        if result.cancelled:
             workflow.logger.warning("hst-imager settings push cancelled by user")
         elif result.returncode == 0:
             workflow.logger.info("hst-imager settings pushed (AllPhysicalDrives=True)")

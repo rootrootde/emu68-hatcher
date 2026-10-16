@@ -87,7 +87,7 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
     ):
         raise BuildError(f"Disk image not found at {image.image_path}; cannot copy staged files")
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
 
     if not runner.is_available():
         raise BuildError(
@@ -119,7 +119,7 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
         if not is_ags_overlay and device_dir.name != EMU68_BOOT_PARTITION_NAME:
             prepare_workbench_metadata(
                 device_dir,
-                cancel_check=lambda: workflow._cancelled,
+                cancel_check=workflow.is_cancelled,
                 allow_stale_metadata=device_dir.name == workflow.config.boot_device,
             )
         file_count, total_bytes = _staging_inventory(device_dir)

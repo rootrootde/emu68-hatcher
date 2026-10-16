@@ -261,7 +261,7 @@ def stage_download(workflow: BuildWorkflow, workspace: Workspace) -> DownloadedA
         work_dir=workspace.downloads_dir,
         max_retries=5,
         timeout=120.0,
-        cancel_callback=lambda: workflow._cancelled,
+        cancel_callback=workflow.is_cancelled,
     )
 
     from emu68hatcher.builder.pipeline._selection import get_resolution

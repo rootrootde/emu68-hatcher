@@ -80,6 +80,7 @@ def main():
         import runpy
 
         _hide_windows_subprocess_consoles()  # the worker spawns icacls + hst-imager
+        _restore_subprocess_ld_library_path()  # pkexec starts a fresh bundle env on linux
         sys.argv = sys.argv[1:]  # worker reads ipc_dir from sys.argv[1]
         runpy.run_path(sys.argv[0], run_name="__main__")
         return
