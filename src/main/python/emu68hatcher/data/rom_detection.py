@@ -62,7 +62,7 @@ KICKSTART_CHECKSUMS: dict[str, dict] = {
         "model": "A1200",
         "sequence": 4,
         "excluded": True,
-        "exclude_message": "Emu68 Imager does not support encrypted AmigaForever ROMs. You will need to either find an unencrypted version or decrypt the ROM. The file found was:",
+        "exclude_message": "Emu68 Hatcher does not support encrypted AmigaForever ROMs. You will need to either find an unencrypted version or decrypt the ROM. The file found was:",
     },
     "1c953f4337b450b24b108df19fccb788": {
         "version": "3.1",

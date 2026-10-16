@@ -6,6 +6,7 @@ from functools import cache
 
 import yaml
 
+from emu68hatcher import __version__
 from emu68hatcher.builder.host.downloads import DownloadItem
 from emu68hatcher.data.emu68_releases import download_table as emu68_download_table
 from emu68hatcher.data.package_loader import get_package_by_name
@@ -42,7 +43,9 @@ def _resolve_github_download(
 ) -> tuple[str | None, str]:
     """resolve GitHub release asset URL by exact filename; returns (url, failure reason)"""
     try:
-        request = urllib.request.Request(api_url, headers={"User-Agent": "Emu68 Hatcher/1.0"})
+        request = urllib.request.Request(
+            api_url, headers={"User-Agent": f"Emu68 Hatcher/{__version__}"}
+        )
         with urllib.request.urlopen(request, timeout=30.0) as response:
             release = json.loads(response.read().decode("utf-8"))
     except Exception as e:

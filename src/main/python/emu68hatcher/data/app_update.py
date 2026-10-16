@@ -9,6 +9,7 @@ from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
 
+from emu68hatcher import __version__
 from emu68hatcher.data.manifest_models import HatcherArtifact, UpdateManifestV1, UpdateManifestV2
 from emu68hatcher.data.manifest_state import get_active_selection
 from emu68hatcher.utils.platform import OperatingSystem, PlatformInfo, get_platform_info
@@ -78,7 +79,7 @@ def download_hatcher_artifact(
     tmp = destination.with_suffix(destination.suffix + ".tmp")
     request = urllib.request.Request(
         str(artifact.url),
-        headers={"User-Agent": "Emu68 Hatcher/1.0"},
+        headers={"User-Agent": f"Emu68 Hatcher/{__version__}"},
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:

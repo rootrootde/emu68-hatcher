@@ -9,7 +9,7 @@ versions:
 - 3.2.3
 - '3.9'
 default: false
-# MUI app; needs codesets + guigfx/render. AmiSSL is already mandatory.
+# MUI app; needs codesets, guigfx/render and AmiSSL.
 requires:
 - mui
 - codesets

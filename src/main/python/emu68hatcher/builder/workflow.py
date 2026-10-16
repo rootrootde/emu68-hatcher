@@ -1,4 +1,4 @@
-"""Eleven-stage build workflow from validation through optional flashing."""
+"""Twelve-stage build workflow from validation through optional flashing."""
 
 import logging
 import platform as _platform

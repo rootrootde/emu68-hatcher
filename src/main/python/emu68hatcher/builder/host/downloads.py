@@ -8,6 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from emu68hatcher import __version__
 from emu68hatcher.builder.host.archive import ARCHIVE_EXTENSIONS, extract_archive
 from emu68hatcher.utils.hashing import calculate_hash, calculate_sha256
 from emu68hatcher.utils.logging import get_logger
@@ -162,7 +163,9 @@ class DownloadManager:
         tmp = dest.with_suffix(dest.suffix + ".tmp")
         for attempt in range(self.max_retries):
             try:
-                request = urllib.request.Request(url, headers={"User-Agent": "Emu68 Hatcher/1.0"})
+                request = urllib.request.Request(
+                    url, headers={"User-Agent": f"Emu68 Hatcher/{__version__}"}
+                )
                 with urllib.request.urlopen(request, timeout=self.timeout) as response:
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     total = int(response.headers.get("Content-Length", 0))

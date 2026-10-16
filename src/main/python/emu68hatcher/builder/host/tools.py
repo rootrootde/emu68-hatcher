@@ -264,7 +264,7 @@ def tool_needs_download(tool_name: str) -> bool:
     resolved = finder()
     if resolved is None:
         return True  # not installed anywhere
-    # only the two pinned GitHub tools are version-managed; 7z is any-recent-version
+    # only hst-imager is version-managed; 7z is any-recent-version
     target = _tool_target_path(tool_name)
     if target is None or resolved != target:
         return False  # 7z, or resolved from system PATH - not ours to version-manage

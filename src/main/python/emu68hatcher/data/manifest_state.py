@@ -230,7 +230,7 @@ def check_remote_manifest(
             )
     except (OSError, ValueError):
         pass
-    headers = {"User-Agent": "Emu68 Hatcher/1.1", **cache_headers}
+    headers = {"User-Agent": f"Emu68 Hatcher/{__version__}", **cache_headers}
     request = urllib.request.Request(
         url or os.environ.get("HATCHER_UPDATE_MANIFEST_URL", DEFAULT_MANIFEST_URL),
         headers=headers,

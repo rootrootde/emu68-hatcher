@@ -263,7 +263,7 @@ STARTUP_SEQUENCE_INJECTIONS = [
         name="Original RexxMast (moved to after BindDrivers)",
     ),
     # the 3.9 CD Startup-Sequence starts RexxMast with a bare line (no If EXISTS
-    # wrapper); remove that too, else our post-BindDrivers RexxMast double-starts it
+    # wrapper); remove that too, else the post-BindDrivers RexxMast double-starts it
     # and the second start fails rc20
     ScriptInjection(
         target_script="S/Startup-Sequence",
@@ -284,7 +284,7 @@ STARTUP_SEQUENCE_INJECTIONS = [
         ),
         name="Iconlib",
     ),
-    # UAEGFX persistent monitor swap (runs 5th, furthest from anchor)
+    # UAEGFX persistent monitor swap (runs 4th, furthest from anchor)
     ScriptInjection(
         target_script="S/Startup-Sequence",
         action=InjectionAction.INJECT_AFTER,
@@ -299,7 +299,7 @@ STARTUP_SEQUENCE_INJECTIONS = [
         start_pattern=r"^(?:C:)?IPrefs(?:\s|$)",
         name="UAE ScreenMode",
     ),
-    # main FirstBoot section (runs 4th)
+    # main FirstBoot section (runs 3rd)
     ScriptInjection(
         target_script="S/Startup-Sequence",
         action=InjectionAction.INJECT_AFTER,
