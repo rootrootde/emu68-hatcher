@@ -20,12 +20,12 @@ class RGB2RTGPanel(QGroupBox):
     """RGB2RTG checkbox, release archive and video mode."""
 
     def __init__(self, parent=None):
-        super().__init__("RGB2RTG v0.75 (experimental)", parent)
+        super().__init__("RGB2RTG v0.76 (experimental)", parent)
         form = form_layout(self, top=True)
         self.rgb2rtg_check = QCheckBox("A1200 / PiStorm32-lite with Pi 4 or CM4")
         form.addRow(self.rgb2rtg_check)
         self.rgb2rtg_archive = QLineEdit()
-        self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.75.7z")
+        self.rgb2rtg_archive.setPlaceholderText("RGB2RTG_A1200_v0.76.7z")
         browse = QPushButton("Browse...")
         browse.clicked.connect(self._browse_rgb2rtg)
         form.addRow("Release archive:", paired_field(self.rgb2rtg_archive, browse))

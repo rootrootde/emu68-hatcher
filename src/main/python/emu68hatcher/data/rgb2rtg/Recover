@@ -58,5 +58,12 @@ IF WARN
   Echo "Baseline kernel/driver restored. Remove the RGB2RTG submenu and startup block manually."
   Quit 20
 ENDIF
+IF EXISTS DEVS:AHI/rgb2rtg-hdmi.audio
+  C:rgb2rtg UNINSTALL AHI >NIL:
+  IF WARN
+    Echo "AHI units still use the RGB2RTG HDMI driver. Pick another mode in Prefs/AHI."
+  ENDIF
+ENDIF
+Delete ENVARC:RGB2RTG ENV:RGB2RTG ALL QUIET FORCE
 Delete ENVARC:RGB2RTG.prefs ENV:RGB2RTG.prefs C:rgb2rtg QUIET
 Echo "Baseline kernel and driver restored. Power cycle the Amiga."

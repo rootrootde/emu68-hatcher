@@ -57,7 +57,7 @@ def rgb2rtg_problems(
     """RGB2RTG requirement failures as (setting, message) in validate_rgb2rtg order."""
     problems = []
     if emu68_version != Emu68Version.V1_1_0_BETA_1.value:
-        problems.append(("emu68_version", "RGB2RTG v0.75 requires the Emu68 1.1.0-beta.1 baseline"))
+        problems.append(("emu68_version", "RGB2RTG v0.76 requires the Emu68 1.1.0-beta.1 baseline"))
     if workbench_mode == WorkbenchScreenMode.NATIVE.value:
         problems.append(("workbench_mode", "RGB2RTG requires a VideoCore Workbench screen mode"))
     if framethrower:
@@ -82,5 +82,5 @@ def rgb2rtg_problems(
                 ("extra_lines", f"Remove the additional RGB2RTG display override: {line}")
             )
     if archive is None or not Path(archive).expanduser().is_file():
-        problems.append(("archive", "Select the local RGB2RTG_A1200_v0.75.7z release archive"))
+        problems.append(("archive", "Select the local RGB2RTG_A1200_v0.76.7z release archive"))
     return problems

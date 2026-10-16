@@ -78,6 +78,14 @@ hdmi_mode={{ 82 if rgb2rtg_video == "ntsc" else 31 }}
 hdmi_force_mode=1
 hdmi_pixel_encoding=2
 dtoverlay={{ rgb2rtg_video }}
+{% if rgb2rtg_soft_limit %}
+[pi3]
+temp_soft_limit=70
+[all]
+{% endif %}
+{% if rgb2rtg_force_turbo %}
+force_turbo=1
+{% endif %}
 # RGB2RTG end
 
 {% endif %}
@@ -225,3 +233,14 @@ initramfs {{ rom_filename }}
 [gpio17=0]
 kernel={{ kernel_classic }}
 initramfs {{ rom_filename }}
+{% if rgb2rtg_video %}
+
+# RGB2RTG last begin
+# A PiStorm32-lite in stealth mode boots the RGB2RTG kernel whatever GPIO 17 reads.
+[all]
+[gpio4=0]
+kernel=kernel/Emu68-rgb2rtg.gz
+initramfs ps32lite-stealth-firmware.gz
+[all]
+# RGB2RTG last end
+{% endif %}

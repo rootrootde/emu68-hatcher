@@ -286,6 +286,18 @@ def generate_config_txt(
 
     kernels = EMU68_KERNELS.get(emu68_version, EMU68_KERNELS["1.0.7"])
     boot_settings = boot_settings or Emu68BootSettings()
+    values = _config_values(boot_settings, emu68_version)
+    extra_keys = [
+        line.split("=", 1)[0].strip().lower() for line in boot_settings.config_txt.extra_lines
+    ]
+    # upstream adds both only where config.txt says nothing itself; force_turbo next to an
+    # over_voltage would set the SoC's warranty bit
+    rgb2rtg_soft_limit = bool(rgb2rtg_video) and "temp_soft_limit" not in extra_keys
+    rgb2rtg_force_turbo = (
+        bool(rgb2rtg_video)
+        and not values["cpu_turbo"]
+        and not any(key == "force_turbo" or key.startswith("over_voltage") for key in extra_keys)
+    )
 
     content = render_template(
         "config_txt.j2",
@@ -302,7 +314,9 @@ def generate_config_txt(
         overlays=_config_overlays(boot_settings, emu68_version, include_diagnostics),
         extra_config_lines=boot_settings.config_txt.extra_lines,
         rgb2rtg_video=rgb2rtg_video,
-        **_config_values(boot_settings, emu68_version),
+        rgb2rtg_soft_limit=rgb2rtg_soft_limit,
+        rgb2rtg_force_turbo=rgb2rtg_force_turbo,
+        **values,
     )
     return re.sub(r"\n{3,}", "\n\n", content)
 

@@ -1,4 +1,4 @@
-RGB2RTG v0.75 installed by Emu68 Hatcher
+RGB2RTG v0.76 installed by Emu68 Hatcher
 
 System -> RGB2RTG opens the Init, Settings, Sound and About windows.
 Use these menus to change settings. C:rgb2rtg APPLY runs at startup.
@@ -6,6 +6,8 @@ New installations default to picture=off when these settings are applied:
 the RTG desktop still shows, but native Amiga screens show black on HDMI.
 Use Init... or C:rgb2rtg ON to turn the picture on and save that choice.
 Existing preferences are kept. The RGB2RTG kernel remains active.
+With the AHI package installed, the RGB2RTG HDMI driver for AHI is in DEVS:AHI;
+switch AHI programs to it in the Sound window (HiFi) or with C:rgb2rtg AHI=ON.
 Do not run MENU, UNMENU or the upstream installer/uninstaller: they do not
 know Hatcher's System submenu or matched recovery files.
 
