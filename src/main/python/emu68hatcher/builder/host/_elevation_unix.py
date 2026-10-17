@@ -70,7 +70,13 @@ def acquire_macos() -> ElevationToken:
 
 
 def acquire_linux() -> ElevationToken:
+    have_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
     have_tty = sys.stdin.isatty() if hasattr(sys.stdin, "isatty") else False
+    have_pkexec = shutil.which("pkexec") is not None
+    # a desktop session gets the polkit dialog even when started from a terminal; the
+    # terminal may sit behind the window and a sudo prompt there goes unseen
+    if have_display and have_pkexec:
+        return _acquire_pkexec_helper()
     if have_tty and shutil.which("sudo"):
         try:
             subprocess.run(["sudo", "-v"], check=True, timeout=120)
@@ -79,11 +85,15 @@ def acquire_linux() -> ElevationToken:
             return token
         except (subprocess.CalledProcessError, subprocess.SubprocessError, OSError) as error:
             logger.info(f"sudo unavailable ({error}); trying pkexec")
-    if not shutil.which("pkexec"):
+    if not have_pkexec:
         raise ElevationDenied(
             "pkexec not found. Run Emu68 Hatcher from a terminal, or install polkit, "
             "and start the build again."
         )
+    return _acquire_pkexec_helper()
+
+
+def _acquire_pkexec_helper() -> ElevationToken:
     from emu68hatcher.builder.host.elevated_helper import ElevatedHelper
 
     helper = ElevatedHelper()
