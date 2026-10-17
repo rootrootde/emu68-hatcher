@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
+from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.staging.scripts.generator import generate_shell_startup
 from emu68hatcher.builder.staging.scripts.injector import (
     apply_package_scripts,
@@ -29,7 +30,7 @@ def configure_scripts(
     """inject into or generate Startup-Sequence, User-Startup, Shell-Startup, FirstBoot"""
     workflow._update_state(progress=10.0)
     workflow._milestone("Injecting into Startup-Sequence")
-    startup_path = s_dir / "Startup-Sequence"
+    startup_path = resolve_staging_path(s_dir, "Startup-Sequence")
 
     if startup_path.exists():
         local_packages_dir = get_local_packages_dir()
@@ -54,7 +55,7 @@ def configure_scripts(
 
     workflow._update_state(progress=20.0)
     workflow._milestone("Setting up User-Startup")
-    user_startup_path = s_dir / "User-Startup"
+    user_startup_path = resolve_staging_path(s_dir, "User-Startup")
     if not user_startup_path.exists():
         write_amiga_script(user_startup_path, ["; User-Startup", "; Emu68 Hatcher"])
 
@@ -66,7 +67,7 @@ def configure_scripts(
     workflow._update_state(progress=30.0)
     workflow._milestone("Generating Shell-Startup")
     shell_startup = generate_shell_startup()
-    write_amiga_script(s_dir / "Shell-Startup", shell_startup.splitlines())
+    write_amiga_script(resolve_staging_path(s_dir, "Shell-Startup"), shell_startup.splitlines())
     workflow.logger.info(f"Generated Shell-Startup ({len(shell_startup)} bytes)")
 
     workflow._update_state(progress=40.0)

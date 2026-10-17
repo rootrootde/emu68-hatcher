@@ -77,7 +77,7 @@ def configure_preferences(
         workflow._milestone("Configuring WiFi")
         sys_dir = ensure_dir(resolve_staging_path(env_archive, "Sys"))
         # UTF-8, not Latin-1: WirelessManager passes the SSID bytes to the AP, which uses UTF-8
-        (sys_dir / "wireless.prefs").write_text(
+        resolve_staging_path(sys_dir, "wireless.prefs").write_text(
             generate_wireless_prefs(
                 workflow.config.wifi.ssid,
                 workflow.config.wifi.password,

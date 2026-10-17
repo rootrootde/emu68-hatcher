@@ -266,7 +266,7 @@ def _configure_native_tools_menu(
         f"STARTPRI={_ADDITEM_STARTPRI}",
         "ADDITEM=----------------, ,NIL:",
     ]
-    helper_dir = s_dir / "AppMenu"
+    helper_dir = resolve_staging_path(s_dir, "AppMenu")
     for index, entry in enumerate(entries, start=1):
         if "," in entry.title:
             raise BuildError(f"Tools menu title contains a comma: {entry.title}")
@@ -342,7 +342,7 @@ def configure_menus(
         workflow.config.rgb2rtg.enabled,
         ags,
     )
-    write_amiga_script(s_dir / "ToolsDaemon.menu", lines)
+    write_amiga_script(resolve_staging_path(s_dir, "ToolsDaemon.menu"), lines)
     native_tools = _configure_native_tools_menu(boot_staging, s_dir, all_packages)
 
     removed = 0
