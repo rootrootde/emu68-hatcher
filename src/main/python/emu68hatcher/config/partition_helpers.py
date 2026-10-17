@@ -17,6 +17,7 @@ from emu68hatcher.config.partition_models import (
 )
 
 _MIN_CONTENT_HEADROOM = 1024 * 1024
+_FFS_RDB_LIMIT = 4 * 1024**3
 
 
 def round_to_cylinder(size: int) -> int:
@@ -98,7 +99,22 @@ def validate_partition_layout(
         build_partition_config(disk_size, boot_size, amiga_partitions)
     except ValidationError as e:
         return [str(error["msg"]) for error in e.errors()]
-    return []
+    return ffs_offset_errors(amiga_partitions)
+
+
+def ffs_offset_errors(amiga_partitions: list[AmigaPartition]) -> list[str]:
+    """FFS partitions ending past 4 GiB of the RDB, which hst-imager leaves unreadable"""
+    errors = []
+    end = RDB_OVERHEAD
+    for part in amiga_partitions:
+        end += round_to_cylinder(part.size)
+        if part.filesystem == Filesystem.FFS and end > _FFS_RDB_LIMIT:
+            errors.append(
+                f"{part.device} ({part.volume}): FFS volumes have to lie within the first "
+                f"4 GB of the Amiga partition, but this one ends at {end / 1024**3:.1f} GB. "
+                "Move it up in the partition list or change it to PFS3."
+            )
+    return errors
 
 
 def build_partition_config(

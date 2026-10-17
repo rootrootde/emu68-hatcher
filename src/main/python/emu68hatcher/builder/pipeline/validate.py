@@ -12,7 +12,9 @@ from emu68hatcher.builder.pipeline.validate_archives import (
 )
 from emu68hatcher.builder.pipeline.validate_output import validate_output_target
 from emu68hatcher.builder.state import BuildStage, ValidatedInputs
+from emu68hatcher.config.partition_helpers import validate_partition_layout
 from emu68hatcher.config.schema import NetworkStack
+from emu68hatcher.data.icon_sets import format_adf_name
 from emu68hatcher.data.install_media import (
     check_install_media_complete,
     get_required_install_media,
@@ -33,6 +35,7 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
     from emu68hatcher.builder.rgb2rtg import validate_rgb2rtg
 
     validate_rgb2rtg(workflow)
+    _check_partition_layout(workflow)
     existing_dirs = _existing_asset_directories(workflow)
     kickstart_version = workflow.config.kickstart.version.value
     rom_path, rom_info, whdload_roms = _resolve_rom(workflow, existing_dirs, kickstart_version)
@@ -84,6 +87,20 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
         ags_plan=ags_plan,
         whdload_roms=whdload_roms,
     )
+
+
+def _check_partition_layout(workflow: BuildWorkflow) -> None:
+    partitions = workflow.config.partitions
+    if partitions is None:
+        return
+    boot, id76 = partitions.layout
+    errors = validate_partition_layout(partitions.disk_size, boot.size, id76.amiga_partitions or [])
+    if errors:
+        raise BuildError(
+            "The partition layout is not valid:\n"
+            + "\n".join(f"  {error}" for error in errors)
+            + "\n\nFix the partition layout under Storage."
+        )
 
 
 def _existing_asset_directories(workflow: BuildWorkflow) -> list[Path]:
@@ -141,20 +158,23 @@ def _resolve_media(
     workflow._update_state(progress=40.0)
     workflow._milestone("Scanning for install media (ADFs/ISOs)")
     found, truncated = scan_install_media_by_hash(directories)
+    workflow.logger.info(f"Found {len(found)} install media files")
     _, missing = check_install_media_complete(found, kickstart_version)
-    cap_hint = " (scan limit reached)" if truncated else ""
-    if found:
-        workflow.logger.info(f"Found {len(found)} install media files")
-        if missing:
-            workflow.logger.warning(
-                f"Missing install media for {kickstart_version}: {missing}{cap_hint}"
-            )
-    else:
-        required = get_required_install_media(kickstart_version)
-        workflow.logger.warning(
-            f"No install media found. Required for {kickstart_version}: {required}{cap_hint}"
-        )
-    return found
+    if not missing:
+        return found
+    cap_hint = (
+        " A scanned directory hit the 5000-file limit, so some media may have been skipped."
+        if truncated
+        else ""
+    )
+    raise BuildError(
+        f"Missing install media for AmigaOS {kickstart_version}: "
+        + ", ".join(format_adf_name(name) for name in missing)
+        + ". Scanned: "
+        + ", ".join(str(path) for path in directories)
+        + f".{cap_hint} Copy the missing files into one of these directories, or add "
+        "the directory that holds them under System > AmigaOS & files."
+    )
 
 
 def _check_optional_package_adfs(
