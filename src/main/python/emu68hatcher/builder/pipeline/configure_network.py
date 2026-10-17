@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emu68hatcher.builder.errors import BuildError
+from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.config.schema import NetworkStack
 from emu68hatcher.data.package_loader import get_local_packages_dir, get_package_by_name
 
@@ -40,10 +41,9 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
         return
     network = workflow.config.network
     amitcp = workflow.config.network_stack == NetworkStack.AMITCP_NG
-    devs = boot_staging / "Devs"
     for name, settings in (("genet", network.ethernet), ("wifipi", network.wifi)):
-        path = devs / "NetInterfaces" / name
-        if not path.exists():
+        path = resolve_source_path(boot_staging, f"Devs/NetInterfaces/{name}")
+        if path is None:
             workflow.logger.warning(f"NetInterfaces/{name} not staged; skipping its IP config")
             continue
         _write_netinterface(
@@ -56,16 +56,20 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
         )
 
     if network.gateway:
-        _write_default_route(devs / "Internet" / "routes", network.gateway)
+        _write_default_route(
+            resolve_staging_path(boot_staging, "Devs/Internet/routes"), network.gateway
+        )
     if network.dns_servers:
-        _write_name_resolution(devs / "Internet" / "name_resolution", network.dns_servers)
+        _write_name_resolution(
+            resolve_staging_path(boot_staging, "Devs/Internet/name_resolution"), network.dns_servers
+        )
 
     if amitcp:
         package = get_package_by_name("amitcp_ng")
         marker = "$VER: AmiTCP_NG"
         if package and package.download and package.download.tag:
             marker += f" {package.download.tag.removeprefix('v')}"
-        _write_lines(boot_staging / "Libs" / "AmiTCP_NG.version", [marker])
+        _write_lines(resolve_staging_path(boot_staging, "Libs/AmiTCP_NG.version"), [marker])
     label = "AmiTCP_NG" if amitcp else "network"
     workflow.logger.info(
         f"Configured {label}: ethernet={network.ethernet.mode.value} "
@@ -76,7 +80,7 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
 
 def _configure_miamidx(workflow: BuildWorkflow, boot_staging: Path) -> None:
     source_dir = get_local_packages_dir() / "System" / "Programs" / "Miami"
-    target_dir = boot_staging / "Programs" / "Miami"
+    target_dir = resolve_staging_path(boot_staging, "Programs/Miami")
     target_dir.mkdir(parents=True, exist_ok=True)
 
     for filename, expected_hash in _MIAMI_PROFILE_HASHES.items():

@@ -10,6 +10,7 @@ from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.files import (
     read_info_tooltypes,
     resolve_source_path,
+    resolve_staging_path,
     write_info_tooltypes,
 )
 from emu68hatcher.builder.staging.scripts.injector import write_amiga_script
@@ -315,7 +316,7 @@ def configure_menus(
 
     toolsdaemon_info = resolve_source_path(boot_staging, "WBStartup/ToolsDaemon.info")
     if toolsdaemon_info is None:
-        toolsdaemon_info = boot_staging / "WBStartup" / "ToolsDaemon.info"
+        toolsdaemon_info = resolve_staging_path(boot_staging, "WBStartup/ToolsDaemon.info")
     try:
         existing = read_info_tooltypes(toolsdaemon_info)
     except (ValueError, OSError) as exc:

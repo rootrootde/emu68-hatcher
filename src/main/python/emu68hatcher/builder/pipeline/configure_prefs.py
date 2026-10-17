@@ -14,7 +14,7 @@ from emu68hatcher.builder.pipeline.configure_network import (
     configure_network,
     generate_wireless_prefs,
 )
-from emu68hatcher.builder.staging.files import resolve_source_path
+from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.builder.state import CreatedImage
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODE_BY_NAME,
@@ -75,7 +75,7 @@ def configure_preferences(
     if workflow.config.wifi and "emu68_wifi" in get_resolution(workflow).selected:
         workflow._update_state(progress=80.0)
         workflow._milestone("Configuring WiFi")
-        sys_dir = ensure_dir(env_archive / "Sys")
+        sys_dir = ensure_dir(resolve_staging_path(env_archive, "Sys"))
         # UTF-8, not Latin-1: WirelessManager passes the SSID bytes to the AP, which uses UTF-8
         (sys_dir / "wireless.prefs").write_text(
             generate_wireless_prefs(

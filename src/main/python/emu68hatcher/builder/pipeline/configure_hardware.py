@@ -7,6 +7,7 @@ import struct
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.state import CreatedImage
 from emu68hatcher.utils.paths import ensure_dir
 
@@ -56,7 +57,7 @@ def stage_whdload_kickstarts(
     if boot_name and boot_name not in matched:
         matched[boot_name] = validated.resolved_rom_path
 
-    kickstarts_dir = ensure_dir(boot_staging / "Devs" / "Kickstarts")
+    kickstarts_dir = ensure_dir(resolve_staging_path(boot_staging, "Devs/Kickstarts"))
     for name, source in matched.items():
         shutil.copy2(source, kickstarts_dir / name)
     found = sorted(matched)

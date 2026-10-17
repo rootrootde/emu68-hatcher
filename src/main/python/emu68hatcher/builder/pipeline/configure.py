@@ -12,6 +12,7 @@ from emu68hatcher.builder.pipeline.configure_prefs import (
 )
 from emu68hatcher.builder.pipeline.configure_scripts import configure_scripts
 from emu68hatcher.builder.pipeline.relocate import apply_relocations
+from emu68hatcher.builder.staging.files import resolve_staging_path
 from emu68hatcher.builder.state import BuildStage, CreatedImage
 from emu68hatcher.utils.paths import ensure_dir
 
@@ -26,10 +27,12 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
 
     boot_device = workflow.config.boot_device
     boot_staging = image.workspace.staging_dir / boot_device
-    s_dir = ensure_dir(boot_staging / "S")
-    prefs_dir = ensure_dir(boot_staging / "Prefs")
-    env_archive = ensure_dir(prefs_dir / "Env-Archive")
-    ensure_dir(boot_staging / "Devs" / "DOSDrivers")
+    # case-insensitive lookups: on linux a literal join beside an ADF-made drawer of
+    # another casing leaves two sibling directories, which finalize refuses
+    s_dir = ensure_dir(resolve_staging_path(boot_staging, "S"))
+    prefs_dir = ensure_dir(resolve_staging_path(boot_staging, "Prefs"))
+    env_archive = ensure_dir(resolve_staging_path(prefs_dir, "Env-Archive"))
+    ensure_dir(resolve_staging_path(boot_staging, "Devs/DOSDrivers"))
 
     all_packages = _collect_enabled_packages(workflow)
 
