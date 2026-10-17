@@ -12,7 +12,7 @@ default: true
 download:
   source: web
   url: http://juen.in/latest/amelinium/Amelinium.lha
-  hash: 0C5E35E1FA46969EF7B41E4314A1C5A7
+  hash: A578700200A3B25AFFC7628A9193C626
   filename: Amelinium.lha
 install:
 - from: Amelinium_040

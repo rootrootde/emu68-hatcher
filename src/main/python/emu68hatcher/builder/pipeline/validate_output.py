@@ -13,8 +13,10 @@ if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
 
 _WRITE_PROTECTED = (
-    "{device} is write-protected. Slide the lock switch on the side of the SD card away "
-    "from LOCK, reinsert it and try again."
+    "{device} reports itself read-only. Either the lock switch on the side of the SD card "
+    "or its adapter is set to LOCK, or on Windows the disk has its read-only attribute set. "
+    "Slide the switch away from LOCK and reinsert the card, or clear the attribute in "
+    "diskpart (select disk <number>, then attributes disk clear readonly), and try again."
 )
 
 

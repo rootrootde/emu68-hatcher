@@ -263,6 +263,10 @@ class UpdatePanel(QObject):
 
     @Slot(object)
     def _on_update_check_finished(self, selection):
+        if selection is None:
+            from dataclasses import replace
+
+            selection = replace(self._update_selection, error="Update check failed", checked=True)
         if self._catalog_build_active and not selection.error:
             from dataclasses import replace
 

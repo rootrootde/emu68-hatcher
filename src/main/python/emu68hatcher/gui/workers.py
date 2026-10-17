@@ -160,6 +160,7 @@ class UpdateCheckWorker(QThread):
                 active = get_active_selection()
             except Exception:
                 logger.exception("no active manifest to report the failed update check against")
+                self.check_finished.emit(None)
                 return
             result = ManifestSelection(
                 active.manifest,

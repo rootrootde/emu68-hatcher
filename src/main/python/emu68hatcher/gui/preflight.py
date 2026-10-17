@@ -220,8 +220,13 @@ def run_preflight(controller) -> tuple[BuildConfig | None, list[ConfigurationIss
             add(message, *rgb2rtg_fields[key])
     for token, names in resolution.unsatisfiable.items():
         add(f"{token}: required by {', '.join(names)}", "software")
-    if window.packages_tab.catalog_notice.text():
-        add(window.packages_tab.catalog_notice.text(), "software", severity="warning")
+    if window.packages_tab.dropped_packages:
+        add(
+            "Saved packages are not in the catalog: "
+            + ", ".join(window.packages_tab.dropped_packages),
+            "software",
+            severity="warning",
+        )
     if any(issue.severity != "warning" for issue in issues):
         return None, issues
     try:

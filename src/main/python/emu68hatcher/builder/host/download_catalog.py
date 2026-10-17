@@ -211,6 +211,11 @@ def get_emu68_boot_files(version: str) -> list[DownloadItem]:
     rel = releases[version]
     assets = [(entry, True) for entry in rel.get("zips", [])]
     assets += [(entry, False) for entry in rel.get("extras", [])]
+    if not assets:
+        raise BuildError(
+            f"emu68_releases.yaml lists no assets for Emu68 {rel['tag']}. Add the release's "
+            "boot zips with their GitHub url, size and sha256."
+        )
 
     items = []
     missing = []

@@ -1,5 +1,6 @@
 """Software requests and their resolved dependencies."""
 
+import logging
 import sys
 
 from PySide6.QtCore import Qt, Signal
@@ -25,6 +26,8 @@ from emu68hatcher.data.package_loader import (
 from emu68hatcher.data.package_selection import resolve_choices, software_defaults
 from emu68hatcher.gui.design import page_layout
 
+logger = logging.getLogger(__name__)
+
 _NETWORK_STACK_PACKAGES = {stack.value.lower() for stack in NetworkStack}
 
 
@@ -39,6 +42,7 @@ class PackagesTab(QWidget):
         self.ags_enabled = False
         self.rgb2rtg_enabled = False
         self._requests = software_defaults()
+        self.dropped_packages: list[str] = []
         self._updating = False
         self.checkboxes: dict[str, QTreeWidgetItem] = {}
         self._key_to_packages: dict[str, list[str]] = {}
@@ -256,6 +260,7 @@ class PackagesTab(QWidget):
         self._requests = {
             name: self._requests.get(name, enabled) for name, enabled in defaults.items()
         }
+        self.dropped_packages = sorted(set(self.dropped_packages) | set(removed))
         self.catalog_notice.setText(
             "Previously selected packages are no longer available: " + ", ".join(removed)
             if removed
@@ -268,6 +273,9 @@ class PackagesTab(QWidget):
         self._requests = software_defaults()
         known = {p.name for p in load_all_packages()}
         unknown = sorted(p.name for p in packages if p.enabled and p.name not in known)
+        self.dropped_packages = unknown
+        if unknown:
+            logger.warning("Saved packages are not in the catalog: %s", ", ".join(unknown))
         self.catalog_notice.setText(
             "Saved packages are no longer available: " + ", ".join(unknown) if unknown else ""
         )
