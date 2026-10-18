@@ -142,8 +142,8 @@ def _prepare_sparse_image(workflow: BuildWorkflow, path: Path) -> None:
         allocate_sparse(path, size)
     except (SparseUnsupportedError, OSError) as e:
         raise BuildError(
-            f"Cannot allocate a sparse image at {path}: {e}. Disable 'Sparse' in the Output "
-            "tab or choose a folder on an NTFS, APFS or ext4 volume."
+            f"Cannot allocate a sparse image at {path}: {e}. Turn off 'Save disk space with "
+            "a sparse image' under Storage, or choose a folder on an NTFS, APFS or ext4 volume."
         ) from e
 
 
