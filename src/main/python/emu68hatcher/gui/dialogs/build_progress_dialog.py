@@ -48,6 +48,7 @@ class BuildProgressDialog(QDialog):
         self.config = config
         self.worker: BuildWorker | None = None
         self._success: bool = False
+        self._cancel_requested: bool = False
         self._overall: float = 0.0  # monotonic overall %, so the bar never jumps back
         self.setup_ui()
 
@@ -252,6 +253,13 @@ class BuildProgressDialog(QDialog):
             if self._flash_device() and self._eject_supported():
                 self.eject_btn.setVisible(True)
                 self.eject_btn.setEnabled(True)
+        elif self._cancel_requested:
+            self.setWindowTitle("Build Cancelled")
+            self.title_label.setText("Build cancelled")
+            set_tone(self.stage_label, "warning")
+            self.stage_label.setText("Cancelled")
+            self.status_label.setText(error)
+            self.log_output.append(f"\nBuild cancelled: {error}")
         else:
             self.setWindowTitle("Build Failed")
             self.title_label.setText("Build failed")
@@ -314,6 +322,7 @@ class BuildProgressDialog(QDialog):
     def cancel_build(self):
         """ask the worker to cancel"""
         if self.worker and self.worker.isRunning():
+            self._cancel_requested = True
             self.worker.cancel()
             self.status_label.setText("Cancelling...")
             self.log_output.append("Cancellation requested...")
