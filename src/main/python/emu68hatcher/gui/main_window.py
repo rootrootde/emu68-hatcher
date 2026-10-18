@@ -3,10 +3,11 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QAbstractButton,
+    QAbstractSpinBox,
     QApplication,
     QComboBox,
     QDialog,
@@ -466,9 +467,28 @@ class MainWindow(QMainWindow):
             self.refresh_review()
 
 
+class _WheelGuard(QObject):
+    """hand wheel events over spin boxes and combos to the parent so the page scrolls"""
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Wheel and isinstance(obj, (QAbstractSpinBox, QComboBox)):
+            # a resent event is not spontaneous, so Qt does not propagate it by itself
+            parent = obj.parentWidget()
+            while parent is not None:
+                event.ignore()
+                QApplication.sendEvent(parent, event)
+                if event.isAccepted():
+                    break
+                parent = parent.parentWidget()
+            return True
+        return False
+
+
 def launch_gui():
     app = QApplication(sys.argv)
     app.setApplicationName("Emu68 Hatcher")
+    wheel_guard = _WheelGuard(app)
+    app.installEventFilter(wheel_guard)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
