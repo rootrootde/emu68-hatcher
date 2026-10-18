@@ -5,7 +5,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
     QGroupBox,
-    QLabel,
     QLineEdit,
     QPushButton,
 )
@@ -33,13 +32,6 @@ class RGB2RTGPanel(QGroupBox):
         self.rgb2rtg_video.addItem("PAL: 1080p50 (recommended)", "pal")
         self.rgb2rtg_video.addItem("NTSC: 1080p60 (recommended)", "ntsc")
         form.addRow("Amiga / HDMI:", self.rgb2rtg_video)
-        note = QLabel(
-            "Installs a matched alternative kernel and VideoCore driver, requires VideoCore "
-            "Workbench and ToolsDaemon. Pi 3 is not tested."
-        )
-        note.setProperty("tone", "muted")
-        note.setWordWrap(True)
-        form.addRow(note)
 
     def _browse_rgb2rtg(self):
         path, _ = QFileDialog.getOpenFileName(
