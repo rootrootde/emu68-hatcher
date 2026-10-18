@@ -192,7 +192,7 @@ class StorageController(QObject):
             )
         lines.extend(error for error in plan.errors if "exceeds RDB capacity" not in error)
         if self.enabled:
-            lines.extend(ags_warnings(self.inventory.profile, roles))
+            lines.extend(ags_warnings(roles))
         if self.migration_notice:
             lines.append(self.migration_notice)
         self.layout_message = "\n".join(lines)

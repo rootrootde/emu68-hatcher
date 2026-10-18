@@ -31,18 +31,12 @@ _source_locks: dict[tuple[int, int], threading.RLock] = {}
 _cache: OrderedDict[tuple, AGSInventory] = OrderedDict()
 
 
-def ags_warnings(profile: str, roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
+def ags_warnings(roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
     if "games" not in roles:
         return ()
-    warnings = [
-        "Some Premium titles need separately supplied commercial game data; see the Premium help."
-    ]
-    if profile == "v31-beta-160726":
-        warnings.append(
-            "The known v31 source lacks StuntCarRacer50, BoingBallDemo and BadApple; "
-            "their original starters remain, but cannot run without those data."
-        )
-    return tuple(warnings)
+    return (
+        "Some Premium titles need separately supplied commercial game data; see the Premium help.",
+    )
 
 
 @contextmanager
