@@ -22,7 +22,7 @@ from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.forms import add_form_row, form_layout
 from emu68hatcher.gui.tabs.emu68_advanced import AdvancedBootSettings
 from emu68hatcher.gui.tabs.rgb2rtg_panel import RGB2RTGPanel
-from emu68hatcher.gui.widgets import select_combo_by_data
+from emu68hatcher.gui.widgets import select_release_option, set_release_default
 from emu68hatcher.gui.work_areas import scroll_page
 
 
@@ -189,17 +189,17 @@ class Emu68Tab(QWidget):
             self.release_radio_stable.setChecked(True)
 
         if self.emu68_version == Emu68Version.V1_1_0_ALPHA_1:
-            defaults = ("2", "no limit", "omit", "enabled", "external", "disabled")
+            defaults = (2, 0, 0, "enabled", "external", "disabled")
         elif self.emu68_version == Emu68Version.V1_1_0_BETA_1:
-            defaults = ("2", "no limit", "omit", "disabled", "internal", "disabled")
+            defaults = (2, 0, 0, "disabled", "internal", "disabled")
         else:
-            defaults = ("1", "2048 MB", "32 MB", "disabled", "internal", "first boot")
+            defaults = (1, 2048, 32, "disabled", "internal", "first_boot")
 
         warning, memory, gpu, turbo, antenna, bus_test = defaults
         self.advanced.set_release_defaults(
             self.emu68_version, warning, memory, gpu, turbo, bus_test
         )
-        self.antenna_combo.setItemText(0, f"Release default ({antenna})")
+        set_release_default(self.antenna_combo, antenna)
         self.advanced.update_custom_fields()
         self.emu68_version_changed.emit(self.emu68_version.value)
 
@@ -217,5 +217,5 @@ class Emu68Tab(QWidget):
         return self.advanced.get_settings(antenna=self.antenna_combo.currentData())
 
     def set_settings(self, settings: Emu68BootSettings):
-        select_combo_by_data(self.antenna_combo, settings.config_txt.antenna.value)
+        select_release_option(self.antenna_combo, settings.config_txt.antenna.value)
         self.advanced.set_settings(settings)
