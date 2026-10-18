@@ -29,8 +29,8 @@ class RGB2RTGPanel(QGroupBox):
         browse.clicked.connect(self._browse_rgb2rtg)
         form.addRow("Release archive:", paired_field(self.rgb2rtg_archive, browse))
         self.rgb2rtg_video = QComboBox()
-        self.rgb2rtg_video.addItem("PAL: 1080p50 (recommended)", "pal")
-        self.rgb2rtg_video.addItem("NTSC: 1080p60 (recommended)", "ntsc")
+        self.rgb2rtg_video.addItem("PAL: 1080p50", "pal")
+        self.rgb2rtg_video.addItem("NTSC: 1080p60", "ntsc")
         form.addRow("Amiga / HDMI:", self.rgb2rtg_video)
 
     def _browse_rgb2rtg(self):
