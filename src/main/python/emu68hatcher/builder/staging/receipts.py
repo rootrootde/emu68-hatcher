@@ -111,8 +111,8 @@ def _block_entries(package: Package, root: Path, user_archives: set[str]) -> lis
             package.name in user_archives
         ):
             continue
-        target = root / script.target
-        text = target.read_bytes() if target.is_file() else b""
+        target = resolve_source_path(root, script.target)
+        text = target.read_bytes() if target is not None and target.is_file() else b""
         block = find_block(text, script.name)
         entries.append(
             {
