@@ -2,6 +2,7 @@
 
 import logging
 import platform as _platform
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -59,6 +60,7 @@ class BuildWorkflow:
         self._resolution: Resolution | None = None
         # package and extras file writes on the boot partition, for the build receipts
         self.write_log: StagingWriteLog | None = None
+        self.work_dir: Path | None = None
         self.logger = get_logger()
         self._cancelled = False
 
@@ -225,7 +227,6 @@ class BuildWorkflow:
         src = image.image_path
         if final is None or src is None or src == final:
             return image
-        import shutil
 
         self._milestone(f"Moving image to {final}")
         final.parent.mkdir(parents=True, exist_ok=True)
@@ -236,6 +237,18 @@ class BuildWorkflow:
         from dataclasses import replace
 
         return replace(image, image_path=final, final_output_path=None)
+
+    def _remove_work_dir(self, image: CreatedImage | None) -> None:
+        """delete the work dir; a finished image built there still goes to the chosen path"""
+        if self.work_dir is None:
+            return
+        if image is not None and image.final_output_path is not None:
+            try:
+                self._finalize_output_move(image)
+            except OSError as error:
+                self.logger.warning(f"Image left at {image.image_path}, could not move it: {error}")
+                return
+        shutil.rmtree(self.work_dir, ignore_errors=True)
 
     def build(self) -> BuildResult:
         with use_catalog(self.catalog):
@@ -251,6 +264,8 @@ class BuildWorkflow:
         self.logger.addHandler(gui_log_handler)
         buildlog_handler = None
         buildlog_path = None
+        phase = None
+        finalized = False
 
         try:
             buildlog_handler, buildlog_path = self._attach_build_log()
@@ -262,9 +277,9 @@ class BuildWorkflow:
             )
             self._log_platform_info()
 
-            phase = None
             for definition in PIPELINE_STAGES:
                 phase = definition.function(self, phase)
+                finalized = finalized or definition.stage == BuildStage.FINALIZE
                 self._check_cancelled()
 
             assert isinstance(phase, CreatedImage)
@@ -316,6 +331,7 @@ class BuildWorkflow:
             self._bring_target_disk_online()
             cleanup_elevation(self.state.elevation)
             self.state.elevation = None
+            self._remove_work_dir(phase if finalized else None)
             self.logger.removeHandler(gui_log_handler)
             if buildlog_handler is not None:
                 self.logger.removeHandler(buildlog_handler)

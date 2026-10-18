@@ -34,6 +34,7 @@ def stage_setup_workspace(workflow: BuildWorkflow, validated: ValidatedInputs) -
     workflow._milestone("Setting up workspace")
 
     work_dir = make_temp_workdir()
+    workflow.work_dir = work_dir
     staging_dir = ensure_dir(work_dir / "staging")
     downloads_dir = ensure_dir(work_dir / "downloads")
     extracted_dir = ensure_dir(work_dir / "extracted")
