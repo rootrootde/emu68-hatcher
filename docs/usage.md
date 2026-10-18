@@ -120,7 +120,7 @@ erasing the target. The progress dialog can cancel the build and records
 
 [![Review checks and build controls](assets/screenshots/review.png)](assets/screenshots/review.png){ target="_blank" }
 
-Writing to a card asks for admin access during the build. On macOS, hst-imager
+Writing to a card asks for admin access during the build. On macOS, Emu68 Hatcher
 also needs Full Disk Access; see [Installation](installation.md#macos).
 
 ## Own packages

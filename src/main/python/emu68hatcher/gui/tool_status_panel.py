@@ -244,30 +244,27 @@ class ToolStatusPanel(QObject):
             self._offer_macos_tcc_registration()
 
     def _offer_macos_tcc_registration(self):
-        """ask whether to file hst-imager with tccd now; deferring just means the first build does it"""
+        """the root helper inherits the app's tcc grant, so the app needs full disk access"""
         from emu68hatcher.builder.host.macos_tcc import (
+            has_full_disk_access,
             open_full_disk_access_pane,
-            register_hst_imager_with_tcc,
         )
-        from emu68hatcher.utils.paths import get_tools_dir
 
-        hst = get_tools_dir() / "hst-imager"
-        if not hst.is_file():
+        if has_full_disk_access():
             return
 
         box = QMessageBox(self._host)
-        box.setWindowTitle("Enable disk access for hst-imager")
+        box.setWindowTitle("Enable Full Disk Access")
         box.setIcon(QMessageBox.Icon.Information)
-        box.setText("hst-imager needs Full Disk Access to write SD cards.")
-        box.setInformativeText(
-            "You'll get a password prompt, then System Settings opens - enable "
-            "<b>hst-imager</b> there. You can skip and do it on the first build."
+        box.setText(
+            "Emu68 Hatcher needs Full Disk Access to read AGS images and files on external drives."
         )
-        setup_btn = box.addButton("Set Up Now", QMessageBox.ButtonRole.AcceptRole)
+        box.setInformativeText(
+            "System Settings opens next: enable <b>Emu68 Hatcher</b> there (add it with + if it "
+            "is not listed), then quit and reopen the app. You can skip and do it later."
+        )
+        setup_btn = box.addButton("Open Settings", QMessageBox.ButtonRole.AcceptRole)
         box.addButton("Skip", QMessageBox.ButtonRole.RejectRole)
         box.exec()
-        if box.clickedButton() is not setup_btn:
-            return
-
-        if register_hst_imager_with_tcc(hst):
+        if box.clickedButton() is setup_btn:
             open_full_disk_access_pane()

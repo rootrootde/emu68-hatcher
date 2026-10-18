@@ -147,11 +147,22 @@ def check_elevated_source_access(workflow: BuildWorkflow, plan: AGSImportPlan) -
     )
     workflow._check_cancelled()
     if not result.success or " ERR]" in result.stdout or "Partitions:" not in result.stdout:
+        from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
+
+        if get_platform_info().os == OperatingSystem.MACOS:
+            # tcc checks the app that spawned the root helper, not hst-imager
+            fix = (
+                "Give Emu68 Hatcher Full Disk Access in System Settings > Privacy & Security > "
+                "Full Disk Access, quit and reopen it, then start the build again."
+            )
+        else:
+            fix = (
+                "Move it to a folder the administrator process can read, then select and "
+                "inspect it again."
+            )
         raise BuildError(
             f"The elevated build process cannot read the AGS source image "
-            f"{plan.inventory.source_path}. Move it to a folder accessible to the "
-            "administrator process (on macOS, outside Downloads, Documents and Desktop), "
-            f"then select and inspect it again. Details: {result.error or result.stdout}"
+            f"{plan.inventory.source_path}. {fix} Details: {result.error or result.stdout}"
         )
 
 

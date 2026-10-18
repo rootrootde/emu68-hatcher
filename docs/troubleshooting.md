@@ -6,7 +6,7 @@ Build failures write **buildlog.txt** next to the **.img** file. Direct-to-SD bu
 
 ### macOS: build fails with "Operation not permitted" on /dev/disk\*
 
-hst-imager needs Full Disk Access. See [Installation → macOS](installation.md#macos).
+Emu68 Hatcher needs Full Disk Access. Enable it, quit and reopen the app. See [Installation → macOS](installation.md#macos).
 
 ### Corrupted downloads or tools
 

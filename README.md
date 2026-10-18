@@ -36,7 +36,7 @@ From [releases](https://github.com/rootrootde/emu68-hatcher/releases):
 
 ### 3. Launch
 
-- **macOS:** open Emu68 Hatcher from /Applications. First run: grant Full Disk Access to **hst-imager** so SD card writes work - see the [installation guide](https://rootrootde.github.io/emu68hatcher/installation/#macos).
+- **macOS:** open Emu68 Hatcher from /Applications. First run: grant Full Disk Access to **Emu68 Hatcher** so builds can write the card and read files on external drives - see the [installation guide](https://rootrootde.github.io/emu68hatcher/installation/#macos).
 - **Linux:** emu68hatcher
 - **Windows:** from the Start menu
 

@@ -29,10 +29,12 @@
 
     Download the latest **.dmg** for your Mac (arm64 for Apple Silicon, x64 for Intel) from the [releases](https://github.com/rootrootde/emu68-hatcher/releases) page, open it and drag **Emu68 Hatcher.app** into /Applications.
 
-    !!! warning "First run: grant Full Disk Access to hst-imager"
-        macOS protects raw disk access, even on removable media like SD cards, so an app needs explicit permission from you to write to one. Emu68 Hatcher uses **hst-imager** to write the card, so it's hst-imager that needs Full Disk Access - not the app itself.
+    !!! warning "First run: grant Full Disk Access to Emu68 Hatcher"
+        macOS protects SD cards and external drives, so a build needs your permission to write the card and to read files such as an AGS image from another drive. macOS checks the app that starts the build, so **Emu68 Hatcher** needs Full Disk Access. hst-imager does not need its own entry.
 
-        Open the app, click **Download Missing Tools…** under **Overview → Updates and tools**. After hst-imager downloads, a dialog asks to register it with macOS - click **Set Up Now**, enter password, then enable **hst-imager** in the settings pane that opens.
+        Open the app, click **Download Missing Tools…** under **Overview → Updates and tools**. After hst-imager downloads, a dialog offers to open the settings if the app has no Full Disk Access yet - click **Open Settings**, enable **Emu68 Hatcher** (add it with + if it is not listed), then quit and reopen the app.
+
+        Each build that writes a card still asks for your password once. macOS shows that prompt with a warning that it could not verify the script; that is expected.
 
     ### Install from source
 
