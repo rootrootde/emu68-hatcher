@@ -68,6 +68,8 @@ def stage_create_image(
         final_output_path = None
         image_path = target_path
 
+    if output_type == OutputType.IMG:
+        workflow.unfinished_image = Path(image_path)
     if output_type == OutputType.DEVICE:
         workflow._milestone(f"Initialising SD card on {image_path}")
         _prepare_device_target(workflow, image_path)

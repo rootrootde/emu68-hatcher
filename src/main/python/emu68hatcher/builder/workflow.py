@@ -61,6 +61,7 @@ class BuildWorkflow:
         # package and extras file writes on the boot partition, for the build receipts
         self.write_log: StagingWriteLog | None = None
         self.work_dir: Path | None = None
+        self.unfinished_image: Path | None = None
         self.logger = get_logger()
         self._cancelled = False
 
@@ -331,6 +332,12 @@ class BuildWorkflow:
             self._bring_target_disk_online()
             cleanup_elevation(self.state.elevation)
             self.state.elevation = None
+            if self.unfinished_image is not None and not finalized:
+                try:
+                    self.unfinished_image.unlink(missing_ok=True)
+                    self.logger.info(f"Removed unfinished image {self.unfinished_image}")
+                except OSError as error:
+                    self.logger.warning(f"Could not remove unfinished image: {error}")
             self._remove_work_dir(phase if finalized else None)
             self.logger.removeHandler(gui_log_handler)
             if buildlog_handler is not None:
