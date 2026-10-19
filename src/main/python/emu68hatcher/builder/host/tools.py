@@ -163,6 +163,8 @@ def download_7zip(force: bool = False, progress_callback=None) -> Path | None:
                 logger.error(f"Could not find {name} in extracted archive")
                 return None
             dest = tools_dir / name
+            # a fresh inode; macos kills a signed binary rewritten in place after it ran
+            dest.unlink(missing_ok=True)
             shutil.copy2(found, dest)
             if dest.suffix.lower() in (".exe",) or dest.suffix == "" and dest.name == "7zz":
                 os.chmod(dest, 0o755)
@@ -351,6 +353,8 @@ def download_tool(
             logger.error("Could not find binary in archive")
             return None
 
+        # a fresh inode; macos kills a signed binary rewritten in place after it ran
+        target_path.unlink(missing_ok=True)
         shutil.copy2(binary_path, target_path)
         os.chmod(target_path, 0o755)
         _write_stamp(target_path, url)
