@@ -241,8 +241,9 @@ def _extract_lha(
     if hst:
         result = run_hst_extract(
             hst,
-            f"{archive_path}/*",
-            str(output_dir) + "/",
+            # hst-imager rejects mixed separators like C:\x\a.lha/*, then 7z mangles latin-1 names
+            f"{archive_path.as_posix()}/*",
+            output_dir.as_posix() + "/",
             uaemetadata="None",
             recursive=True,
             timeout=None,
