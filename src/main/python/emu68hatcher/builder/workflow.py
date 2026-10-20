@@ -167,6 +167,9 @@ class BuildWorkflow:
 
         if get_platform_info().os != OperatingSystem.WINDOWS or self.config.output is None:
             return
+        # without the helper the disk was never taken offline, and set-disk would be denied
+        if self.state.elevation is None:
+            return
         targets: list[str] = []
         if self.config.output.type == OutputType.DEVICE:
             targets.append(str(self.config.output.path))
