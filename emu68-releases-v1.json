@@ -1,0 +1,122 @@
+{
+  "payload": {
+    "format": "emu68-releases-v1",
+    "releases": [
+      {
+        "assets": [
+          {
+            "filename": "Emu68-pistorm32lite.zip",
+            "kind": "zip",
+            "role": "emu68_boot",
+            "sha256": "34d4c3a0c4f39afa5846c933c1074bf712b18fe4e9e9b36e16de63bd574f9a12",
+            "size": 3868437,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.0.7/Emu68-pistorm32lite.zip"
+          },
+          {
+            "filename": "Emu68-pistorm.zip",
+            "kind": "zip",
+            "role": "emu68_boot_pistorm",
+            "sha256": "12f1b961e0063f3fe8ebd3e10a837f50f547225962f38fb9918fe96bdd7b1fa4",
+            "size": 3819117,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.0.7/Emu68-pistorm.zip"
+          }
+        ],
+        "channel": "stable",
+        "dialect": "legacy-1.0",
+        "kernels": {
+          "classic": "Emu68-pistorm",
+          "modern": "Emu68-pistorm32lite",
+          "pistorm16": "Emu68-pistorm"
+        },
+        "prerelease": false,
+        "tag": "v1.0.7",
+        "version": "1.0.7"
+      },
+      {
+        "assets": [
+          {
+            "filename": "Emu68-pistorm.zip",
+            "kind": "zip",
+            "role": "emu68_boot",
+            "sha256": "cb0b20b875f42dbba80b271fd90182027d5e9213e1f1010e766c7ba721be2983",
+            "size": 4053639,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/Emu68-pistorm.zip"
+          },
+          {
+            "filename": "Emu68-pistorm-classic.zip",
+            "kind": "zip",
+            "role": "emu68_boot_classic",
+            "sha256": "a6e8971bcf9247f25cb1594c12444dd319751de16ff2a7c2b09d838fa08aeb4c",
+            "size": 3982328,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/Emu68-pistorm-classic.zip"
+          },
+          {
+            "filename": "VideoCore.card",
+            "kind": "raw",
+            "role": "emu68_videocore",
+            "sha256": "a2a5f43c5a378fbabc17b258eac83518d43474580644cfd435ea1181666d3a48",
+            "size": 25864,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-alpha.1/VideoCore.card"
+          }
+        ],
+        "channel": "alpha",
+        "dialect": "1.1-alpha",
+        "kernels": {
+          "classic": "Emu68-pistorm-classic.gz",
+          "modern": "Emu68-pistorm.gz",
+          "pistorm16": "Emu68-pistorm.gz"
+        },
+        "prerelease": true,
+        "tag": "v1.1.0-alpha.1",
+        "version": "1.1.0-alpha.1"
+      },
+      {
+        "assets": [
+          {
+            "filename": "Emu68-pistorm.zip",
+            "kind": "zip",
+            "role": "emu68_boot",
+            "sha256": "3f6921fe9179a834f2d1cacbdcf7229fa602b13c144965ff170bdfae7bbd1bd6",
+            "size": 4080430,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/Emu68-pistorm.zip"
+          },
+          {
+            "filename": "Emu68-pistorm-classic.zip",
+            "kind": "zip",
+            "role": "emu68_boot_classic",
+            "sha256": "601e6af4cc2dfb1a1ac53d1b6b1974d80e51f27d2e2fc6d96d088ab8fcb49f0c",
+            "size": 4004630,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/Emu68-pistorm-classic.zip"
+          },
+          {
+            "filename": "VideoCore.card",
+            "kind": "raw",
+            "role": "emu68_videocore",
+            "sha256": "a2a5f43c5a378fbabc17b258eac83518d43474580644cfd435ea1181666d3a48",
+            "size": 25864,
+            "url": "https://github.com/michalsc/Emu68/releases/download/v1.1.0-beta.1/VideoCore.card"
+          }
+        ],
+        "channel": "beta",
+        "dialect": "1.1-beta",
+        "kernels": {
+          "classic": "Emu68-pistorm-classic.gz",
+          "modern": "Emu68-pistorm.gz",
+          "pistorm16": "Emu68-pistorm.gz"
+        },
+        "prerelease": true,
+        "tag": "v1.1.0-beta.1",
+        "version": "1.1.0-beta.1"
+      }
+    ],
+    "repository": "michalsc/Emu68",
+    "revision": 1792612436,
+    "schema_version": 1,
+    "source_commit": "ea9087e4cea56b5b90da8ab2ffeb31b32827efb3"
+  },
+  "signature": {
+    "algorithm": "ed25519",
+    "key_id": "updates-2026",
+    "value": "1Ortyrxk9VPxXyNtyDXCaztwkFGT4Xy8tjwwEB/47cRdz3Yi/9nUo9VWNbYbmhjGTh8owm3jsyOaXCSk/7f0CQ=="
+  }
+}

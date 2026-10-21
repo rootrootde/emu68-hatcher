@@ -3452,13 +3452,6 @@
             "group": "Commodities",
             "id": "magicmenu"
           },
-          "picasso96": {
-            "default": true,
-            "description": "picasso96 RTG driver (shareware) + amiga-blitter disable patch",
-            "display_name": "Picasso96",
-            "group": "RTG",
-            "id": "picasso96"
-          },
           "toolsdaemon": {
             "default": true,
             "description": "Custom Workbench menus and preferences editor",
@@ -3474,10 +3467,10 @@
             "id": "whdload"
           }
         },
-        "catalog_schema_version": 1,
-        "id": "hatcher-1_1",
+        "catalog_schema_version": 1003000,
+        "id": "hatcher-1-3-0",
         "max_hatcher_version_exclusive": null,
-        "min_hatcher_version": "1.1.0",
+        "min_hatcher_version": "1.3.0",
         "packages": {
           "additem": {
             "archive_package": null,
@@ -3486,7 +3479,6 @@
             "default": false,
             "description": "native Workbench Tools menu entries",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "additem.lha",
               "hash": "e4f43fa5389554083445fd5325799e78",
@@ -3502,6 +3494,7 @@
             "install": [
               {
                 "from": "AddItem/AddItem",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3510,6 +3503,7 @@
               },
               {
                 "from": "AddItem/AddItem.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3523,10 +3517,10 @@
             "name": "additem",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -3542,7 +3536,6 @@
             "default": true,
             "description": "AHI retargetable audio system (Paula output)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ahiusr_4.18.lha",
               "hash": "52131E5F771927FF5D5AAAA64FD97ABC",
@@ -3558,6 +3551,7 @@
             "install": [
               {
                 "from": "AHI/User/Devs/ahi.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3566,6 +3560,7 @@
               },
               {
                 "from": "AHI/User/Devs/AHI/paula.audio",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3574,6 +3569,7 @@
               },
               {
                 "from": "AHI/User/Devs/AHI/filesave.audio",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3582,6 +3578,7 @@
               },
               {
                 "from": "AHI/User/Devs/AudioModes/PAULA",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3590,6 +3587,7 @@
               },
               {
                 "from": "AHI/User/Devs/AudioModes/FILESAVE",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3598,6 +3596,7 @@
               },
               {
                 "from": "AHI/User/Prefs/AHI_MUI",
+                "patch": [],
                 "recursive": false,
                 "rename": "AHI",
                 "stack": null,
@@ -3606,6 +3605,7 @@
               },
               {
                 "from": "AHI/User/Prefs/AHI.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": 32000,
@@ -3619,12 +3619,12 @@
             "name": "ahi",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": "4.18",
             "versions": [
               "3.1",
               "3.2",
@@ -3640,7 +3640,6 @@
             "default": true,
             "description": "GIF image datatype",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "akGIF-dt.lha",
               "hash": "9b5ae40e92dcb2960c93635f90209f53",
@@ -3656,6 +3655,7 @@
             "install": [
               {
                 "from": "akGIF-Datatype/Classes/DataTypes/akGIF.datatype",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3664,6 +3664,7 @@
               },
               {
                 "from": "akGIF-Datatype/devs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3672,6 +3673,7 @@
               },
               {
                 "from": "akGIF-Datatype/Prefs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3680,6 +3682,7 @@
               },
               {
                 "from": "akGIF-Datatype/c/dtimage.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3688,6 +3691,7 @@
               },
               {
                 "from": "akGIF-Datatype/c/spatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3696,6 +3700,7 @@
               },
               {
                 "from": "akGIF-Datatype/classes/datatypes/akGIF-040.pch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3709,12 +3714,12 @@
             "name": "akdatatypes_gif",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "akdatatypes_wizard_lib"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -3730,7 +3735,6 @@
             "default": true,
             "description": "JPEG/JFIF image datatype",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "akJFIF-dt.lha",
               "hash": "7b5fcb7a557c87faaf529110f912f909",
@@ -3746,6 +3750,7 @@
             "install": [
               {
                 "from": "akJFIF-Datatype/Classes/DataTypes/akJFIF.datatype",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3754,6 +3759,7 @@
               },
               {
                 "from": "akJFIF-Datatype/devs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3762,6 +3768,7 @@
               },
               {
                 "from": "akJFIF-Datatype/Prefs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3770,6 +3777,7 @@
               },
               {
                 "from": "akJFIF-Datatype/c/dtimage.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3778,6 +3786,7 @@
               },
               {
                 "from": "akJFIF-Datatype/c/spatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3786,6 +3795,7 @@
               },
               {
                 "from": "akJFIF-Datatype/classes/datatypes/akJFIF-040.pch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3799,12 +3809,12 @@
             "name": "akdatatypes_jfif",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "akdatatypes_wizard_lib"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -3820,7 +3830,6 @@
             "default": true,
             "description": "PNG image datatype",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "akPNG-dt.lha",
               "hash": "ff0fe74ed8f9790ee27098aaf43ef756",
@@ -3836,6 +3845,7 @@
             "install": [
               {
                 "from": "akPNG-Datatype/Classes/DataTypes/akPNG.datatype",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3844,6 +3854,7 @@
               },
               {
                 "from": "akPNG-Datatype/devs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3852,6 +3863,7 @@
               },
               {
                 "from": "akPNG-Datatype/Prefs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3860,6 +3872,7 @@
               },
               {
                 "from": "akPNG-Datatype/c/dtimage.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3868,6 +3881,7 @@
               },
               {
                 "from": "akPNG-Datatype/c/spatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3876,6 +3890,7 @@
               },
               {
                 "from": "akPNG-Datatype/classes/datatypes/akPNG-040.pch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3889,12 +3904,12 @@
             "name": "akdatatypes_png",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "akdatatypes_wizard_lib"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -3910,7 +3925,6 @@
             "default": true,
             "description": "TIFF image datatype",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "akTIFF-dt.lha",
               "hash": "01c8c82022816b41baf683940cd3a8cf",
@@ -3926,6 +3940,7 @@
             "install": [
               {
                 "from": "akTIFF-Datatype/Classes/DataTypes/akTIFF.datatype",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3934,6 +3949,7 @@
               },
               {
                 "from": "akTIFF-Datatype/devs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3942,6 +3958,7 @@
               },
               {
                 "from": "akTIFF-Datatype/Prefs/Datatypes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3950,6 +3967,7 @@
               },
               {
                 "from": "akTIFF-Datatype/c/dtimage.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3958,6 +3976,7 @@
               },
               {
                 "from": "akTIFF-Datatype/c/spatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3966,6 +3985,7 @@
               },
               {
                 "from": "akTIFF-Datatype/classes/datatypes/akTIFF-040.pch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -3979,12 +3999,12 @@
             "name": "akdatatypes_tiff",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "akdatatypes_wizard_lib"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4000,7 +4020,6 @@
             "default": false,
             "description": "shared wizard.library for ak datatypes",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "WizardLibrary.lha",
               "hash": "44e5084e9cb644940fda9d172d87d91d",
@@ -4016,6 +4035,7 @@
             "install": [
               {
                 "from": "wizard.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4029,10 +4049,10 @@
             "name": "akdatatypes_wizard_lib",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4048,7 +4068,6 @@
             "default": false,
             "description": "swap/remap Amiga Keys, enable/disable CapsLock",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "AKeys.lha",
               "hash": "5EC7EFA6AFDA8B4F8B220BA55B4E6911",
@@ -4064,6 +4083,7 @@
             "install": [
               {
                 "from": "AKeys107/AKeys",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4072,6 +4092,7 @@
               },
               {
                 "from": "AKeys107/AKeys.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4085,10 +4106,10 @@
             "name": "akeys",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4104,7 +4125,6 @@
             "default": true,
             "description": "web browser with optional javascript",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Amelinium.lha",
               "hash": "0DA2EEBEAA4697D57965696D8145C551",
@@ -4120,6 +4140,7 @@
             "install": [
               {
                 "from": "Amelinium_040",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4128,6 +4149,7 @@
               },
               {
                 "from": "Amelinium_040_JS",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4136,6 +4158,7 @@
               },
               {
                 "from": "Amelinium.readme",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4144,6 +4167,7 @@
               },
               {
                 "from": "jsdemo.html",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4172,12 +4196,10 @@
             "name": "amelinium",
             "provides": [],
             "purchase_url": null,
-            "recommends": [
-              "amissl"
-            ],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4193,7 +4215,6 @@
             "default": false,
             "description": "MP3 and audio player",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "AmigaAMP3-68k.lha",
               "hash": "B73250E69D852CC12DFC12846B480030",
@@ -4209,6 +4230,7 @@
             "install": [
               {
                 "from": "AmigaAMP3.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4217,6 +4239,7 @@
               },
               {
                 "from": "AmigaAMP3",
+                "patch": [],
                 "recursive": true,
                 "rename": null,
                 "stack": null,
@@ -4236,15 +4259,13 @@
             "name": "amigaamp",
             "provides": [],
             "purchase_url": null,
-            "recommends": [
-              "ahi"
-            ],
             "relocate": [],
             "requires": [
               "asyncio_library",
               "mpega_library"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -4259,7 +4280,6 @@
             "default": true,
             "description": "internet speed test",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "AmiSpeedTest.lha",
               "hash": "e68738db162376549e391ade3c6ad96b",
@@ -4275,6 +4295,7 @@
             "install": [
               {
                 "from": "AmiSpeedTest/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4294,10 +4315,10 @@
             "name": "amispeedtest",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4313,7 +4334,6 @@
             "default": true,
             "description": "TLS/SSL library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "AmiSSL.lha",
               "hash": "A4234F9CEDCAEADBC1D3BC759EB5F44E",
@@ -4329,6 +4349,7 @@
             "install": [
               {
                 "from": "AmiSSL/Libs/AmigaOS3/amisslmaster.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4337,6 +4358,7 @@
               },
               {
                 "from": "AmiSSL/Libs/AmigaOS3/AmiSSL/68020-40/amissl_v*.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4345,6 +4367,7 @@
               },
               {
                 "from": "AmiSSL/Doc/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4353,6 +4376,7 @@
               },
               {
                 "from": "AmiSSL/Certs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4361,6 +4385,7 @@
               },
               {
                 "from": "AmiSSL/C/CA.pl",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4369,6 +4394,7 @@
               },
               {
                 "from": "AmiSSL/C/tsget.pl",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4377,6 +4403,7 @@
               },
               {
                 "from": "AmiSSL/C/openssl.cnf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4385,6 +4412,7 @@
               },
               {
                 "from": "AmiSSL/C/AmigaOS3/OpenSSL",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4398,7 +4426,6 @@
             "name": "amissl",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -4409,6 +4436,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4426,7 +4454,6 @@
             "default": false,
             "description": "open TCP/IP stack with Roadshow-compatible commands",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "AmiTCP_NG-v4.1.8.lha",
               "hash": "02C3C528BA699B984894C292CD043E62",
@@ -4442,6 +4469,7 @@
             "install": [
               {
                 "from": "AmiTCP_NG/data/Libs/bsdsocket.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4450,6 +4478,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/Libs/usergroup.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4458,6 +4487,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/C/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4466,6 +4496,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/Devs/Internet/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4474,6 +4505,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/Storage/NetInterfaces/genet",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4482,6 +4514,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/Storage/NetInterfaces/wifipi",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4490,6 +4523,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/S/Network-Startup",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4498,6 +4532,7 @@
               },
               {
                 "from": "AmiTCP_NG/data/db/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4506,6 +4541,7 @@
               },
               {
                 "from": "AmiTCP_NG/COPYING",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4514,6 +4550,7 @@
               },
               {
                 "from": "AmiTCP_NG/COPYRIGHTS",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4522,6 +4559,7 @@
               },
               {
                 "from": "AmiTCP_NG/ReadMe",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4530,6 +4568,7 @@
               },
               {
                 "from": "AmiTCP_NG/ReadMe.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4538,6 +4577,7 @@
               },
               {
                 "from": "AmiTCP_NG.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "AmiTCP.info",
                 "stack": null,
@@ -4553,7 +4593,6 @@
               "tcpip_stack"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "network_config"
@@ -4566,6 +4605,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": "4.1.8",
             "versions": [
               "3.1",
               "3.2",
@@ -4581,7 +4621,6 @@
             "default": false,
             "description": "asynchronous file I/O library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "asyncioppc.lha",
               "hash": "BE3454C8811CEE206719B564CAD1A822",
@@ -4597,6 +4636,7 @@
             "install": [
               {
                 "from": "asyncioppc/libs/asyncio.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4610,10 +4650,10 @@
             "name": "asyncio_library",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4629,7 +4669,6 @@
             "default": false,
             "description": "os 3.9 boingbag 1 - update files",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "BoingBag39-1.lha",
               "hash": "71353D4AEB9AF1F129545618D013A8C8",
@@ -4649,10 +4688,10 @@
             "name": "boingbag_os39_bb1",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.9"
             ]
@@ -4664,7 +4703,6 @@
             "default": false,
             "description": "os 3.9 boingbag 2 - soft rom update + fixes",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "BoingBag39-2.lha",
               "hash": "FD45D24BB408203883A4C9A56E968E28",
@@ -4684,10 +4722,10 @@
             "name": "boingbag_os39_bb2",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.9"
             ]
@@ -4699,7 +4737,6 @@
             "default": false,
             "description": "test if a dir is empty",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "CE14.lha",
               "hash": "5A3B871F77E2B2804EDC80D507C01233",
@@ -4715,6 +4752,7 @@
             "install": [
               {
                 "from": "CE",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4728,10 +4766,10 @@
             "name": "ce",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4747,7 +4785,6 @@
             "default": true,
             "description": "compactflash PCMCIA driver",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "cfd.v20261007.lha",
               "hash": "9F317F5658C49866D7458866ED5143E2",
@@ -4763,6 +4800,7 @@
             "install": [
               {
                 "from": "cfd/small/68020/devs/compactflash.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4771,6 +4809,7 @@
               },
               {
                 "from": "cfd/small/68020/libs/ptable.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4779,6 +4818,7 @@
               },
               {
                 "from": "cfd/c/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4787,6 +4827,7 @@
               },
               {
                 "from": "cfd/Storage/DOSDrivers/CF0",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4795,6 +4836,7 @@
               },
               {
                 "from": "cfd/Storage/DOSDrivers/CF0.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4808,12 +4850,12 @@
             "name": "cfd",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "fat95"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4839,7 +4881,6 @@
             "name": "clicktofront",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [
               {
                 "from": "Tools/Commodities/ClickToFront",
@@ -4848,6 +4889,7 @@
             ],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4863,7 +4905,6 @@
             "default": true,
             "description": "Launch shell programs and scripts from Workbench icons",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "CLICon.lha",
               "hash": "99ED66A6D2CA952EA3D564341B267DD3",
@@ -4879,6 +4920,7 @@
             "install": [
               {
                 "from": "CLICon/CLICon",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4892,10 +4934,10 @@
             "name": "clicon",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4911,7 +4953,6 @@
             "default": false,
             "description": "emu68 kernel cmdline (FAT32 boot)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -4931,10 +4972,10 @@
             "name": "cmdline_txt",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.9"
@@ -4947,7 +4988,6 @@
             "default": false,
             "description": "character set conversion library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "codesets-68000.lha",
               "hash": "6B120E1B89FF2F80F5136E050A0A0DA0",
@@ -4963,6 +5003,7 @@
             "install": [
               {
                 "from": "codesets.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -4976,10 +5017,10 @@
             "name": "codesets",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -4995,7 +5036,6 @@
             "default": false,
             "description": "emu68 boot config",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -5015,10 +5055,10 @@
             "name": "config_txt",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5034,7 +5074,6 @@
             "default": true,
             "description": "file manager",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "DOpus416JRbin.lha",
               "hash": "19C6CDEA1F01EBDFE8154C16E7DABF23",
@@ -5050,6 +5089,7 @@
             "install": [
               {
                 "from": "DOpus.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "DOpus.info",
                 "stack": null,
@@ -5058,6 +5098,7 @@
               },
               {
                 "from": "DOpus/DirectoryOpus",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5066,6 +5107,7 @@
               },
               {
                 "from": "DOpus/DirectoryOpus.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5074,6 +5116,7 @@
               },
               {
                 "from": "DOpus/libs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5082,6 +5125,7 @@
               },
               {
                 "from": "DOpus/libs/dopus.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5090,6 +5134,7 @@
               },
               {
                 "from": "DOpus/modules/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5098,6 +5143,7 @@
               },
               {
                 "from": "DOpus/c/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5106,6 +5152,7 @@
               },
               {
                 "from": "DOpus/s/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5114,6 +5161,7 @@
               },
               {
                 "from": "DOpus/catalogs/*",
+                "patch": [],
                 "recursive": true,
                 "rename": null,
                 "stack": null,
@@ -5122,6 +5170,7 @@
               },
               {
                 "from": "DOpus/Docs/English/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5130,6 +5179,7 @@
               },
               {
                 "from": "DOpus/DOpus416JRbin.readme",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5138,6 +5188,7 @@
               },
               {
                 "from": "DOpus/DOpus416JRbin.readme.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5157,10 +5208,10 @@
             "name": "dopus418",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5186,10 +5237,10 @@
             "name": "emu68_boot",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5211,6 +5262,7 @@
             "install": [
               {
                 "from": "EmuControl/EmuControl",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5219,6 +5271,7 @@
               },
               {
                 "from": "EmuControl/EmuControl",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5227,6 +5280,7 @@
               },
               {
                 "from": "EmuControl/EmuControl.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5240,10 +5294,10 @@
             "name": "emu68_control",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5265,6 +5319,7 @@
             "install": [
               {
                 "from": "Emu68Info/Emu68Info",
+                "patch": [],
                 "recursive": false,
                 "rename": "EMU68INFO",
                 "stack": null,
@@ -5273,6 +5328,7 @@
               },
               {
                 "from": "VideoCore/VideoCore.card",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5286,10 +5342,10 @@
             "name": "emu68_core",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5311,6 +5367,7 @@
             "install": [
               {
                 "from": "Emu68EDID/Emu68EDID",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5319,6 +5376,7 @@
               },
               {
                 "from": "ListDeviceTree/ListDeviceTree",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5332,10 +5390,10 @@
             "name": "emu68_diagnostics",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5360,6 +5418,7 @@
             "install": [
               {
                 "from": "LIBS/gic400.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5368,6 +5427,7 @@
               },
               {
                 "from": "LIBS/bcmpcie.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5381,10 +5441,10 @@
             "name": "emu68_driver_libraries",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5400,7 +5460,6 @@
             "default": false,
             "description": "consolidated Pi4/CM4 driver stack - genet ethernet (SANA-II), xhci usb, nvme storage + gic400/bcmpcie libraries",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "emu68-drivers-2.2.0.lha",
               "hash": "83B581A6197B79E8202CF07D346545F3",
@@ -5423,10 +5482,10 @@
             "name": "emu68_driver_stack",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": "2.2.0",
             "versions": [
               "3.1",
               "3.2",
@@ -5451,6 +5510,7 @@
             "install": [
               {
                 "from": "Storage/DEVS/Networks/genet.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5459,6 +5519,7 @@
               },
               {
                 "from": "Storage/C/genet-stats",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5474,12 +5535,12 @@
               "ethernet_driver"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "emu68_driver_libraries"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5504,6 +5565,7 @@
             "install": [
               {
                 "from": "DEVS/nvme.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5512,6 +5574,7 @@
               },
               {
                 "from": "C/nvmeinfo",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5520,6 +5583,7 @@
               },
               {
                 "from": "C/nvmeadm",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5533,12 +5597,12 @@
             "name": "emu68_nvme",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "emu68_driver_libraries"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5563,6 +5627,7 @@
             "install": [
               {
                 "from": "LIBS/openpci.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5571,6 +5636,7 @@
               },
               {
                 "from": "C/lspci",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5579,6 +5645,7 @@
               },
               {
                 "from": "C/emu68check",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5592,12 +5659,12 @@
             "name": "emu68_pci_tools",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "emu68_driver_libraries"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5619,6 +5686,7 @@
             "install": [
               {
                 "from": "I2C/i2c.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5627,6 +5695,7 @@
               },
               {
                 "from": "I2C/SetClockI2C",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5640,10 +5709,10 @@
             "name": "emu68_rtc",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5659,7 +5728,6 @@
             "default": false,
             "description": "emu68 tools",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Emu68-tools.zip",
               "hash": "505C72151D67988E415B330AA6E19A8C",
@@ -5679,10 +5747,10 @@
             "name": "emu68_tools",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5707,6 +5775,7 @@
             "install": [
               {
                 "from": "Storage/DEVS/USBHardware/xhci.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5720,12 +5789,12 @@
             "name": "emu68_usb",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "emu68_driver_libraries"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5747,6 +5816,7 @@
             "install": [
               {
                 "from": "WaitUntilConnected/WaitUntilConnected",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5755,6 +5825,7 @@
               },
               {
                 "from": "Emu68-WiFi/Devs/*",
+                "patch": [],
                 "recursive": true,
                 "rename": null,
                 "stack": null,
@@ -5768,12 +5839,12 @@
             "name": "emu68_wifi",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "prism2"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5789,7 +5860,6 @@
             "default": false,
             "description": "First-boot setup and UAE screen mode selection",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -5805,6 +5875,7 @@
             "install": [
               {
                 "from": "System/S/Hatcher-FirstBoot",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5813,6 +5884,7 @@
               },
               {
                 "from": "System/C/Hatcher-UAE-ScreenMode",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5826,10 +5898,10 @@
             "name": "emu68hatcher_local_files",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5845,7 +5917,6 @@
             "default": false,
             "description": "boot-time env vars + DST config",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -5861,14 +5932,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/FIRSTTIMEBOOT",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Prefs/Env-Archive/",
-                "xor": null
-              },
-              {
-                "from": "System/Prefs/Env-Archive/REBOOT",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5877,6 +5941,7 @@
               },
               {
                 "from": "System/S/DST.dat",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5890,10 +5955,10 @@
             "name": "environment_variables",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5909,7 +5974,6 @@
             "default": false,
             "description": "FAT12/16/32 filesystem handler",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "fat95.v20261007.lha",
               "hash": "657A8A4D516F7D9BF37D681169EB81D4",
@@ -5925,6 +5989,7 @@
             "install": [
               {
                 "from": "fat95/l/68020/fat95",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5933,6 +5998,7 @@
               },
               {
                 "from": "fat95/libs/small/68020/ptable.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -5946,10 +6012,10 @@
             "name": "fat95",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -5965,7 +6031,6 @@
             "default": true,
             "description": "userland FS API (for smb2fs etc)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "filesysbox.m68k-amigaos.lha",
               "hash": "3BC80A8D599504B15B9981FB1B9AC246",
@@ -5981,6 +6046,7 @@
             "install": [
               {
                 "from": "filesysbox/Libs/filesysbox.library.020",
+                "patch": [],
                 "recursive": false,
                 "rename": "filesysbox.library",
                 "stack": null,
@@ -5994,10 +6060,10 @@
             "name": "filesysbox",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6013,7 +6079,6 @@
             "default": false,
             "description": "first-boot init scripts",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -6029,6 +6094,7 @@
             "install": [
               {
                 "from": "System/FirstBoot/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6037,6 +6103,7 @@
               },
               {
                 "from": "System/WBStartup/FirstBootWB",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6045,6 +6112,7 @@
               },
               {
                 "from": "System/WBStartup/FirstBootWB.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6058,10 +6126,10 @@
             "name": "firstboot",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6077,7 +6145,6 @@
             "default": false,
             "description": "Topaz/TopazPlus, MicroKnight/Plus, P0T-NOoDLE and mOsOul (TrueType)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "amigafonts-d429875.zip",
               "hash": "8650777db2db0f5517e01813b42a5b59",
@@ -6093,6 +6160,7 @@
             "install": [
               {
                 "from": "amigafonts-d42987535d94ebbfb51e64fee76f9974c6ae145a/ttf/*.ttf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6106,12 +6174,12 @@
             "name": "fonts_amiga_retro",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "ttflib"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_apparent": {
@@ -6121,7 +6189,6 @@
             "default": false,
             "description": "bitmap font in sizes 11 and 13",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Apparent.lha",
               "hash": "d6db082095d636497dcff15ffbe18255",
@@ -6137,6 +6204,7 @@
             "install": [
               {
                 "from": "Fonts/Apparent*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6150,10 +6218,10 @@
             "name": "fonts_apparent",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_dejavu": {
@@ -6163,7 +6231,6 @@
             "default": false,
             "description": "DejaVu 2.37 TrueType families, including condensed and mono styles",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "dejavu-fonts-ttf-2.37.zip",
               "hash": "33e1e61fab06a547851ed308b4ffef42",
@@ -6179,6 +6246,7 @@
             "install": [
               {
                 "from": "dejavu-fonts-ttf-2.37/ttf/*.ttf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6192,12 +6260,12 @@
             "name": "fonts_dejavu",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "ttflib"
             ],
             "scripts": [],
+            "upstream_version": "2.37",
             "versions": []
           },
           "fonts_dina": {
@@ -6207,7 +6275,6 @@
             "default": false,
             "description": "fixed-width bitmap fonts, including bold and italic",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Dina.lha",
               "hash": "5254fb6cf3448c68207d59515c54b850",
@@ -6223,6 +6290,7 @@
             "install": [
               {
                 "from": "Dina/Dina*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6236,10 +6304,10 @@
             "name": "fonts_dina",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_magicwb": {
@@ -6249,7 +6317,6 @@
             "default": false,
             "description": "XEN, XHelvetica and XCourier",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MagicWB21p.lha",
               "hash": "e425201fbbad65df41b5c683d539d2c1",
@@ -6265,6 +6332,7 @@
             "install": [
               {
                 "from": "MagicWB2.1p/Fonts/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6278,10 +6346,10 @@
             "name": "fonts_magicwb",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_proptopaz": {
@@ -6291,7 +6359,6 @@
             "default": false,
             "description": "proportional Topaz 1.2/1.3, size 8",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "proptopaz.lha",
               "hash": "57041fd97e8f389af94293968ca31e93",
@@ -6307,6 +6374,7 @@
             "install": [
               {
                 "from": "Proptopaz/fonts/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6320,10 +6388,10 @@
             "name": "fonts_proptopaz",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_roboto": {
@@ -6333,7 +6401,6 @@
             "default": false,
             "description": "Roboto 2.138 and Roboto Condensed, static TrueType styles",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "roboto-unhinted.zip",
               "hash": "5bf2e05feff2c242a1796557aaec9953",
@@ -6349,6 +6416,7 @@
             "install": [
               {
                 "from": "*.ttf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6362,12 +6430,12 @@
             "name": "fonts_roboto",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "ttflib"
             ],
             "scripts": [],
+            "upstream_version": "2.138",
             "versions": []
           },
           "fonts_terminus": {
@@ -6377,7 +6445,6 @@
             "default": false,
             "description": "fixed-width bitmap fonts with the supplied ISO-8859 variants",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "terminus-font.lha",
               "hash": "d0a89dcddb076364f856e4c9a216b4d1",
@@ -6393,6 +6460,7 @@
             "install": [
               {
                 "from": "terminus-font/Fonts/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6406,10 +6474,10 @@
             "name": "fonts_terminus",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_topazpro": {
@@ -6419,7 +6487,6 @@
             "default": false,
             "description": "Topaz redrawn for square pixels, size 16",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "dS-tpro.lha",
               "hash": "8f9dd915e3360cd1531c6de36291b433",
@@ -6435,6 +6502,7 @@
             "install": [
               {
                 "from": "dS!-tpro/TopazPro*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6448,10 +6516,10 @@
             "name": "fonts_topazpro",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "fonts_vera": {
@@ -6461,7 +6529,6 @@
             "default": false,
             "description": "Vera Sans, Serif and Sans Mono, including supplied styles",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ttf-bitstream-vera-1.10.zip",
               "hash": "ff1b2d3037c1dc369595fb719c296960",
@@ -6477,6 +6544,7 @@
             "install": [
               {
                 "from": "ttf-bitstream-vera-1.10/*.ttf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6490,12 +6558,12 @@
             "name": "fonts_vera",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "ttflib"
             ],
             "scripts": [],
+            "upstream_version": "1.10",
             "versions": []
           },
           "genet_config": {
@@ -6505,7 +6573,6 @@
             "default": false,
             "description": "roadshow config for genet",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -6521,6 +6588,7 @@
             "install": [
               {
                 "from": "System/Devs/NetInterfaces/genet",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6534,12 +6602,12 @@
             "name": "genet_config",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "ethernet_driver"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6555,7 +6623,6 @@
             "default": true,
             "description": "ethernet driver (Pi4/CM4) - polled IO, last release before the gic400.library dependency",
             "download": {
-              "backup_url": null,
               "check_latest_release": false,
               "filename": "genet.device",
               "hash": "263F49B359C8E8D65A7EF59C14A2E943",
@@ -6573,6 +6640,7 @@
             "install": [
               {
                 "from": "genet.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6588,10 +6656,10 @@
               "ethernet_driver"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6607,7 +6675,6 @@
             "default": false,
             "description": "pixel graphics application layer (68040/fpu build)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "guigfxlib.lha",
               "hash": "AA83710882AC07BC10A7C4485372D549",
@@ -6623,6 +6690,7 @@
             "install": [
               {
                 "from": "libs/guigfx.library_68040",
+                "patch": [],
                 "recursive": false,
                 "rename": "guigfx.library",
                 "stack": null,
@@ -6636,10 +6704,69 @@
             "name": "guigfx",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "hatcher_prefs": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "network settings window: connect, disconnect, WiFi password, addresses",
+            "download": {
+              "check_latest_release": true,
+              "filename": "Hatcher-Prefs.lha",
+              "hash": null,
+              "path": "Hatcher-Prefs.lha",
+              "repo": null,
+              "source": "local",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Hatcher Prefs",
+            "group": "Utilities",
+            "install": [
+              {
+                "from": "Hatcher-Prefs/Hatcher-Prefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "Hatcher-Prefs",
+                "patch": [],
+                "recursive": true,
+                "rename": null,
+                "stack": null,
+                "to": "Emu68-Hatcher/Tools/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "hatcher_prefs",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui"
+            ],
+            "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6655,7 +6782,6 @@
             "default": false,
             "description": "mouse wheel support (firmware 3.0.0+)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Hid2Ami.lha",
               "hash": "A502D5E9F4AE2E71F036157C441EF92F",
@@ -6671,6 +6797,13 @@
             "install": [
               {
                 "from": "Hid2Ami/HID2AmiDriver",
+                "patch": [
+                  {
+                    "expect": 0,
+                    "offset": 4529,
+                    "value": 246
+                  }
+                ],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6684,7 +6817,6 @@
             "name": "hid2ami",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -6695,6 +6827,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6710,7 +6843,6 @@
             "default": true,
             "description": "MOD and other tracker module player",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "hippoplayer.lha",
               "hash": "aa28f29175d968c4f4ccfd5a6c4f7ce4",
@@ -6726,6 +6858,7 @@
             "install": [
               {
                 "from": "HippoPlayer/HiP",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6734,6 +6867,7 @@
               },
               {
                 "from": "HippoPlayer/HiP.*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6742,6 +6876,7 @@
               },
               {
                 "from": "HippoPlayer/HippoPlayer.PS3M",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6750,6 +6885,7 @@
               },
               {
                 "from": "HippoSupport/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6758,6 +6894,7 @@
               },
               {
                 "from": "HippoSupport/Libs/octa*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6766,6 +6903,7 @@
               },
               {
                 "from": "HippoSupport/Libs/m*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6785,10 +6923,10 @@
             "name": "hippoplayer",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6804,7 +6942,6 @@
             "default": true,
             "description": "hippoplayer update",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "hippoplayerupdate.lha",
               "hash": "8D3609208F67515108C269EFD34664A4",
@@ -6820,6 +6957,7 @@
             "install": [
               {
                 "from": "HiP",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6828,6 +6966,7 @@
               },
               {
                 "from": "HippoPlayer.group",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6836,6 +6975,7 @@
               },
               {
                 "from": "playsid.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6849,10 +6989,10 @@
             "name": "hippoplayerupdate",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -6868,7 +7008,6 @@
             "default": true,
             "description": "web browser (demo)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "IBrowse-OS3.lha",
               "hash": "E448F1B7E46034A5D2DBCB464C9A7268",
@@ -6884,6 +7023,7 @@
             "install": [
               {
                 "from": "IBrowse*.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "IBrowse.info",
                 "stack": null,
@@ -6892,6 +7032,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Catalogs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6900,6 +7041,7 @@
               },
               {
                 "from": "IBrowse*-OS3/codecs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6908,6 +7050,7 @@
               },
               {
                 "from": "IBrowse*-OS3/codecs040fpu/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6916,6 +7059,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ibcc/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6924,6 +7068,7 @@
               },
               {
                 "from": "IBrowse*-OS3/images/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6932,6 +7077,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Anims/TransferAnimation.24",
+                "patch": [],
                 "recursive": false,
                 "rename": "TransferAnimation",
                 "stack": null,
@@ -6940,6 +7086,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Anims/TransferAnimation",
+                "patch": [],
                 "recursive": false,
                 "rename": "TransferAnimation",
                 "stack": null,
@@ -6948,6 +7095,7 @@
               },
               {
                 "from": "IBrowse*-OS3/info/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6956,6 +7104,7 @@
               },
               {
                 "from": "IBrowse*-OS3/protocols/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6964,6 +7113,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Icons/IBrowse.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6972,6 +7122,7 @@
               },
               {
                 "from": "IBrowse*-OS3/javascript/javascript.library.020",
+                "patch": [],
                 "recursive": false,
                 "rename": "javascript.library",
                 "stack": null,
@@ -6980,6 +7131,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Plugins",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6988,6 +7140,7 @@
               },
               {
                 "from": "IBrowse*-OS3/mui/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -6996,6 +7149,7 @@
               },
               {
                 "from": "IBrowse*-OS3/spatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7004,6 +7158,7 @@
               },
               {
                 "from": "IBrowse*-OS3/Cache",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7012,6 +7167,7 @@
               },
               {
                 "from": "IBrowse*-OS3/history.txt",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7020,6 +7176,7 @@
               },
               {
                 "from": "IBrowse*-OS3/IBrowse",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7028,6 +7185,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.html",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7036,6 +7194,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.html.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7044,6 +7203,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.mui",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7052,6 +7212,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.mui.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7060,6 +7221,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.txt",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7068,6 +7230,7 @@
               },
               {
                 "from": "IBrowse*-OS3/ReadMe.txt.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7087,13 +7250,13 @@
             "name": "ibrowse",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui",
               "amissl"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7109,7 +7272,6 @@
             "default": false,
             "description": "icon.library replacement",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Iconlib.lha",
               "hash": "FCFDF3A09F7D8507AEEF904BDAD03F82",
@@ -7125,6 +7287,7 @@
             "install": [
               {
                 "from": "IconLib_*/ThirdParty/RemLib/RemLib",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7133,6 +7296,7 @@
               },
               {
                 "from": "IconLib_*/Libs/icon.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7146,10 +7310,10 @@
             "name": "iconlib",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": "46.4",
             "versions": [
               "3.1",
               "3.2",
@@ -7165,7 +7329,6 @@
             "default": true,
             "description": "hardware/board identification librray",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "IdentifyUsr.lha",
               "hash": "F8BD9FEB9FA595BEA979755224D08C5C",
@@ -7181,6 +7344,7 @@
             "install": [
               {
                 "from": "Identify/libs/rexxidentify.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7189,6 +7353,7 @@
               },
               {
                 "from": "Identify/libs/identify.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7202,10 +7367,10 @@
             "name": "identify",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7221,7 +7386,6 @@
             "default": true,
             "description": "commodore installer utility",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Installer-43_3.lha",
               "hash": "B22CD3A6A6CBE7D8A44BD7853ABB56E9",
@@ -7237,6 +7401,7 @@
             "install": [
               {
                 "from": "Installer43_3/Installer",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7250,10 +7415,10 @@
             "name": "installer",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7269,7 +7434,6 @@
             "default": true,
             "description": "text editor",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "JanoEditor.lha",
               "hash": "f7ad33f8c8374ccb8b9488f571ff76f5",
@@ -7285,6 +7449,7 @@
             "install": [
               {
                 "from": "Jano_v*/Jano*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7304,12 +7469,12 @@
             "name": "janoeditor",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "wbrun"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7325,7 +7490,6 @@
             "default": true,
             "description": "LHA/LZH archiver",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "lha_68k.lha",
               "hash": "b027204c48dfde2b653dadb598124e28",
@@ -7341,6 +7505,7 @@
             "install": [
               {
                 "from": "lha_68040",
+                "patch": [],
                 "recursive": false,
                 "rename": "LHA",
                 "stack": null,
@@ -7354,10 +7519,10 @@
             "name": "lha",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7373,7 +7538,6 @@
             "default": true,
             "description": "LZX archiver",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "lzx121r1.lha",
               "hash": "13A4E1947DBFBBA7728B2DCBAF690FE9",
@@ -7389,6 +7553,7 @@
             "install": [
               {
                 "from": "LZX_68040r",
+                "patch": [],
                 "recursive": false,
                 "rename": "LZX",
                 "stack": null,
@@ -7397,6 +7562,7 @@
               },
               {
                 "from": "LZX.Keyfile",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7410,10 +7576,10 @@
             "name": "lzx",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7429,7 +7595,6 @@
             "default": false,
             "description": "intuition menu enhancer 3.1 - pop-up, sticky and transparent menus",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MagicMenu_3.1.lha",
               "hash": "4539081FCE7789F11374B07F99915AE1",
@@ -7445,6 +7610,7 @@
             "install": [
               {
                 "from": "MagicMenu/WBStartup/MagicMenu",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7453,6 +7619,7 @@
               },
               {
                 "from": "MagicMenu/Icons/DualPNG/MagicMenu.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7461,6 +7628,7 @@
               },
               {
                 "from": "MagicMenu/Prefs/MagicMenuPrefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7469,6 +7637,7 @@
               },
               {
                 "from": "MagicMenu/Icons/DualPNG/MagicMenuPrefs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7477,6 +7646,7 @@
               },
               {
                 "from": "MagicMenu/Catalogs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7490,12 +7660,12 @@
             "name": "magicmenu",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": "3.1",
             "versions": [
               "3.1",
               "3.2",
@@ -7511,7 +7681,6 @@
             "default": false,
             "description": "default magicmenu prefs - gives it a saved config so it starts silently",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -7527,6 +7696,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/MagicMenu.prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7540,10 +7710,10 @@
             "name": "magicmenu_prefs",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7559,7 +7729,6 @@
             "default": true,
             "description": "MUI BetterString class (+HotkeyString)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MCC_BetterString_68k.lha",
               "hash": "B3BA21A971C23D108DF239FF6461AABE",
@@ -7575,6 +7744,7 @@
             "install": [
               {
                 "from": "BetterString.mcc",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7583,6 +7753,7 @@
               },
               {
                 "from": "BetterString.mcp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7591,6 +7762,7 @@
               },
               {
                 "from": "HotkeyString.mcc",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7604,12 +7776,12 @@
             "name": "mcc_betterstring",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7625,7 +7797,6 @@
             "default": true,
             "description": "MUI NList classes",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MCC_NList-0.128.lha",
               "hash": "A8F6DE36C1F51CEA237D31F0482A2B38",
@@ -7641,6 +7812,7 @@
             "install": [
               {
                 "from": "MCC_NList/Libs/MUI/AmigaOS3/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7654,12 +7826,12 @@
             "name": "mcc_nlist",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": "0.128",
             "versions": [
               "3.1",
               "3.2",
@@ -7675,7 +7847,6 @@
             "default": true,
             "description": "MUI Popplaceholder class",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MCC_Popph.lha",
               "hash": "B68A9E8508EBF3378A9C97F412C9DFE9",
@@ -7691,6 +7862,7 @@
             "install": [
               {
                 "from": "MCC_Popph/Libs/mui/Popplaceholder.mcc",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7704,12 +7876,12 @@
             "name": "mcc_popph",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7725,7 +7897,6 @@
             "default": true,
             "description": "MUI TextEditor class",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MCC_TextEditor_68k.lha",
               "hash": "68C0FA74C26491E7344548357E6143D6",
@@ -7741,6 +7912,7 @@
             "install": [
               {
                 "from": "TextEditor.mcc",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7749,6 +7921,7 @@
               },
               {
                 "from": "TextEditor.mcp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7762,12 +7935,12 @@
             "name": "mcc_texteditor",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7783,7 +7956,6 @@
             "default": true,
             "description": "MUI Toolbar class",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MCC_Toolbar_68k.lha",
               "hash": "6F30A21696EBED522218AC066BBF9610",
@@ -7799,6 +7971,7 @@
             "install": [
               {
                 "from": "Toolbar.mcc",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7807,6 +7980,7 @@
               },
               {
                 "from": "Toolbar.mcp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7820,12 +7994,12 @@
             "name": "mcc_toolbar",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7843,7 +8017,6 @@
             "default": false,
             "description": "Miami Deluxe 1.0c TCP/IP stack with GENET and WifiPi profiles",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MiamiDx10cmain.lha",
               "hash": "C698B2E570254C6D6CB99A1A01FE5917",
@@ -7859,6 +8032,7 @@
             "install": [
               {
                 "from": "MiamiDx10_Install/main/Libs/plain.MiamiPanel",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7867,6 +8041,7 @@
               },
               {
                 "from": "MiamiDx10_Install/main/Libs/*.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7875,6 +8050,7 @@
               },
               {
                 "from": "MiamiDx10_Install/main/Mi*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7883,6 +8059,7 @@
               },
               {
                 "from": "MiamiDx10_Install/main/Icons/NewIcons/MiamiDx.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7898,7 +8075,6 @@
               "tcpip_stack"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "miamidx_mui",
@@ -7913,6 +8089,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7928,7 +8105,6 @@
             "default": false,
             "description": "MUI interface modules for MiamiDX",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MiamiDx10c-MUI.lha",
               "hash": "885BF8CB83BBA1FE7A587110E7BF1922",
@@ -7944,6 +8120,7 @@
             "install": [
               {
                 "from": "MiamiDx10_Install/MUI/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -7957,10 +8134,10 @@
             "name": "miamidx_mui",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -7974,9 +8151,8 @@
             "bundle": null,
             "conflicts": [],
             "default": false,
-            "description": "MiamiDX connection tools and GENET settings",
+            "description": "MiamiDX GENET settings and the Network Settings icon",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -7992,6 +8168,7 @@
             "install": [
               {
                 "from": "System/S/MiamiNetwork.rexx",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8000,6 +8177,7 @@
               },
               {
                 "from": "System/Prefs/Env-Archive/genet_Miami.prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": "genet.prefs",
                 "stack": null,
@@ -8007,15 +8185,8 @@
                 "xor": null
               },
               {
-                "from": "System/Utilities/MiamiDX Network Config",
-                "recursive": false,
-                "rename": "Network Config",
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Network Config.info",
+                "from": "System/Utilities/Network Settings",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8023,50 +8194,11 @@
                 "xor": null
               },
               {
-                "from": "System/Utilities/Connect MiamiDX WiFi",
-                "recursive": false,
-                "rename": "Connect WiFi",
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect WiFi.info",
+                "from": "System/Utilities/Network Settings.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect MiamiDX Ethernet",
-                "recursive": false,
-                "rename": "Connect Ethernet",
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect Ethernet.info",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Disconnect MiamiDX",
-                "recursive": false,
-                "rename": "Disconnect",
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Network Config.info",
-                "recursive": false,
-                "rename": "Disconnect.info",
-                "stack": null,
+                "stack": 65536,
                 "to": "Utilities/",
                 "xor": null
               }
@@ -8077,14 +8209,15 @@
             "name": "miamidx_support",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
+              "hatcher_prefs",
               "rexxreqtools",
               "ethernet_driver",
               "emu68_wifi"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -8100,7 +8233,6 @@
             "default": false,
             "description": "MPEG audio decoder library (MP3 playback)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "mpega_library.lha",
               "hash": "A4704A87E8A810978AAE55193631C7DB",
@@ -8116,6 +8248,7 @@
             "install": [
               {
                 "from": "mpega_library/libs/mpega020.library",
+                "patch": [],
                 "recursive": false,
                 "rename": "mpega.library",
                 "stack": null,
@@ -8129,10 +8262,10 @@
             "name": "mpega_library",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -8150,7 +8283,6 @@
             "default": true,
             "description": "magic user interface 3.8 GUI toolkit",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "mui38usr.lha",
               "hash": "04DF2D2C444A112C66D1B2CA593CB71A",
@@ -8166,6 +8298,7 @@
             "install": [
               {
                 "from": "MUI.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8174,6 +8307,7 @@
               },
               {
                 "from": "MUI/Docs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8182,6 +8316,7 @@
               },
               {
                 "from": "MUI/Libs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8190,6 +8325,7 @@
               },
               {
                 "from": "MUI/Rexx/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8198,6 +8334,7 @@
               },
               {
                 "from": "MUI/Presets/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8206,6 +8343,7 @@
               },
               {
                 "from": "MUI/Patterns/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8214,6 +8352,7 @@
               },
               {
                 "from": "MUI/Icons/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8222,6 +8361,7 @@
               },
               {
                 "from": "MUI/Goodies/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8230,6 +8370,7 @@
               },
               {
                 "from": "MUI/Images/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8238,6 +8379,7 @@
               },
               {
                 "from": "MUI/Docs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8246,6 +8388,7 @@
               },
               {
                 "from": "MUI/Goodies.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8254,6 +8397,7 @@
               },
               {
                 "from": "MUI/Icons.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8262,6 +8406,7 @@
               },
               {
                 "from": "MUI/Images.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8270,6 +8415,7 @@
               },
               {
                 "from": "MUI/Libs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8278,6 +8424,7 @@
               },
               {
                 "from": "MUI/LiesMich",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8286,6 +8433,7 @@
               },
               {
                 "from": "MUI/LiesMich.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8294,6 +8442,7 @@
               },
               {
                 "from": "MUI/MUI",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8302,6 +8451,7 @@
               },
               {
                 "from": "MUI/MUI.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8310,6 +8460,7 @@
               },
               {
                 "from": "MUI/Patterns.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8318,6 +8469,7 @@
               },
               {
                 "from": "MUI/Presets.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8326,6 +8478,7 @@
               },
               {
                 "from": "MUI/PSI",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8334,6 +8487,7 @@
               },
               {
                 "from": "MUI/PSI.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8342,6 +8496,7 @@
               },
               {
                 "from": "MUI/ReadMe",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8350,6 +8505,7 @@
               },
               {
                 "from": "MUI/ReadMe.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8358,6 +8514,7 @@
               },
               {
                 "from": "MUI/Rexx.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8373,7 +8530,6 @@
               "mui"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -8384,6 +8540,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -8401,7 +8558,6 @@
             "default": false,
             "description": "magic user interface 5.0 (68020+ successor to 3.8)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "MUI-5.0-20210831-os3.lha",
               "hash": "4886AB9FA684EDFD8E12F12A6CF9D91F",
@@ -8417,6 +8573,7 @@
             "install": [
               {
                 "from": "MUI.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8425,6 +8582,7 @@
               },
               {
                 "from": "MUI",
+                "patch": [],
                 "recursive": true,
                 "rename": null,
                 "stack": null,
@@ -8440,7 +8598,6 @@
               "mui"
             ],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -8451,6 +8608,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": "5.0-20210831",
             "versions": [
               "3.1",
               "3.2",
@@ -8464,9 +8622,8 @@
             "bundle": null,
             "conflicts": [],
             "default": false,
-            "description": "shared network settings and launchers",
+            "description": "shared network settings and the Network Settings icon",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -8477,11 +8634,12 @@
               "url": null
             },
             "emu68_versions": null,
-            "friendly_name": "Network Config",
+            "friendly_name": "Network Settings",
             "group": "System",
             "install": [
               {
                 "from": "System/S/NetworkConfig.rexx",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8489,7 +8647,8 @@
                 "xor": null
               },
               {
-                "from": "System/Utilities/Network Config",
+                "from": "System/Utilities/Network Settings",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -8497,42 +8656,11 @@
                 "xor": null
               },
               {
-                "from": "System/Utilities/Network Config.info",
+                "from": "System/Utilities/Network Settings.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect WiFi",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect WiFi.info",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect Ethernet",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Utilities/",
-                "xor": null
-              },
-              {
-                "from": "System/Utilities/Connect Ethernet.info",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
+                "stack": 65536,
                 "to": "Utilities/",
                 "xor": null
               }
@@ -8543,14 +8671,15 @@
             "name": "network_config",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
+              "hatcher_prefs",
               "rexxreqtools",
               "ethernet_driver",
               "emu68_wifi"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -8576,10 +8705,10 @@
             "name": "os_install",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -8605,10 +8734,10 @@
             "name": "os_install_locale_3_1",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1"
             ]
@@ -8630,10 +8759,10 @@
             "name": "os_install_locale_cz_czech",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2.3"
             ]
@@ -8655,10 +8784,10 @@
             "name": "os_install_locale_de_german",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8682,10 +8811,10 @@
             "name": "os_install_locale_dk_danish",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8709,10 +8838,10 @@
             "name": "os_install_locale_es_spanish",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8736,10 +8865,10 @@
             "name": "os_install_locale_fr_french",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8763,10 +8892,10 @@
             "name": "os_install_locale_gr_greek",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8790,10 +8919,10 @@
             "name": "os_install_locale_it_italian",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8817,10 +8946,10 @@
             "name": "os_install_locale_nl_dutch",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8844,10 +8973,10 @@
             "name": "os_install_locale_no_norwegian",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8871,10 +9000,10 @@
             "name": "os_install_locale_pl_polish",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8898,10 +9027,10 @@
             "name": "os_install_locale_pt_portuguese",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8925,10 +9054,10 @@
             "name": "os_install_locale_rs_serbian",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2.3"
             ]
@@ -8950,10 +9079,10 @@
             "name": "os_install_locale_ru_russian",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -8977,10 +9106,10 @@
             "name": "os_install_locale_se_swedish",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -9004,10 +9133,10 @@
             "name": "os_install_locale_tr_turkish",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -9031,10 +9160,10 @@
             "name": "os_install_locale_uk_english",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -9048,7 +9177,6 @@
             "default": true,
             "description": "PFS3 maintenance tools: pfsdoctor and setfnsize",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "PFS3_53.lha",
               "hash": "FEDAA397BDD9C593EF1EA7C2E86BFB33",
@@ -9064,6 +9192,7 @@
             "install": [
               {
                 "from": "PFS3/tools/setfnsize",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9072,6 +9201,7 @@
               },
               {
                 "from": "PFS3/tools/pfsdoctor",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9080,6 +9210,7 @@
               },
               {
                 "from": "PFS3/classes/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9093,10 +9224,10 @@
             "name": "pfs_additional_tools",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9107,12 +9238,11 @@
           },
           "picasso96": {
             "archive_package": null,
-            "bundle": "picasso96",
+            "bundle": null,
             "conflicts": [],
             "default": false,
             "description": "picasso96 driver (shareware)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Picasso96.lha",
               "hash": "16287F92CE6DDEA23F5456CEB4525189",
@@ -9128,6 +9258,7 @@
             "install": [
               {
                 "from": "Picasso96Install/Classes/DataTypes/picture.datatype",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9136,6 +9267,7 @@
               },
               {
                 "from": "Picasso96Install/Devs/Monitors/Picasso96.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "Videocore.info",
                 "stack": null,
@@ -9144,6 +9276,7 @@
               },
               {
                 "from": "Picasso96Install/Devs/Monitors/Picasso96",
+                "patch": [],
                 "recursive": false,
                 "rename": "Videocore",
                 "stack": null,
@@ -9152,6 +9285,7 @@
               },
               {
                 "from": "Picasso96Install/Devs/Monitors/Picasso96.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "uaegfx.info",
                 "stack": null,
@@ -9160,6 +9294,7 @@
               },
               {
                 "from": "Picasso96Install/Devs/Monitors/Picasso96",
+                "patch": [],
                 "recursive": false,
                 "rename": "uaegfx",
                 "stack": null,
@@ -9168,6 +9303,7 @@
               },
               {
                 "from": "Picasso96Install/Libs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9176,6 +9312,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/Picasso96Mode",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9184,6 +9321,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/Picasso96Mode.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9192,6 +9330,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/PVS",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9200,6 +9339,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/PVS.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9208,6 +9348,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/PVS.guide",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9216,6 +9357,7 @@
               },
               {
                 "from": "Picasso96Install/Prefs/PVS.guide.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9224,6 +9366,7 @@
               },
               {
                 "from": "Picasso96Install/Picasso96/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9232,6 +9375,7 @@
               },
               {
                 "from": "Picasso96Install/Picasso96.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9240,6 +9384,7 @@
               },
               {
                 "from": "Picasso96Install/prefs/P96Prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9248,6 +9393,7 @@
               },
               {
                 "from": "Picasso96Install/prefs/P96Prefs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9261,7 +9407,6 @@
             "name": "picasso96",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -9272,6 +9417,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9282,12 +9428,11 @@
           },
           "picasso96_disableamigablitter": {
             "archive_package": null,
-            "bundle": "picasso96",
+            "bundle": null,
             "conflicts": [],
             "default": false,
             "description": "disable amiga blitter under P96",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -9303,6 +9448,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/Picasso96/DisableAmigaBlitter",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9316,58 +9462,10 @@
             "name": "picasso96_disableamigablitter",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
-            "versions": [
-              "3.1",
-              "3.2",
-              "3.2.2.1",
-              "3.2.3",
-              "3.9"
-            ]
-          },
-          "picasso96settings": {
-            "archive_package": null,
-            "bundle": null,
-            "conflicts": [],
-            "default": false,
-            "description": "Picasso96 settings generated during configuration",
-            "download": {
-              "backup_url": null,
-              "check_latest_release": true,
-              "filename": null,
-              "hash": null,
-              "path": "System/Devs/Picasso96Settings",
-              "repo": null,
-              "source": "local",
-              "tag": null,
-              "url": null
-            },
-            "emu68_versions": null,
-            "friendly_name": "Picasso96",
-            "group": "RTG",
-            "install": [
-              {
-                "from": "System/Devs/Picasso96Settings",
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Devs/",
-                "xor": null
-              }
-            ],
-            "mandatory": true,
-            "menu_entries": [],
-            "menu_entry": null,
-            "name": "picasso96settings",
-            "provides": [],
-            "purchase_url": null,
-            "recommends": [],
-            "relocate": [],
-            "requires": [],
-            "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9383,7 +9481,6 @@
             "default": false,
             "description": "USB support for Pi4/CM4 ports",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "PoseidonV4.lha",
               "hash": "4209D5940A7FCD2F2744A80F1472D672",
@@ -9402,6 +9499,7 @@
             "install": [
               {
                 "from": "PoseidonV4/InstallData/Libs/poseidon.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9410,6 +9508,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/Libs/VHI/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9418,6 +9517,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/Classes/USB/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9426,6 +9526,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/Prefs/Trident",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9434,6 +9535,7 @@
               },
               {
                 "from": "PoseidonV4/Extra/MasonIcons.lha/MasonIcons/ColorIcons/Trident.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": 65536,
@@ -9442,6 +9544,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/Tools/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9450,6 +9553,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/Prefs/Presets/*",
+                "patch": [],
                 "recursive": true,
                 "rename": null,
                 "stack": null,
@@ -9458,6 +9562,7 @@
               },
               {
                 "from": "PoseidonV4/InstallData/PsdStackloader",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9471,7 +9576,6 @@
             "name": "poseidon",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "stackattack",
@@ -9486,6 +9590,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9501,7 +9606,6 @@
             "default": false,
             "description": "WirelessManager for wifipi.device",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "prism2v2.lha",
               "hash": "18EB7E3318659F77042A0C69F8A405FF",
@@ -9517,6 +9621,7 @@
             "install": [
               {
                 "from": "prism2v2/C/WirelessManager",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9525,6 +9630,7 @@
               },
               {
                 "from": "prism2v2/C/wpa_passphrase",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9538,10 +9644,10 @@
             "name": "prism2",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9557,7 +9663,6 @@
             "default": false,
             "description": "reboot command",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "reboot.lha",
               "hash": "95355F5C845088151874633164A95693",
@@ -9573,6 +9678,7 @@
             "install": [
               {
                 "from": "Reboot/Reboot",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9586,10 +9692,10 @@
             "name": "reboot",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9605,7 +9711,6 @@
             "default": false,
             "description": "low-level pixel rendering library (guigfx backend)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "renderlib.lha",
               "hash": "835201535B6B924FB4112BAD96AB157D",
@@ -9621,6 +9726,7 @@
             "install": [
               {
                 "from": "renderlib/libs/render.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9634,10 +9740,10 @@
             "name": "render",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9653,7 +9759,6 @@
             "default": true,
             "description": "reqtools requester library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ReqtoolsWide.lha",
               "hash": "7b146009ce6b99623d73a244a89b8c2a",
@@ -9669,6 +9774,7 @@
             "install": [
               {
                 "from": "reqtools.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9682,12 +9788,12 @@
             "name": "reqtools",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "reqtools_prefs"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9703,7 +9809,6 @@
             "default": false,
             "description": "default reqtools prefs",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -9719,6 +9824,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/ReqTools.prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9732,10 +9838,10 @@
             "name": "reqtools_prefs",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9751,7 +9857,6 @@
             "default": true,
             "description": "ARexx wrapper for reqtools.library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ReqToolsUsr.lha",
               "hash": "d2155055d235218d213b08743b334e6c",
@@ -9767,6 +9872,7 @@
             "install": [
               {
                 "from": "ReqTools/RexxReqTools/rexxreqtools.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9780,12 +9886,12 @@
             "name": "rexxreqtools",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "reqtools"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9801,7 +9907,6 @@
             "default": true,
             "description": "ARexx extension library",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": "7ABF177D07FEF0E41B80315E5C403E83",
@@ -9817,6 +9922,7 @@
             "install": [
               {
                 "from": "RexxTricks/Libs/rexxtricks.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9830,10 +9936,10 @@
             "name": "rexxtricks",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9849,7 +9955,6 @@
             "default": false,
             "description": "FTP/FTPS/SFTP client",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "RNOXfer_68k.lha",
               "hash": "CF4596EDFCB0CB2B6A65B02B87898396",
@@ -9865,6 +9970,7 @@
             "install": [
               {
                 "from": "RNOXfer_68k.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "RNOXfer.info",
                 "stack": null,
@@ -9873,6 +9979,7 @@
               },
               {
                 "from": "RNOXfer_68k/RNOXfer",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9881,6 +9988,7 @@
               },
               {
                 "from": "RNOXfer_68k/RNOXfer.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9889,6 +9997,7 @@
               },
               {
                 "from": "RNOXfer_68k/muiroyale.hwp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9897,6 +10006,7 @@
               },
               {
                 "from": "RNOXfer_68k/hurl.hwp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9905,6 +10015,7 @@
               },
               {
                 "from": "RNOXfer_68k/advanced.conf",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9913,6 +10024,7 @@
               },
               {
                 "from": "RNOXfer_68k/gfx/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9921,6 +10033,7 @@
               },
               {
                 "from": "RNOXfer_68k/ReadMe.txt",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9940,7 +10053,6 @@
             "name": "rnoxfer",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "mui",
@@ -9950,6 +10062,7 @@
               "amissl"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -9967,10 +10080,9 @@
             "default": true,
             "description": "TCP/IP stack (demo by default; full version when a Roadshow archive is configured)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Roadshow-Demo-1.15.lha",
-              "hash": "25471647C76D8EAB98F78D24945B3FC6",
+              "hash": null,
               "path": "Roadshow-Demo-1.15.lha",
               "repo": null,
               "source": "local",
@@ -9983,6 +10095,7 @@
             "install": [
               {
                 "from": "Roadshow*/Workbench/Storage/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9991,6 +10104,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Libs/bsdsocket.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -9999,6 +10113,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Libs/usergroup.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10007,6 +10122,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Devs/Internet/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10015,6 +10131,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Devs/Networks/ppp-ethernet.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10023,6 +10140,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Devs/Networks/ppp-serial.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10031,6 +10149,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/C/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10039,6 +10158,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Locale/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10047,6 +10167,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/Stop-Firewall",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10055,6 +10176,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/Start-Firewall",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10063,6 +10185,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/Network-Startup",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10071,6 +10194,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/Check-Firewall-Rules",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10079,6 +10203,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/IPF/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10087,6 +10212,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/S/PPP-Configurations/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10095,6 +10221,7 @@
               },
               {
                 "from": "Roadshow*/Documentation/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10103,6 +10230,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Storage/NetInterfaces/CNet16.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "wifipi.info",
                 "stack": null,
@@ -10111,6 +10239,7 @@
               },
               {
                 "from": "Roadshow*/Workbench/Storage/NetInterfaces/CNet16.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "genet.info",
                 "stack": null,
@@ -10119,6 +10248,7 @@
               },
               {
                 "from": "Roadshow-1.15/Workbench/Libs/020/bsdsocket.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10127,6 +10257,7 @@
               },
               {
                 "from": "Roadshow-1.15/Workbench/Devs/Networks/020/ppp-ethernet.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10135,6 +10266,7 @@
               },
               {
                 "from": "Roadshow-1.15/Workbench/Devs/Networks/020/ppp-serial.device",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10150,7 +10282,6 @@
               "tcpip_stack"
             ],
             "purchase_url": "https://www.amigashop.org/product_info.php?cPath=2_34&products_id=200&language=de",
-            "recommends": [],
             "relocate": [],
             "requires": [
               "genet_config",
@@ -10172,6 +10303,7 @@
                 "when_user_archive": true
               }
             ],
+            "upstream_version": "1.15",
             "versions": [
               "3.1",
               "3.2",
@@ -10187,7 +10319,6 @@
             "default": false,
             "description": "Roadshow performance settings and boot toggle",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -10203,6 +10334,7 @@
             "install": [
               {
                 "from": "System/S/RoadshowSettings",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10211,6 +10343,7 @@
               },
               {
                 "from": "System/S/Network-disabled",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10224,10 +10357,10 @@
             "name": "roadshow_tuning",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10243,7 +10376,6 @@
             "default": false,
             "description": "additional RTB file",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "7CitiesOfGold.lha",
               "hash": "66E9152B0CEABA95B2A2D957D66E4940",
@@ -10259,6 +10391,7 @@
             "install": [
               {
                 "from": "7CitiesOfGoldInstall/kick31034.A1000.RTB",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10272,10 +10405,10 @@
             "name": "rtb_file_7_cities_of_gold",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10291,7 +10424,6 @@
             "default": false,
             "description": "softkick RTB files for kickstart patching (WHDLoad)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "skick346.lha",
               "hash": "745EBF5A39D42E1B352A1FB914CFAB7A",
@@ -10307,6 +10439,7 @@
             "install": [
               {
                 "from": "Kickstarts/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10320,10 +10453,10 @@
             "name": "rtb_files_skick",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10339,7 +10472,6 @@
             "default": false,
             "description": "default screenmode.prefs",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -10355,6 +10487,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/Sys/screenmode.prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10368,10 +10501,10 @@
             "name": "screenprefs",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10387,7 +10520,6 @@
             "default": true,
             "description": "print text onto screen",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ScreenText.lha",
               "hash": "55EAC0A9583DC989A69DA48FC626DC6F",
@@ -10403,6 +10535,7 @@
             "install": [
               {
                 "from": "ScreenText",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10416,10 +10549,10 @@
             "name": "screentext",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10435,7 +10568,6 @@
             "default": false,
             "description": "DOSDriver for FAT32 boot partition",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -10451,6 +10583,7 @@
             "install": [
               {
                 "from": "System/Devs/DosDrivers/SD0pi3",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10459,6 +10592,7 @@
               },
               {
                 "from": "System/Devs/DosDrivers/SD0pi4",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10472,10 +10606,10 @@
             "name": "sd0_device",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10491,7 +10625,6 @@
             "default": true,
             "description": "Adjust the system clock for daylight saving time",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "SetDST.lha",
               "hash": "EF32E16790F81AAF5AB8DDC1A60E372B",
@@ -10507,6 +10640,7 @@
             "install": [
               {
                 "from": "SetDST-*/C/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10515,6 +10649,7 @@
               },
               {
                 "from": "SetDST-*/SetDST",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10528,7 +10663,6 @@
             "name": "setdst",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -10539,6 +10673,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10554,7 +10689,6 @@
             "default": false,
             "description": "setpatch 44.38 (OS bug fixes)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "SetPatch.lha",
               "hash": "B3FCB573BF33987C33E4C9415E3ED0BB",
@@ -10570,6 +10704,7 @@
             "install": [
               {
                 "from": "SetPatch",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10583,10 +10718,10 @@
             "name": "setpatch44_38",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1"
             ]
@@ -10598,7 +10733,6 @@
             "default": false,
             "description": "DOSDriver for SMB network shares (SMB0:)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -10614,6 +10748,7 @@
             "install": [
               {
                 "from": "System/Storage/DosDrivers/SMB0",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10627,10 +10762,10 @@
             "name": "smb0_device",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10646,7 +10781,6 @@
             "default": true,
             "description": "SMB/CIFS filesystem handler",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "smb2fs.m68k-amigaos.lha",
               "hash": "131156C5C3F56C4512A00743DE74FFB4",
@@ -10662,6 +10796,7 @@
             "install": [
               {
                 "from": "smb2fs/L/smb2-handler.020",
+                "patch": [],
                 "recursive": false,
                 "rename": "smb2-handler",
                 "stack": null,
@@ -10675,13 +10810,13 @@
             "name": "smbfs",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "filesysbox",
               "smb0_device"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10697,7 +10832,6 @@
             "default": true,
             "description": "system call viewer",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Snoopdos.lha",
               "hash": "2D214246781EB26B9536628BE9A6A0F9",
@@ -10713,6 +10847,7 @@
             "install": [
               {
                 "from": "*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10732,10 +10867,10 @@
             "name": "snoopdos",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10751,7 +10886,6 @@
             "default": true,
             "description": "SNTP time sync client",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "sntp.lha",
               "hash": "30409A06905519C006C8E88A771E0C32",
@@ -10767,6 +10901,7 @@
             "install": [
               {
                 "from": "sntp/sntp",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10780,10 +10915,10 @@
             "name": "sntp",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10799,7 +10934,6 @@
             "default": false,
             "description": "boot patch that enforces a minimum stack size for newly started processes",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "StackAttack2.lha",
               "hash": "D1E22C526BAEAA45F04992D6D99A4655",
@@ -10815,6 +10949,7 @@
             "install": [
               {
                 "from": "StackAttack",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10828,7 +10963,6 @@
             "name": "stackattack",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -10839,6 +10973,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -10854,7 +10989,6 @@
             "default": true,
             "description": "benchmarking program",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "SysInfo.lha",
               "hash": "8384493A31CF4C2A3F03FE51EF0341F7",
@@ -10870,6 +11004,7 @@
             "install": [
               {
                 "from": "SysInfo.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10878,6 +11013,7 @@
               },
               {
                 "from": "SysInfo/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10897,10 +11033,10 @@
             "name": "sysinfo",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": "4.4",
             "versions": [
               "3.1",
               "3.2",
@@ -10916,7 +11052,6 @@
             "default": true,
             "description": "Custom Workbench menus and preferences editor",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ToolsDaemon21a.lha",
               "hash": "ac84352f58beb2f564722b87c431dc20",
@@ -10932,6 +11067,7 @@
             "install": [
               {
                 "from": "ToolsDaemon/ToolsDaemon",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10940,6 +11076,7 @@
               },
               {
                 "from": "ToolsDaemon/ToolsDaemon.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10948,6 +11085,7 @@
               },
               {
                 "from": "ToolsDaemon/ToolsDaemon-handler",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10956,6 +11094,7 @@
               },
               {
                 "from": "ToolsDaemon/ToolsPrefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10964,6 +11103,7 @@
               },
               {
                 "from": "ToolsDaemon/ToolsPrefs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -10977,7 +11117,6 @@
             "name": "toolsdaemon",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "additem",
@@ -10986,6 +11125,7 @@
               "wbrun"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11001,7 +11141,6 @@
             "default": false,
             "description": "ToolsDaemon 2.2 binary updates",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ToolsDaemon22.lha",
               "hash": "79ef8ec1c9d6eff110dd838df9c6863e",
@@ -11021,10 +11160,10 @@
             "name": "toolsdaemon_patch",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11040,7 +11179,6 @@
             "default": false,
             "description": "TrueType font engine 0.8.5 for 68040+, installed with TrueType fonts",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "ttflib68040.lha",
               "hash": "11697f9995edb72c3439d810ca299c54",
@@ -11056,6 +11194,7 @@
             "install": [
               {
                 "from": "ttflib68040_0.85.lha/ttflib68040/ttf.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11064,6 +11203,7 @@
               },
               {
                 "from": "ttflib68040_0.85.lha/ttflib68040/ttfinstall",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11077,10 +11217,10 @@
             "name": "ttflib",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": []
           },
           "unzip": {
@@ -11090,7 +11230,6 @@
             "default": true,
             "description": "ZIP extractor",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Unzip552.lha",
               "hash": "A657AA4A7E323D504FBB0B7443292EE6",
@@ -11106,6 +11245,7 @@
             "install": [
               {
                 "from": "UnZIP*/UnZip",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11119,10 +11259,10 @@
             "name": "unzip",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11138,7 +11278,6 @@
             "default": true,
             "description": "console handler",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Vinced.lha",
               "hash": "CD5C624A0E5C10E211E9E189175F9D31",
@@ -11154,6 +11293,7 @@
             "install": [
               {
                 "from": "ViNCEd/LIBS/vnc.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11162,6 +11302,7 @@
               },
               {
                 "from": "ViNCEd/C/SetVNC.coded",
+                "patch": [],
                 "recursive": false,
                 "rename": "SetVNC",
                 "stack": null,
@@ -11170,6 +11311,7 @@
               },
               {
                 "from": "ViNCEd/DEVS/DOSDrivers/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11178,6 +11320,7 @@
               },
               {
                 "from": "ViNCEd/Shell_VNC.info",
+                "patch": [],
                 "recursive": false,
                 "rename": "Shell.info",
                 "stack": null,
@@ -11186,6 +11329,7 @@
               },
               {
                 "from": "ViNCEd/S/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11194,6 +11338,7 @@
               },
               {
                 "from": "ViNCEd/Prefs/SetVNC.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11202,6 +11347,7 @@
               },
               {
                 "from": "ViNCEd/Prefs/Env-Archive/XTerm.Prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": "ViNCEd.Prefs",
                 "stack": null,
@@ -11210,6 +11356,7 @@
               },
               {
                 "from": "ViNCEd/Guides/ViNCEd.guide",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11218,6 +11365,7 @@
               },
               {
                 "from": "ViNCEd/Guides/ViNCEd.guide.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11225,7 +11373,62 @@
                 "xor": null
               },
               {
-                "from": "ViNCEd/LOCALE/Catalogs/*",
+                "from": "ViNCEd/LOCALE/Catalogs/deutsch",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/Français",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/italiano",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/polski",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/slovensko",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/suomi",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "ViNCEd/LOCALE/Catalogs/svenska",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11234,6 +11437,7 @@
               },
               {
                 "from": "ViNCEd/Extras/StringSnip",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11242,6 +11446,7 @@
               },
               {
                 "from": "ViNCEd/Extras/TrueMultiAssigns",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11250,6 +11455,7 @@
               },
               {
                 "from": "ViNCEd/Extras/Fonts/topaz6.font",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11258,6 +11464,7 @@
               },
               {
                 "from": "ViNCEd/Extras/Fonts/topaz6/8e",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11277,7 +11484,6 @@
             "name": "vinced",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [
@@ -11288,6 +11494,7 @@
                 "when_user_archive": null
               }
             ],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11303,7 +11510,6 @@
             "default": false,
             "description": "run cli tools in workbench mode",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "WBRun_fix.lha",
               "hash": "88BA6BCF9106930B33ACC5DBD94A9A26",
@@ -11319,6 +11525,7 @@
             "install": [
               {
                 "from": "WBRun/WBRun",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11327,6 +11534,7 @@
               },
               {
                 "from": "WBRun/parm.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11340,10 +11548,10 @@
             "name": "wbrun",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11359,7 +11567,6 @@
             "default": true,
             "description": "runs amiga games+demos from HD",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Whdload_usr.lha",
               "hash": "C4292398CE6F49937FDDE67E5C2A6474",
@@ -11375,6 +11582,7 @@
             "install": [
               {
                 "from": "WHDLoad/C/WHDLoad",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11383,6 +11591,7 @@
               },
               {
                 "from": "WHDLoad/C/WHDLoad",
+                "patch": [],
                 "recursive": false,
                 "rename": "WHDLoad.ori",
                 "stack": null,
@@ -11391,6 +11600,7 @@
               },
               {
                 "from": "WHDLoad/C/WHDLoadCD32",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11399,6 +11609,7 @@
               },
               {
                 "from": "WHDLoad/C/RawDIC",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11407,6 +11618,7 @@
               },
               {
                 "from": "WHDLoad/C/DIC",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11415,6 +11627,7 @@
               },
               {
                 "from": "WHDLoad/C/Patcher",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11423,6 +11636,7 @@
               },
               {
                 "from": "WHDLoad/S/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11436,13 +11650,13 @@
             "name": "whdload",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "rtb_files_skick",
               "rtb_file_7_cities_of_gold"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11458,7 +11672,6 @@
             "default": true,
             "description": "emu68-specific WHDLoad wrapper (for compatibility)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "WHDLoadWrapper.lha",
               "hash": "B7BE793656776C8F7E3D153499E9FA1D",
@@ -11474,6 +11687,7 @@
             "install": [
               {
                 "from": "WHDLoadWrapper/C/Bplcon3Hack",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11482,6 +11696,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/checkagatest",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11490,6 +11705,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/CopyReplace",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11498,6 +11714,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/Emu68Downclocker",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11506,6 +11723,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/RemakeDisplay",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11514,6 +11732,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/ScreenText",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11522,6 +11741,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/tude",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11530,6 +11750,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/uae-configuration",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11538,6 +11759,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/WHDLoadWrapper",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11546,6 +11768,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/WHDMassUpdate",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11554,6 +11777,7 @@
               },
               {
                 "from": "WHDLoadWrapper/C/WHDLoadWrapper",
+                "patch": [],
                 "recursive": false,
                 "rename": "WHDLoad",
                 "stack": null,
@@ -11562,6 +11786,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/Updater/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11570,6 +11795,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/Execute31",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11578,6 +11804,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/StartupScript_Caffeine",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11586,6 +11813,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/StartupScript_NoScreenText",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11594,6 +11822,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/StartupScript_ScreenText",
+                "patch": [],
                 "recursive": false,
                 "rename": "StartupScript",
                 "stack": null,
@@ -11602,6 +11831,7 @@
               },
               {
                 "from": "WHDLoadWrapper/S/WHDLoad-Wrapper/UpdateDBs.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11610,6 +11840,7 @@
               },
               {
                 "from": "WHDLoadWrapper/DB/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11618,6 +11849,7 @@
               },
               {
                 "from": "WHDLoadWrapper/DB-General/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11631,14 +11863,72 @@
             "name": "whdloadwrapper",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "whdload",
               "emu68_control",
-              "screentext"
+              "screentext",
+              "whdloadwrapper_config"
             ],
             "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "whdloadwrapper_config": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "wrapper updater kept offline, plus the on/off switch script",
+            "download": {
+              "check_latest_release": true,
+              "filename": null,
+              "hash": null,
+              "path": null,
+              "repo": null,
+              "source": "local",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "WHDLoadWrapper Config",
+            "group": "System",
+            "install": [
+              {
+                "from": "System/S/WHDLoad-Wrapper/Updater/WHDUpdate.conf",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "S/WHDLoad-Wrapper/Updater/",
+                "xor": null
+              },
+              {
+                "from": "System/S/WHDLoadWrapper-Switch",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "S/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "whdloadwrapper_config",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11654,7 +11944,6 @@
             "default": false,
             "description": "WiFi credentials config (Pi4/CM4)",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -11670,6 +11959,7 @@
             "install": [
               {
                 "from": "System/Devs/NetInterfaces/wifipi",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11683,12 +11973,12 @@
             "name": "wifipi_config",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [
               "emu68_wifi"
             ],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11704,7 +11994,6 @@
             "default": false,
             "description": "arrange windows with hotkeys",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "WinZoom.lha",
               "hash": "966B1A30E214B6C89AA84965D45ABFA8",
@@ -11720,6 +12009,7 @@
             "install": [
               {
                 "from": "WinZoom/WinZoom",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11728,6 +12018,7 @@
               },
               {
                 "from": "WinZoom/WinZoom.info",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11736,6 +12027,7 @@
               },
               {
                 "from": "WinZoom/Catalogs/dansk/WinZoom.catalog",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11744,6 +12036,7 @@
               },
               {
                 "from": "WinZoom/Catalogs/deutsch/WinZoom.catalog",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11752,6 +12045,7 @@
               },
               {
                 "from": "WinZoom/Catalogs/russian/WinZoom.catalog",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11765,10 +12059,10 @@
             "name": "winzoom",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11784,7 +12078,6 @@
             "default": false,
             "description": "workbench.library replacement",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "WorkbenchLibrary.lha",
               "hash": "401059CD24DFD9C196BDDA7F2293276C",
@@ -11800,6 +12093,7 @@
             "install": [
               {
                 "from": "Workbench.library",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11813,10 +12107,10 @@
             "name": "workbench_library",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1"
             ]
@@ -11828,7 +12122,6 @@
             "default": false,
             "description": "default workbench prefs",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": null,
               "hash": null,
@@ -11844,6 +12137,7 @@
             "install": [
               {
                 "from": "System/Prefs/Env-Archive/Sys/Workbench.prefs",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11857,10 +12151,10 @@
             "name": "workbench_prefs",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -11875,7 +12169,6 @@
             "default": true,
             "description": "archive handler framework",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "xadmaster020.lha",
               "hash": "38C003269BECBF309108BF1C86E0C688",
@@ -11891,6 +12184,7 @@
             "install": [
               {
                 "from": "xad/C/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11899,6 +12193,7 @@
               },
               {
                 "from": "xad/Libs/xad/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11907,6 +12202,7 @@
               },
               {
                 "from": "xad/Libs/xadmast*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11920,10 +12216,10 @@
             "name": "xadmaster",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11939,7 +12235,6 @@
             "default": true,
             "description": "XPK compression framework",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "xpk_User.lha",
               "hash": "e00729e65dac3c7bbfac01ab032d7e5d",
@@ -11955,6 +12250,7 @@
             "install": [
               {
                 "from": "xpk_User/Libs/*",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -11968,10 +12264,10 @@
             "name": "xpk",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -11987,7 +12283,6 @@
             "default": true,
             "description": "ZIP archiver",
             "download": {
-              "backup_url": null,
               "check_latest_release": true,
               "filename": "Zip232.lha",
               "hash": "089E815D495A5A3B374C0E6BF0E80E58",
@@ -12003,6 +12298,7 @@
             "install": [
               {
                 "from": "ZIP*/Zip",
+                "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
@@ -12016,10 +12312,10 @@
             "name": "zip",
             "provides": [],
             "purchase_url": null,
-            "recommends": [],
             "relocate": [],
             "requires": [],
             "scripts": [],
+            "upstream_version": null,
             "versions": [
               "3.1",
               "3.2",
@@ -12029,58 +12325,58 @@
             ]
           }
         },
-        "revision": 20,
-        "source_commit": "358d6921d1cdb187c4d669d461eedd52731e6fd6"
+        "revision": 1,
+        "source_commit": "ea9087e4cea56b5b90da8ab2ffeb31b32827efb3"
       }
     ],
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.2.2-linux-arm64.deb",
-          "sha256": "802895bf41ff3d59779c6b950f8fa06880be2c24975524312df5e419723e9374",
-          "size": 71187260,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-linux-arm64.deb"
+          "filename": "emu68hatcher-1.3.0-linux-arm64.deb",
+          "sha256": "fde37ed11887ff5c6ea935d8b7c1621e18778c5e6aa6e4e7538f7c8799bc9979",
+          "size": 69357724,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.2.2-linux-x64.deb",
-          "sha256": "076ca7afb4e91dd70e39d892c87cf2656b0922c391564b841ec06771be0a8062",
-          "size": 75647764,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-linux-x64.deb"
+          "filename": "emu68hatcher-1.3.0-linux-x64.deb",
+          "sha256": "80067bf520b4feebfcb6830a7aa64d3fda3d2e9b4aa451e644eea0a1af05cbf4",
+          "size": 73572416,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.2.2-macos-arm64.dmg",
-          "sha256": "a39341c07abca7aef63fe336fdec8ced1485e77377aef5930ad9e80e6a18f34a",
-          "size": 37223678,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.3.0-macos-arm64.dmg",
+          "sha256": "d0e5493ff184c6852dd4ff6d624e3c943bb009dec2470f9175c98879e2c387d0",
+          "size": 35137413,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.2.2-macos-x64.dmg",
-          "sha256": "13b9dce2970261cf552d312d85ab307cde72cb2b788f93913704e1f7d9a8ad3c",
-          "size": 39329603,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-macos-x64.dmg"
+          "filename": "emu68hatcher-1.3.0-macos-x64.dmg",
+          "sha256": "f693b7056efd37fd81f59333b7a34768e429b71df6b0b6774e73599e14512f9f",
+          "size": 37231210,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.2.2-windows-arm64.exe",
-          "sha256": "4d34fac2ced5ca7cadd89ecc80c0484e0d82104246cf9d20e4d101b2222d9bb9",
-          "size": 41483660,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-windows-arm64.exe"
+          "filename": "emu68hatcher-1.3.0-windows-arm64.exe",
+          "sha256": "25bfbfd5cf4be2a03a7929aa61260ba51bb21d8fe8321fe1d1cf6f813a29bd18",
+          "size": 39135917,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.2.2-windows-x64.exe",
-          "sha256": "5dbdfdaae31153027dba7dd1df251bf68c8cd87c1a1be5cf774fa0071f16f683",
-          "size": 52086158,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.2.2/emu68hatcher-1.2.2-windows-x64.exe"
+          "filename": "emu68hatcher-1.3.0-windows-x64.exe",
+          "sha256": "a996fbbe4b4a08d16d8e66c20518b29a23d1e2fc97eef6b4922a4255ba702202",
+          "size": 49995724,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.0/emu68hatcher-1.3.0-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.2.2",
-      "version": "1.2.2"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.3.0",
+      "version": "1.3.0"
     },
-    "revision": 1792245560,
+    "revision": 1792612436,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "Mg8pS2Gr2Kmfn6KsLjEsJkGIoHNkRupwHz/q0/1iXBbaY53M7qxCFN+e708I7YX6bivdRytuJIqyOUBrbu71Aw=="
+    "value": "JktAChFaDp7cL/8bGey8YbyDGw/KKR6aC89bWYRnkff1O9T/ljkHoU4XGetqcT4a3AQJav3I4M+kirLkMJ91Cg=="
   }
 }
