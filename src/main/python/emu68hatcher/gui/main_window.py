@@ -70,7 +70,10 @@ class MainWindow(QMainWindow):
         self.controller = ConfigurationController(self)
         self.storage_controller = StorageController(self)
         self.setup_ui()
-        QApplication.instance().paletteChanged.connect(self._refresh_design)
+        app = QApplication.instance()
+        app.paletteChanged.connect(self._refresh_design)
+        # here and not in launch_gui: the frozen app builds the window from app.py
+        app.installEventFilter(_WheelGuard(app))
         self.resize(1200, 800)
         QTimer.singleShot(0, self.start_tab.check_for_updates)
 
@@ -490,8 +493,6 @@ class _WheelGuard(QObject):
 def launch_gui():
     app = QApplication(sys.argv)
     app.setApplicationName("Emu68 Hatcher")
-    wheel_guard = _WheelGuard(app)
-    app.installEventFilter(wheel_guard)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
