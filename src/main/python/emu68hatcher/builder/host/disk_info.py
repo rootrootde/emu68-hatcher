@@ -8,7 +8,6 @@ class DiskInfo:
     device: str
     name: str
     size_bytes: int
-    is_removable: bool
     is_system_disk: bool
     mounted_partitions: list[str] = field(default_factory=list)
     is_read_only: bool = False

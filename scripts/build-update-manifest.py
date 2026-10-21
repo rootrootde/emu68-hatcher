@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add the latest release artifacts to a manifest payload."""
+"""Build the update payloads: one signed catalog for the latest released version."""
 
 import argparse
 import hashlib
@@ -9,19 +9,16 @@ import subprocess
 import time
 from pathlib import Path
 
-from emu68hatcher.data.catalog import DATA_DIR, load_catalog_source, read_catalog_yaml
+from emu68hatcher import __version__
+from emu68hatcher.data.catalog import DATA_DIR, load_catalog_source
 from emu68hatcher.data.catalog_manifest import (
+    CATALOG_SCHEMA_VERSION,
     CatalogRelease,
-    CatalogTarget,
+    catalog_id,
     validate_client_catalog,
 )
-from emu68hatcher.data.update_manifest import (
-    _MAX_MANIFEST_BYTES,
-    UpdateManifestV1,
-    UpdateManifestV2,
-    verify_manifest_bytes,
-)
-from pydantic import BaseModel, ConfigDict, Field
+from emu68hatcher.data.manifest_models import UpdateManifestV1, UpdateManifestV2
+from emu68hatcher.data.manifest_signing import MAX_MANIFEST_BYTES, verify_manifest_bytes
 
 _ARTIFACT_RE = re.compile(
     r"^emu68hatcher-(?P<version>.+)-(?P<platform>"
@@ -81,29 +78,7 @@ def _release_payload(release: dict, asset_dir: Path) -> dict:
     }
 
 
-class PublishTarget(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    target: CatalogTarget
-    close_ranges: dict[str, str] = Field(default_factory=dict)
-    legacy_hash_updates: list[str] = Field(default_factory=list)
-
-
-def refresh_legacy_hashes(legacy: UpdateManifestV1, catalog, names: list[str]) -> UpdateManifestV1:
-    fields = legacy.model_dump(mode="json", exclude_none=True)
-    for name in names:
-        old = fields["packages"].get(name)
-        package = catalog.packages.get(name)
-        if old is None or package is None or package.download is None:
-            raise ValueError(f"unknown legacy download override: {name}")
-        current = package.download.model_dump(mode="json", exclude_none=True)
-        if any(current.get(key) != value for key, value in old.items() if key != "hash"):
-            raise ValueError(f"legacy download source changed: {name}")
-        old["hash"] = current["hash"]
-    return UpdateManifestV1.model_validate(fields)
-
-
 def build_catalog_manifest(
-    target_config,
     previous,
     *,
     revision,
@@ -112,45 +87,37 @@ def build_catalog_manifest(
     packages_dir=DATA_DIR / "packages",
     reference_dir=None,
 ):
-    config = PublishTarget.model_validate(target_config)
-    if config.target.catalog_schema_version != 1:
-        raise ValueError("generator supports catalog schema 1 only")
-    catalogs = []
-    previous_revision = previous.revision if previous else 0
-    if revision <= previous_revision:
+    version = release["version"]
+    if version != __version__:
+        raise ValueError(
+            f"checkout version {__version__} is not the latest published release {version}; "
+            "publish from that release's branch"
+        )
+    if previous and revision <= previous.revision:
         raise ValueError("publication revision must increase")
-    previous_catalogs = {c.id: c for c in previous.catalogs} if previous else {}
-    unknown = config.close_ranges.keys() - previous_catalogs.keys()
-    if unknown:
-        raise ValueError(f"cannot close unknown ranges: {sorted(unknown)}")
-    for old in previous_catalogs.values():
-        if old.id == config.target.id:
-            continue
-        if old.id in config.close_ranges:
-            fields = old.model_dump(mode="json")
-            fields["max_hatcher_version_exclusive"] = config.close_ranges[old.id]
-            if fields["max_hatcher_version_exclusive"] != old.max_hatcher_version_exclusive:
-                fields["revision"] = old.revision + 1
-            old = CatalogRelease.model_validate(fields)
-        catalogs.append(old)
+    # the catalog revision counts the publications for one version; the Amiga tools read it
+    old = None
+    if previous:
+        old = next((c for c in previous.catalogs if c.id == catalog_id(version)), None)
     data = load_catalog_source(packages_dir, reference_dir)
-    old = previous_catalogs.get(config.target.id)
-    if old and old.min_hatcher_version != config.target.min_hatcher_version:
-        raise ValueError("a new lower version bound needs a new catalog id")
     catalog = CatalogRelease(
-        **config.target.model_dump(),
-        revision=(old.revision + 1 if old else 1),
+        id=catalog_id(version),
+        min_hatcher_version=version,
+        catalog_schema_version=CATALOG_SCHEMA_VERSION,
+        revision=old.revision + 1 if old else 1,
         source_commit=source_commit,
         **data.model_dump(mode="json", by_alias=True),
     )
     validate_client_catalog(catalog.snapshot())
-    catalogs.append(catalog)
     return UpdateManifestV2(
-        schema_version=2,
-        revision=revision,
-        hatcher=release,
-        catalogs=sorted(catalogs, key=lambda c: c.id),
+        schema_version=2, revision=revision, hatcher=release, catalogs=[catalog]
     )
+
+
+def build_legacy_manifest(previous, *, revision, release):
+    # 1.0 clients read the release block; their download overrides stay as last published
+    packages = previous.packages if previous else {}
+    return UpdateManifestV1(schema_version=1, revision=revision, hatcher=release, packages=packages)
 
 
 def _previous(path, expected_schema):
@@ -177,7 +144,7 @@ def _write_payload(path, manifest):
         "signature": {"algorithm": "ed25519", "key_id": "updates-2026", "value": "A" * 88},
     }
     signed_size = len((json.dumps(envelope, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
-    if signed_size > _MAX_MANIFEST_BYTES:
+    if signed_size > MAX_MANIFEST_BYTES:
         raise ValueError("generated manifest exceeds client size limit")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8", newline="\n")
@@ -186,14 +153,10 @@ def _write_payload(path, manifest):
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
-    parser.add_argument("--target", type=Path, default=Path("updates/catalog-target.yaml"))
     parser.add_argument("--packages-dir", type=Path, default=DATA_DIR / "packages")
     parser.add_argument("--reference-dir", type=Path)
     parser.add_argument("--previous-v2", type=Path)
     parser.add_argument("--previous-v1", type=Path)
-    parser.add_argument(
-        "--legacy-source", type=Path, default=Path("updates/legacy-manifest-source.json")
-    )
     parser.add_argument("--legacy-output", type=Path, required=True)
     parser.add_argument("--release-json", type=Path, required=True)
     parser.add_argument("--asset-dir", type=Path, required=True)
@@ -201,21 +164,17 @@ def main() -> int:
     args = parser.parse_args()
 
     previous = _previous(args.previous_v2, 2)
-    legacy = _previous(args.previous_v1, 1) or UpdateManifestV1.model_validate(
-        json.loads(args.legacy_source.read_text(encoding="utf-8"))
+    legacy_previous = _previous(args.previous_v1, 1)
+    floor = max(
+        previous.revision + 1 if previous else 1,
+        legacy_previous.revision + 1 if legacy_previous else 1,
     )
-    revision = (
-        args.revision
-        if args.revision is not None
-        else max(int(time.time()), (previous.revision + 1 if previous else 1), legacy.revision + 1)
-    )
-    if revision <= legacy.revision:
-        raise ValueError("legacy publication revision must increase")
+    revision = args.revision if args.revision is not None else max(int(time.time()), floor)
+    if revision < floor:
+        raise ValueError("publication revision must increase")
     release = _release_payload(_release_from_json(args.release_json), args.asset_dir)
     source_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    target_config = read_catalog_yaml(args.target)
     manifest = build_catalog_manifest(
-        target_config,
         previous,
         revision=revision,
         source_commit=source_commit,
@@ -223,15 +182,7 @@ def main() -> int:
         packages_dir=args.packages_dir,
         reference_dir=args.reference_dir,
     )
-    target = PublishTarget.model_validate(target_config)
-    legacy = refresh_legacy_hashes(
-        legacy,
-        load_catalog_source(args.packages_dir, args.reference_dir),
-        target.legacy_hash_updates,
-    )
-    legacy_fields = legacy.model_dump(mode="json")
-    legacy_fields.update(revision=revision, hatcher=release)
-    legacy = UpdateManifestV1.model_validate(legacy_fields)
+    legacy = build_legacy_manifest(legacy_previous, revision=revision, release=release)
     _write_payload(args.output, manifest)
     _write_payload(args.legacy_output, legacy)
     return 0

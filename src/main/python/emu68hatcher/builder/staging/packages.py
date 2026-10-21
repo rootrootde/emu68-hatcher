@@ -12,10 +12,11 @@ from emu68hatcher.builder.staging.files import (
     resolve_source_path,
     resolve_staging_path,
 )
-from emu68hatcher.builder.staging.tree_copy import copy_contained_tree
+from emu68hatcher.builder.staging.receipts import StagingWriteLog
+from emu68hatcher.builder.staging.tree_copy import FileCopied, copy_contained_tree
 from emu68hatcher.config.defaults import DEFAULT_BOOT_DEVICE
 from emu68hatcher.data.package_loader import get_package_by_name
-from emu68hatcher.data.package_schema import InstallRule, Package
+from emu68hatcher.data.package_schema import BytePatch, InstallRule, Package, SourceType
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import ensure_dir
 
@@ -40,9 +41,25 @@ def _set_icon_stack(info_path: Path, size: int) -> None:
         info_path.write_bytes(data)
 
 
-def _merge_tree(source: Path, dest: Path) -> int:
+def _apply_byte_patches(path: Path, patches: list[BytePatch], logger) -> None:
+    """write each patch byte; a byte that is not the expected one leaves the file as copied"""
+    data = bytearray(path.read_bytes())
+    for patch in patches:
+        if patch.offset >= len(data) or data[patch.offset] != patch.expect:
+            found = f"{data[patch.offset]:#04x}" if patch.offset < len(data) else "past the end"
+            logger.warning(
+                f"{path.name}: byte at {patch.offset:#x} is {found}, not {patch.expect:#04x}; "
+                "patch skipped"
+            )
+            return
+    for patch in patches:
+        data[patch.offset] = patch.value
+    path.write_bytes(data)
+
+
+def _merge_tree(source: Path, dest: Path, on_file: FileCopied | None = None) -> int:
     """recursively merge source into dest; same-name collisions overwrite (case-insensitive)"""
-    result = copy_contained_tree(source, dest, resolve_target=resolve_staging_path)
+    result = copy_contained_tree(source, dest, resolve_target=resolve_staging_path, on_file=on_file)
     if result.skipped_cycles:
         get_logger().warning(
             f"Skipped {result.skipped_cycles} repeated directories while copying {source}"
@@ -60,17 +77,26 @@ class PackageInstaller:
         local_packages_dir: Path | None = None,
         boot_device: str | None = None,
         extracted_paths: dict[str, Path] | None = None,
+        write_log: StagingWriteLog | None = None,
     ):
         # must match the tree configure/install_workbench stage into, or finalize splits the device
         self.boot_device = boot_device or DEFAULT_BOOT_DEVICE
         self.staging_dir = staging_dir
         self.extracted_dir = extracted_packages_dir
         self.local_packages_dir = local_packages_dir
+        self._extracted_paths = dict(extracted_paths or {})
         # the extraction stage can link package roots into the download cache.
         self._extracted_roots = frozenset(
             path.resolve() for path in (extracted_paths or {}).values()
         )
         self.logger = get_logger()
+        # receipts are built from what was actually copied, never from the rules
+        self.write_log = write_log
+        self._package: str | None = None
+
+    def _wrote(self, path: Path) -> None:
+        if self.write_log is not None and self._package is not None:
+            self.write_log.package_wrote(self._package, path)
 
     def install_package(self, package_name: str) -> int:
         """install a single package"""
@@ -81,16 +107,11 @@ class PackageInstaller:
             return 0
 
         files_installed = 0
+        self._package = pkg.name
 
         source_dir = self._get_source_dir(pkg)
 
         for rule in pkg.install:
-            # Cached catalogs can still contain the former font documentation rules.
-            destination = rule.dest.strip("/").casefold()
-            if destination == "emu68-hatcher/fonts" or destination.startswith(
-                "emu68-hatcher/fonts/"
-            ):
-                continue
             count = self._apply_install_rule(rule, source_dir)
             files_installed += count
 
@@ -111,33 +132,20 @@ class PackageInstaller:
         if not pkg.download:
             return None
 
-        if pkg.download.source.value == "local":
-            # extracted dir first (for local archives), fall back to local_packages_dir
-            source_dir = self.extracted_dir / pkg.name
-            if source_dir.exists():
-                return source_dir
-            return self.local_packages_dir
+        extracted = self._extracted_paths.get(pkg.name)
+        if extracted is not None and extracted.is_dir():
+            return extracted
 
         source_dir = self.extracted_dir / pkg.name
-        if source_dir.exists():
+        if source_dir.is_dir():
             return source_dir
 
-        # try filename without archive extension
-        if pkg.download.filename:
-            base_name = pkg.download.filename
-            for ext in [".lha", ".zip", ".7z", ".tar.gz"]:
-                if base_name.lower().endswith(ext):
-                    base_name = base_name[: -len(ext)]
-                    break
-
-            source_dir = self.extracted_dir / base_name
-            if source_dir.exists():
-                return source_dir
-
-        # try case-insensitive search
-        matched = ci_match_child(self.extracted_dir, pkg.name)
-        if matched and (self.extracted_dir / matched).is_dir():
-            return self.extracted_dir / matched
+        # local packages without an archive install straight from local_packages/
+        path = pkg.download.path
+        if pkg.download.source == SourceType.LOCAL and (
+            not path or Path(path).suffix.lower() not in ARCHIVE_EXTENSIONS
+        ):
+            return self.local_packages_dir
 
         self.logger.debug(f"Source directory not found for {pkg.name}")
         return None
@@ -153,7 +161,7 @@ class PackageInstaller:
 
             if next_path.is_file():
                 suffix = next_path.suffix.lower()
-                if suffix in ARCHIVE_EXTENSIONS:
+                if suffix in ARCHIVE_EXTENSIONS and i < len(parts) - 1:
                     extract_dir = require_contained_path(
                         source_dir, next_path.parent / f"_extracted_{next_path.stem}"
                     )
@@ -223,8 +231,13 @@ class PackageInstaller:
         search_dir = source_dir
         if base_parts:
             resolved = resolve_source_path(source_dir, "/".join(base_parts))
-            if resolved:
-                search_dir = resolved
+            if resolved is None:
+                self.logger.warning(
+                    f"install rule {rule.source} for {self._package}: source prefix "
+                    f"{'/'.join(base_parts)} not found in {source_dir}"
+                )
+                return 0
+            search_dir = resolved
 
         strip_levels = len(glob_part.split("/")) - 1
         installed = 0
@@ -241,8 +254,7 @@ class PackageInstaller:
             installed += self._copy_item(
                 source_item,
                 destination,
-                rule.stack,
-                rule.xor_byte,
+                rule,
                 merge_dirs=True,
             )
         return installed
@@ -260,30 +272,36 @@ class PackageInstaller:
         if not source.exists():
             return 0
         destination = resolve_staging_path(dest_dir, rule.rename or source.name)
+        is_dir = source.is_dir()
+        if is_dir and not rule.recursive:
+            self.logger.info(f"install rule {rule.source}: {source.name} is a directory, merging")
         return self._copy_item(
             source,
             destination,
-            rule.stack,
-            rule.xor_byte,
-            merge_dirs=rule.recursive,
+            rule,
+            merge_dirs=rule.recursive or is_dir,
         )
 
-    @staticmethod
     def _copy_item(
+        self,
         source: Path,
         destination: Path,
-        stack: int | None,
-        xor_byte: int | None,
+        rule: InstallRule,
         merge_dirs: bool,
     ) -> int:
         if not source.is_file() and not source.is_dir():
             return 0
         destination.parent.mkdir(parents=True, exist_ok=True)
         if source.is_dir() and merge_dirs:
-            return _merge_tree(source, destination)
+            return _merge_tree(source, destination, self._wrote)
         shutil.copy2(source, destination)
-        if xor_byte is not None:
-            destination.write_bytes(bytes(value ^ xor_byte for value in destination.read_bytes()))
-        if stack:
-            _set_icon_stack(destination, stack)
+        if rule.xor_byte is not None:
+            destination.write_bytes(
+                bytes(value ^ rule.xor_byte for value in destination.read_bytes())
+            )
+        if rule.stack:
+            _set_icon_stack(destination, rule.stack)
+        if rule.patch:
+            _apply_byte_patches(destination, rule.patch, self.logger)
+        self._wrote(destination)
         return 1

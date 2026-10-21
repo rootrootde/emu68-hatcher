@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildError
+from emu68hatcher.builder.staging.files import resolve_source_path
 
 _PATCH_TARGETS = (
     ("WBStartup/ToolsDaemon", "ToolsDaemon.pch"),
@@ -24,8 +25,8 @@ def patch_toolsdaemon(
 
     patched: list[tuple[Path, bytes]] = []
     for relative_target, patch_name in _PATCH_TARGETS:
-        target = boot_staging / Path(relative_target)
-        if not target.is_file():
+        target = resolve_source_path(boot_staging, relative_target)
+        if target is None or not target.is_file():
             raise BuildError(f"ToolsDaemon base file is missing: SYS:{relative_target}")
         patch_file = _find_patch_file(patch_root, patch_name)
         patched.append((target, _apply_patch(target.read_bytes(), patch_file.read_bytes())))

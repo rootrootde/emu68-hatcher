@@ -5,7 +5,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).parent / "src" / "main" / "python"))
+from emu68hatcher.config.schema import KickstartVersion  # noqa: E402
 from emu68hatcher.data.catalog import load_catalog_source  # noqa: E402
+from emu68hatcher.data.package_schema import PACKAGE_GROUPS  # noqa: E402
 
 _ROOT = Path(__file__).parent
 _PKG_DIR = _ROOT / "src" / "main" / "python" / "emu68hatcher" / "data" / "packages"
@@ -23,7 +25,7 @@ _GROUP_ORDER = [
     "Fonts",
     "Locale",
 ]
-_ALL_VERSIONS = {"3.1", "3.2", "3.2.2.1", "3.2.3", "3.9"}
+_ALL_VERSIONS = {v.value for v in KickstartVersion}
 
 _HEADER = """\
 # Packages
@@ -31,16 +33,16 @@ _HEADER = """\
 Generated from the package definitions used by the app. **always** is required,
 **preselected** is on by default, and **optional** starts off.
 Dependencies are installed when a selected package needs them. The Software
-tab shows the reason. Minimal keeps the OS, RTG and FirstBoot tools;
-see [Usage](usage.md) for its effect on software and networking.
+work area shows the reason under **Required packages**; see [Usage](usage.md).
 
 """
 
 
-def _tier(pkg: dict) -> tuple[int, str]:
+def _tier(pkg: dict, bundles: dict) -> tuple[int, str]:
     if pkg.get("mandatory"):
         return 0, "always"
-    if pkg.get("default"):
+    bundle = pkg.get("bundle")
+    if bundles[bundle]["default"] if bundle else pkg.get("default"):
         return 1, "preselected"
     return 2, "optional"
 
@@ -82,9 +84,13 @@ def _description_cell(pkg: dict) -> str:
 
 def _render() -> str:
     by_group: dict[str, list[dict]] = {}
-    packages = load_catalog_source(_PKG_DIR).model_dump(mode="json", by_alias=True)["packages"]
+    catalog = load_catalog_source(_PKG_DIR).model_dump(mode="json", by_alias=True)
+    packages, bundles = catalog["packages"], catalog["bundles"]
     for pkg in packages.values():
         by_group.setdefault(pkg.get("group", "Other"), []).append(pkg)
+    unknown = set(_GROUP_ORDER) - set(PACKAGE_GROUPS) - set(by_group)
+    if unknown:
+        raise ValueError(f"_GROUP_ORDER names unknown groups: {sorted(unknown)}")
 
     order = _GROUP_ORDER + sorted(g for g in by_group if g not in _GROUP_ORDER)
 
@@ -93,14 +99,16 @@ def _render() -> str:
         pkgs = by_group.get(group)
         if not pkgs:
             continue
-        pkgs.sort(key=lambda p: (_tier(p)[0], (p.get("friendly_name") or p["name"]).lower()))
+        pkgs.sort(
+            key=lambda p: (_tier(p, bundles)[0], (p.get("friendly_name") or p["name"]).lower())
+        )
         out.append(f"## {group}\n\n")
         out.append("| Package | Installed | Description | Source |\n")
         out.append("|---|---|---|---|\n")
         for pkg in pkgs:
             name = pkg.get("friendly_name") or pkg["name"]
             out.append(
-                f"| **{name}** | {_tier(pkg)[1]} "
+                f"| **{name}** | {_tier(pkg, bundles)[1]} "
                 f"| {_description_cell(pkg)} | {_source_cell(pkg, packages)} |\n"
             )
         out.append("\n")

@@ -25,25 +25,18 @@ from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.config.ags_models import AGS_ROLES, AGSRole
 from emu68hatcher.utils.host_tools import find_hst_imager
 
-_PARSER_REVISION = 3
 _MAX_SOURCES = 2
 _cache_lock = threading.Lock()
 _source_locks: dict[tuple[int, int], threading.RLock] = {}
 _cache: OrderedDict[tuple, AGSInventory] = OrderedDict()
 
 
-def _warnings(profile: str, roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
+def ags_warnings(roles: tuple[AGSRole, ...]) -> tuple[str, ...]:
     if "games" not in roles:
         return ()
-    warnings = [
-        "Some Premium titles need separately supplied commercial game data; see the Premium help."
-    ]
-    if profile == "v31-beta-160726":
-        warnings.append(
-            "The known v31 source lacks StuntCarRacer50, BoingBallDemo and BadApple; "
-            "their original starters remain, but cannot run without those data."
-        )
-    return tuple(warnings)
+    return (
+        "Some Premium titles need separately supplied commercial game data; see the Premium help.",
+    )
 
 
 @contextmanager
@@ -68,19 +61,8 @@ def _cache_key(path: Path) -> tuple:
     if binary is None or not binary.is_file():
         raise BuildError("HST Imager is needed to inspect the AGS image")
     stamp = binary.with_name(binary.name + ".version")
-    binary_stat = binary.stat()
-    profile_file = Path(__file__).with_name("ags_profiles.py")
-    profile_stat = profile_file.stat() if profile_file.exists() else None
-    return (
-        str(path),
-        *source_identity(path),
-        _PARSER_REVISION,
-        profile_stat.st_mtime_ns if profile_stat else 0,
-        str(binary.resolve()),
-        binary_stat.st_size,
-        binary_stat.st_mtime_ns,
-        stamp.read_text(encoding="utf-8") if stamp.is_file() else "",
-    )
+    version = stamp.read_text(encoding="utf-8") if stamp.is_file() else ""
+    return (str(path), *source_identity(path), version)
 
 
 def _lookup(key: tuple, roles: tuple[AGSRole, ...]) -> AGSInventory | None:
@@ -99,7 +81,6 @@ def _lookup(key: tuple, roles: tuple[AGSRole, ...]) -> AGSInventory | None:
             inventory.partitions,
             tuple(component for component in inventory.components if component.role in roles),
             inventory.marker_hashes,
-            _warnings(inventory.profile, roles),
             inventory.source_scripts,
         )
 
@@ -158,14 +139,12 @@ def inspect_ags_source(
                     dict(scripts) | dict(read_ags_scripts(path, whdload, extra_paths, cancel_check))
                 )
             components: dict[AGSRole, AGSComponentInventory] = {}
-            warnings = _warnings(profile.name, selected)
         else:
             partitions = cached.partitions
             marker_hashes = cached.marker_hashes
             scripts = cached.source_scripts
             profile = match_profile(marker_hashes)
             components = {component.role: component for component in cached.components}
-            warnings = _warnings(profile.name, selected)
         for role in selected:
             if role not in components:
                 components[role] = inspect_ags_component(path, partitions, role, cancel_check)
@@ -180,7 +159,6 @@ def inspect_ags_source(
             partitions,
             tuple(components[role] for role in AGS_ROLES if role in components),
             marker_hashes,
-            warnings,
             MappingProxyType(dict(scripts)),
         )
         _publish(key, full)
@@ -192,6 +170,5 @@ def inspect_ags_source(
             full.partitions,
             tuple(components[role] for role in selected),
             full.marker_hashes,
-            full.warnings,
             full.source_scripts,
         )

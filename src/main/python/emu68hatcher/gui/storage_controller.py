@@ -5,7 +5,8 @@ from time import monotonic
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
 
-from emu68hatcher.config.ags_layout import apply_ags_layout, plan_ags_layout
+from emu68hatcher.builder.ags_inspection import ags_warnings
+from emu68hatcher.config.ags_layout import plan_ags_layout
 from emu68hatcher.config.ags_models import AGSComponents
 from emu68hatcher.gui.extra_content_inspector import ExtraContentInspector
 from emu68hatcher.gui.partition_editor_model import PartitionEditorModel
@@ -53,11 +54,9 @@ class StorageController(QObject):
         self.roles = AGSComponents().selected_roles()
         self.inventory = None
         self.generation = 0
-        self.revision = 0
         self.allocation_state = "pending"
         self.inspection_error = ""
         self.layout_message = ""
-        self.legacy_content_device = None
         self.migration_notice = None
         self._workers = set()
         self._requested = False
@@ -159,7 +158,6 @@ class StorageController(QObject):
             self.layout_changed.emit()
             self.changed.emit()
             return
-        self.revision += 1
         roles = self.roles if self.enabled else ()
         requirements = (
             {item.role: item.partition.size for item in self.inventory.components}
@@ -176,35 +174,25 @@ class StorageController(QObject):
             self.changed.emit()
             return
         draft = self.model.to_layout_draft()
-        identity = self.inventory.identity if self.enabled else None
-        proposal = plan_ags_layout(
-            draft,
-            requirements,
-            roles,
-            source_identity=identity,
-            selection_revision=self.revision,
-        )
-        if proposal.errors:
-            draft.layout[1].amiga_partitions = list(proposal.partitions)
+        plan = plan_ags_layout(draft, requirements, roles)
+        if plan.layout is None:
+            draft.layout[1].amiga_partitions = list(plan.partitions)
         else:
-            draft = apply_ags_layout(
-                draft,
-                proposal,
-                source_identity=identity,
-                selection_revision=self.revision,
-            )
+            draft = plan.layout
             self.allocation_state = "ready"
-            self.legacy_content_device = self.migration_notice = None
+            self.migration_notice = None
         if draft.model_dump() != self.model.to_layout_draft().model_dump():
             self.model.load(draft)
         selected = sum(requirements[role] for role in roles)
         lines = [f"{selected / 1024**3:.2f} GiB selected"] if self.enabled else []
-        if proposal.free_bytes < 0:
+        if plan.free_bytes < 0:
             lines.append(
-                f"Capacity shortfall: {-proposal.free_bytes / 1024**3:.2f} GiB. "
+                f"Capacity shortfall: {-plan.free_bytes / 1024**3:.2f} GiB. "
                 "Deselect content, choose a larger target, or adjust manual partitions."
             )
-        lines.extend(error for error in proposal.errors if "exceeds RDB capacity" not in error)
+        lines.extend(error for error in plan.errors if "exceeds RDB capacity" not in error)
+        if self.enabled:
+            lines.extend(ags_warnings(roles))
         if self.migration_notice:
             lines.append(self.migration_notice)
         self.layout_message = "\n".join(lines)
@@ -220,7 +208,6 @@ class StorageController(QObject):
         self.inventory = None
         self.inspection_error = ""
         self._refresh = False
-        self.legacy_content_device = config.legacy_content_device if config else None
         self.migration_notice = config.migration_notice if config else None
         self._schedule()
         self.replan()
@@ -238,7 +225,6 @@ class StorageController(QObject):
                 role: role in self.roles for role in ("whdload", "games", "work", "media")
             },
             "allocation_state": self.allocation_state,
-            "legacy_content_device": self.legacy_content_device,
             "migration_notice": self.migration_notice,
         }
 

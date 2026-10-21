@@ -32,7 +32,11 @@ class _EjectWorker(QThread):
     def run(self):
         from emu68hatcher.builder.host.disk_enum import eject_disk
 
-        ok, msg = eject_disk(self._device)
+        try:
+            ok, msg = eject_disk(self._device)
+        except Exception as e:
+            self.done.emit(False, str(e) or type(e).__name__)
+            return
         self.done.emit(ok, msg)
 
 
@@ -44,6 +48,7 @@ class BuildProgressDialog(QDialog):
         self.config = config
         self.worker: BuildWorker | None = None
         self._success: bool = False
+        self._cancel_requested: bool = False
         self._overall: float = 0.0  # monotonic overall %, so the bar never jumps back
         self.setup_ui()
 
@@ -213,8 +218,10 @@ class BuildProgressDialog(QDialog):
             idx = self._STAGE_ORDER.index(stage)
             overall = (idx + progress / 100.0) / len(self._STAGE_ORDER) * 100.0
             self._overall = max(self._overall, overall)
-            self.overall_bar.setValue(round(self._overall))
-            self.overall_label.setText(f"Overall  {round(self._overall)}%")
+            # floor and hold at 99 - rounding showed 100% while the last stage was still running
+            shown = min(99, int(self._overall))
+            self.overall_bar.setValue(shown)
+            self.overall_label.setText(f"Overall  {shown}%")
 
     @Slot(str, str)
     def on_log_event(self, stage: str, message: str):
@@ -246,6 +253,13 @@ class BuildProgressDialog(QDialog):
             if self._flash_device() and self._eject_supported():
                 self.eject_btn.setVisible(True)
                 self.eject_btn.setEnabled(True)
+        elif self._cancel_requested:
+            self.setWindowTitle("Build Cancelled")
+            self.title_label.setText("Build cancelled")
+            set_tone(self.stage_label, "warning")
+            self.stage_label.setText("Cancelled")
+            self.status_label.setText(error)
+            self.log_output.append(f"\nBuild cancelled: {error}")
         else:
             self.setWindowTitle("Build Failed")
             self.title_label.setText("Build failed")
@@ -283,7 +297,15 @@ class BuildProgressDialog(QDialog):
         self.status_label.setText(f"Ejecting {device}…")
         self._eject_worker = _EjectWorker(device, self)
         self._eject_worker.done.connect(self._on_eject_done)
+        self._eject_worker.finished.connect(self._eject_worker_finished)
         self._eject_worker.start()
+
+    @Slot()
+    def _eject_worker_finished(self):
+        worker = self.sender()
+        if worker is self._eject_worker:
+            self._eject_worker = None
+        worker.deleteLater()
 
     @Slot(bool, str)
     def _on_eject_done(self, ok: bool, msg: str):
@@ -300,6 +322,7 @@ class BuildProgressDialog(QDialog):
     def cancel_build(self):
         """ask the worker to cancel"""
         if self.worker and self.worker.isRunning():
+            self._cancel_requested = True
             self.worker.cancel()
             self.status_label.setText("Cancelling...")
             self.log_output.append("Cancellation requested...")

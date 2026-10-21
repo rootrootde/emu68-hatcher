@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -13,9 +14,12 @@ if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
 
 _WRITE_PROTECTED = (
-    "{device} is write-protected. Slide the lock switch on the side of the SD card away "
-    "from LOCK, reinsert it and try again."
+    "{device} reports itself read-only. Either the lock switch on the side of the SD card "
+    "or its adapter is set to LOCK, or on Windows the disk has its read-only attribute set. "
+    "Slide the switch away from LOCK and reinsert the card, or clear the attribute in "
+    "diskpart (select disk <number>, then attributes disk clear readonly), and try again."
 )
+_FAT32_MAX_FILE = 2**32 - 1
 
 
 def validate_output_target(workflow: BuildWorkflow) -> None:
@@ -39,6 +43,7 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
             )
         if not out_path.parent.exists():
             raise BuildError(f"Output directory not found: {out_path.parent}")
+        _check_file_size_limit(out_path.parent, required_size)
         if output.flash_target:
             if output.verify_after_flash:
                 from emu68hatcher.builder.host.disk_writer import check_flash_verification_support
@@ -64,6 +69,27 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
     _validate_target_disk(info, required_size)
     _acquire_for_workflow(workflow)
     _claim_macos_disk(workflow, str(output.path))
+
+
+def _check_file_size_limit(folder: Path, required_size: int) -> None:
+    """FAT32 holds files up to 4 GiB; probe the folder before downloads, not in create_image"""
+    if required_size <= _FAT32_MAX_FILE:
+        return
+    probe = folder / ".emu68hatcher-size-probe"
+    try:
+        with open(probe, "wb") as handle:
+            handle.truncate(_FAT32_MAX_FILE + 1)
+    except OSError as error:
+        # a full disk is not the size limit; create_image reports that one
+        if error.errno == errno.ENOSPC:
+            return
+        raise BuildError(
+            f"{folder} cannot hold the {required_size / 1024**3:.1f} GiB image ({error}). "
+            "The volume is most likely FAT32, which stores files up to 4 GiB only. "
+            "Choose a folder on an APFS, NTFS, ext4 or exFAT volume."
+        ) from error
+    finally:
+        probe.unlink(missing_ok=True)
 
 
 def _validate_target_disk(info, required_size: int) -> None:
@@ -129,9 +155,9 @@ def _acquire_for_workflow(workflow: BuildWorkflow) -> None:
             command,
             workflow.state.elevation,
             timeout=30,
-            cancel_check=lambda: workflow._cancelled,
+            cancel_check=workflow.is_cancelled,
         )
-        if getattr(result, "cancelled", False):
+        if result.cancelled:
             workflow.logger.warning("hst-imager settings push cancelled by user")
         elif result.returncode == 0:
             workflow.logger.info("hst-imager settings pushed (AllPhysicalDrives=True)")

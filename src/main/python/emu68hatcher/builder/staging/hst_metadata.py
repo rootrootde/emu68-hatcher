@@ -10,13 +10,12 @@ from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
-from emu68hatcher.builder.ags_metadata import (
-    _DB_NAME,
-    _records_by_host,
+from emu68hatcher.builder.errors import BuildCancelledError, BuildError
+from emu68hatcher.builder.staging.uaefsdb import DB_NAME, records_by_host
+from emu68hatcher.builder.staging.uaefsdb_merge import (
     coalesce_staged_directories,
     iter_staged_entries,
 )
-from emu68hatcher.builder.errors import BuildCancelledError, BuildError
 
 _RESERVED = re.compile(r"(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)")
 _SPECIAL = frozenset('\\/:*?"<>|#%')
@@ -84,19 +83,20 @@ def prepare_workbench_metadata(
         coalesce_staged_directories(root, cancel_check)
     for entry in iter_staged_entries(root, cancel_check, allow_stale_metadata=allow_stale_metadata):
         _encoded_name(entry.path.rsplit("/", 1)[-1])
+    obsolete: list[str] = []
     stack = [root]
     while stack:
         if cancel_check and cancel_check():
             raise BuildCancelledError("Build was cancelled by user")
         parent = stack.pop()
-        records = _records_by_host(parent)
+        records = records_by_host(parent)
         with os.scandir(parent) as children:
-            entries = [entry for entry in children if entry.name != _DB_NAME]
+            entries = [entry for entry in children if entry.name != DB_NAME]
         present = {entry.name.casefold() for entry in entries}
-        for key in records.keys() - present:
-            logging.getLogger(__name__).debug(
-                "Ignoring obsolete Workbench metadata: %s/%s", parent, records[key].host_name
-            )
+        obsolete.extend(
+            (parent / records[key].host_name).relative_to(root).as_posix()
+            for key in sorted(records.keys() - present)
+        )
         planned = []
         names: set[str] = set()
         amiga_names = {
@@ -149,6 +149,13 @@ def prepare_workbench_metadata(
                 )
             if is_dir:
                 stack.append(destination)
-        database = parent / _DB_NAME
+        database = parent / DB_NAME
         if database.exists():
             database.unlink()
+    if obsolete:
+        logging.getLogger(__name__).debug(
+            "Ignoring %d obsolete Workbench metadata records under %s, first: %s",
+            len(obsolete),
+            root,
+            ", ".join(obsolete[:5]),
+        )

@@ -80,15 +80,20 @@ jobs:
             "$RUNNER_TEMP/payload-v1.json" "$RUNNER_TEMP/manifest.json" --key "$key"
           python scripts/sign-update-manifest.py \
             "$RUNNER_TEMP/payload-v2.json" "$RUNNER_TEMP/manifest-v2.json" --key "$key"
+          revision=$(jq -r .revision "$RUNNER_TEMP/payload-v2.json")
+          python scripts/export-emu68-releases.py "$RUNNER_TEMP/payload-releases.json" --revision "$revision"
+          python scripts/sign-update-manifest.py --format releases \
+            "$RUNNER_TEMP/payload-releases.json" "$RUNNER_TEMP/emu68-releases-v1.json" --key "$key"
           python scripts/verify-update-publication.py "$RUNNER_TEMP" --source-commit "$GITHUB_SHA"
 
       - name: Publish updates branch
         run: |
           cp "$RUNNER_TEMP/manifest.json" "$RUNNER_TEMP/published/manifest.json"
           cp "$RUNNER_TEMP/manifest-v2.json" "$RUNNER_TEMP/published/manifest-v2.json"
+          cp "$RUNNER_TEMP/emu68-releases-v1.json" "$RUNNER_TEMP/published/emu68-releases-v1.json"
           git -C "$RUNNER_TEMP/published" config user.name github-actions
           git -C "$RUNNER_TEMP/published" config user.email github-actions@github.com
-          git -C "$RUNNER_TEMP/published" add manifest.json manifest-v2.json
+          git -C "$RUNNER_TEMP/published" add manifest.json manifest-v2.json emu68-releases-v1.json
           git -C "$RUNNER_TEMP/published" commit -m "update manifests"
           git -C "$RUNNER_TEMP/published" push origin HEAD:updates
 
@@ -98,6 +103,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/verified"
           git show origin/updates:manifest.json > "$RUNNER_TEMP/verified/manifest.json"
           git show origin/updates:manifest-v2.json > "$RUNNER_TEMP/verified/manifest-v2.json"
+          git show origin/updates:emu68-releases-v1.json > "$RUNNER_TEMP/verified/emu68-releases-v1.json"
           cmp "$RUNNER_TEMP/manifest.json" "$RUNNER_TEMP/verified/manifest.json"
           cmp "$RUNNER_TEMP/manifest-v2.json" "$RUNNER_TEMP/verified/manifest-v2.json"
+          cmp "$RUNNER_TEMP/emu68-releases-v1.json" "$RUNNER_TEMP/verified/emu68-releases-v1.json"
           python scripts/verify-update-publication.py "$RUNNER_TEMP/verified" --source-commit "$GITHUB_SHA"

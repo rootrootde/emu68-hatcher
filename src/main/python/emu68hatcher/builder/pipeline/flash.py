@@ -17,6 +17,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     """flash .img to flash_target; no-op for DEVICE mode or IMG mode without flash_target"""
     output = workflow.config.output
     if output is None or output.type != OutputType.IMG or not output.flash_target:
+        workflow._update_state(BuildStage.FLASH, 100.0)
         return image
 
     workflow._update_state(BuildStage.FLASH, 0.0)
@@ -49,7 +50,7 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
         workflow._update_state(progress=pct, message=msg)
 
     def cancel_predicate() -> bool:
-        return workflow._cancelled
+        return workflow.is_cancelled()
 
     # size-derived cap, same 1 MB/s floor finalize uses for fs copy. without it the timeout
     # defaults to None, which the elevated helper caps at 630s - a multi-GB write+verify blows

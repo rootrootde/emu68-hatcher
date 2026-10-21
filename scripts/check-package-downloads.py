@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check remote package files against their configured checksums."""
+"""Check remote package files against their configured MD5 checksums."""
 
 from __future__ import annotations
 
@@ -7,24 +7,25 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src" / "main" / "python"))
 
-from emu68hatcher.data.package_schema import DownloadInfo, Package, SourceType  # noqa: E402
+from emu68hatcher.data.catalog import load_catalog_source  # noqa: E402
+from emu68hatcher.data.package_schema import DownloadInfo, SourceType  # noqa: E402
+from emu68hatcher.data.package_urls import (  # noqa: E402
+    aminet_url,
+    github_api_url,
+    github_repo_valid,
+)
 
-_GITHUB_REPO_RE = re.compile(r"^[\w][\w.-]*/[\w][\w.-]*$")
 _MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 
@@ -32,6 +33,12 @@ _MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 class PackageSpec:
     name: str
     download: DownloadInfo
+
+
+@dataclass(frozen=True)
+class Digest:
+    md5: str
+    size: int
 
 
 @dataclass(frozen=True)
@@ -47,19 +54,12 @@ class CheckResult:
 
 
 def _load_specs(packages_dir: Path) -> list[PackageSpec]:
-    specs = []
-    known_names = set()
-    for path in sorted(packages_dir.glob("*.yaml")):
-        package = Package.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
-        if package.name in known_names:
-            raise ValueError(f"duplicate package name: {package.name}")
-        known_names.add(package.name)
-        if package.download is None:
-            continue
-        download = package.download
-        if download.source != SourceType.LOCAL:
-            specs.append(PackageSpec(package.name, download))
-    return specs
+    catalog = load_catalog_source(packages_dir)
+    return [
+        PackageSpec(p.name, p.download)
+        for p in catalog.packages.values()
+        if p.download and p.download.source != SourceType.LOCAL
+    ]
 
 
 def _request(url: str, timeout: float, *, github_api: bool = False):
@@ -73,8 +73,7 @@ def _request(url: str, timeout: float, *, github_api: bool = False):
     return urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=timeout)
 
 
-def _github_release(repo: str, selector: str, timeout: float) -> dict:
-    url = f"https://api.github.com/repos/{repo}/releases/{selector}"
+def _github_release(url: str, timeout: float) -> dict:
     with _request(url, timeout, github_api=True) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -82,19 +81,15 @@ def _github_release(repo: str, selector: str, timeout: float) -> dict:
 def _github_asset(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     download = spec.download
     repo = download.repo or ""
-    if not _GITHUB_REPO_RE.fullmatch(repo):
+    if not github_repo_valid(repo):
         raise ValueError(f"invalid GitHub repo: {repo!r}")
     if not download.filename:
         raise ValueError("GitHub package has no filename")
 
     latest_tag = None
-    if download.tag:
-        tag = urllib.parse.quote(download.tag, safe="")
-        release = _github_release(repo, f"tags/{tag}", timeout)
-        if download.check_latest_release:
-            latest_tag = _github_release(repo, "latest", timeout).get("tag_name")
-    else:
-        release = _github_release(repo, "latest", timeout)
+    release = _github_release(github_api_url(repo, download.tag), timeout)
+    if download.tag and download.check_latest_release:
+        latest_tag = _github_release(github_api_url(repo), timeout).get("tag_name")
 
     for asset in release.get("assets", []):
         if asset.get("name", "").lower() == download.filename.lower():
@@ -109,7 +104,7 @@ def _download_url(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     if download.source == SourceType.AMINET:
         if not download.path:
             raise ValueError("Aminet package has no path")
-        return f"https://aminet.net/{download.path.lstrip('/')}", None
+        return aminet_url(download.path), None
     if download.source == SourceType.WEB:
         if not download.url:
             raise ValueError("web package has no URL")
@@ -119,8 +114,8 @@ def _download_url(spec: PackageSpec, timeout: float) -> tuple[str, str | None]:
     raise ValueError(f"unsupported source: {download.source.value}")
 
 
-def _remote_md5(url: str, timeout: float) -> tuple[str, int]:
-    digest = hashlib.md5()
+def _remote_digest(url: str, timeout: float) -> Digest:
+    md5 = hashlib.md5()
     size = 0
     with _request(url, timeout) as response:
         length = response.headers.get("Content-Length")
@@ -130,15 +125,15 @@ def _remote_md5(url: str, timeout: float) -> tuple[str, int]:
             size += len(chunk)
             if size > _MAX_DOWNLOAD_BYTES:
                 raise ValueError(f"download is larger than {_MAX_DOWNLOAD_BYTES} bytes")
-            digest.update(chunk)
-    return digest.hexdigest().upper(), size
+            md5.update(chunk)
+    return Digest(md5.hexdigest().upper(), size)
 
 
 def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
     source = spec.download.source.value
     try:
         url, latest_tag = _download_url(spec, timeout)
-        observed_hash, size = _remote_md5(url, timeout)
+        digest = _remote_digest(url, timeout)
     except urllib.error.HTTPError as error:
         return CheckResult(
             spec.name, source, "download failed", f"HTTP {error.code} at {error.url}"
@@ -147,6 +142,7 @@ def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
         detail = str(error) or type(error).__name__
         return CheckResult(spec.name, source, "download failed", detail)
 
+    observed_hash, size = digest.md5, digest.size
     expected_hash = spec.download.hash
     if not expected_hash:
         return CheckResult(

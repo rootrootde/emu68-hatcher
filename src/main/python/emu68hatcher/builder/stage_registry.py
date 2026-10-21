@@ -25,7 +25,6 @@ class StageDefinition:
     stage: BuildStage
     label: str
     function: Callable
-    include_in_progress: bool = True
 
 
 PIPELINE_STAGES = (
@@ -49,6 +48,4 @@ STAGE_LABELS = {
     BuildStage.COMPLETE.value: "Complete",
     BuildStage.FAILED.value: "Failed",
 }
-PROGRESS_STAGE_ORDER = tuple(
-    definition.stage.value for definition in PIPELINE_STAGES if definition.include_in_progress
-)
+PROGRESS_STAGE_ORDER = tuple(definition.stage.value for definition in PIPELINE_STAGES)

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def validate_dependency_graph(packages: list[Package]) -> None:
-    """check requires/recommends/conflicts reference known packages or provides-tokens."""
+    """check requires/conflicts reference known packages or provides-tokens."""
     # raise on bad refs so a yaml typo fails the build instead of under-resolving silently
     tokens = {p.name.lower() for p in packages}
     for p in packages:
@@ -27,11 +27,9 @@ def validate_dependency_graph(packages: list[Package]) -> None:
         else:
             if p.archive_package and (p.download or not source.download):
                 errors.append(f"{p.name}: archive source needs one download definition")
-        for t in p.requires + p.recommends:
+        for t in p.requires:
             if t.lower() not in tokens:
-                errors.append(
-                    f"{p.name}: requires/recommends unknown '{t}' (no package or provides)"
-                )
+                errors.append(f"{p.name}: requires unknown '{t}' (no package or provides)")
         unknown_conflicts = [t for t in p.conflicts if t.lower() not in tokens]
         if unknown_conflicts:
             logger.warning(f"{p.name}: conflicts reference unknown token(s) {unknown_conflicts}")

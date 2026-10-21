@@ -26,12 +26,6 @@ hippoplayer:
   description: "MOD and other tracker module player"
   default: true
 
-picasso96:
-  display_name: Picasso96
-  group: RTG
-  description: "picasso96 RTG driver (shareware) + amiga-blitter disable patch"
-  default: true
-
 magicmenu:
   display_name: MagicMenu
   group: Commodities

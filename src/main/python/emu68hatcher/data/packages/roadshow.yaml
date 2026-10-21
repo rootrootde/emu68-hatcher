@@ -2,6 +2,7 @@ name: roadshow
 friendly_name: Roadshow
 group: Network
 description: 'TCP/IP stack (demo by default; full version when a Roadshow archive is configured)'
+upstream_version: '1.15'
 purchase_url: https://www.amigashop.org/product_info.php?cPath=2_34&products_id=200&language=de
 versions:
 - '3.1'
@@ -22,7 +23,6 @@ conflicts:
 download:
   source: local
   path: Roadshow-Demo-1.15.lha
-  hash: 25471647C76D8EAB98F78D24945B3FC6
   filename: Roadshow-Demo-1.15.lha
 install:
 - from: Roadshow*/Workbench/Storage/*

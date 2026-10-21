@@ -3,8 +3,6 @@
 import logging
 import shutil
 import struct
-from collections.abc import Callable
-from dataclasses import dataclass, field
 from pathlib import Path
 
 from emu68hatcher.data.catalog import validate_relative_path
@@ -122,21 +120,6 @@ def _skip_image(data: bytes, offset: int) -> int:
     return offset
 
 
-@dataclass
-class AmigaFile:
-    """represents a file to be installed on Amiga"""
-
-    source_path: Path
-    dest_path: str  # amiga-style path (e.g., "C/Dir")
-    device: str = "DH0"
-    icon_path: Path | None = None
-
-    @property
-    def has_icon(self) -> bool:
-        """check if file has an associated icon"""
-        return self.icon_path is not None and self.icon_path.exists()
-
-
 def ci_match_child(parent: Path, name: str) -> str | None:
     """case-insensitive lookup of 'name' under 'parent', returning actual on-disk name or None"""
     if (parent / name).exists():
@@ -185,86 +168,6 @@ def resolve_source_path(base: Path, rel_path: str) -> Path | None:
     return current
 
 
-@dataclass
-class FileMapping:
-    """mapping of source files to destinations on Amiga"""
-
-    files: list[AmigaFile] = field(default_factory=list)
-
-    def add(self, source: Path, dest: str, device: str = "DH0") -> None:
-        """add a file mapping"""
-        # check for associated icon
-        icon_path = Path(str(source) + ".info")
-        if not icon_path.exists():
-            icon_path = None
-
-        self.files.append(
-            AmigaFile(
-                source_path=source,
-                dest_path=dest,
-                device=device,
-                icon_path=icon_path,
-            )
-        )
-
-    def add_directory(
-        self,
-        source_dir: Path,
-        dest_dir: str,
-        device: str = "DH0",
-        recursive: bool = True,
-        filter_func: Callable[[Path], bool] | None = None,
-    ) -> None:
-        """add all files from a directory"""
-        if not source_dir.exists():
-            return
-
-        pattern = "**/*" if recursive else "*"
-
-        # case-fold dedupe so Linux ext4 matches PFS3 semantics (newest mtime wins on collision)
-        by_ci_path: dict[str, Path] = {}
-        for source in source_dir.glob(pattern):
-            if not source.is_file():
-                continue
-            key = str(source.relative_to(source_dir)).lower()
-            existing = by_ci_path.get(key)
-            if existing is None or source.stat().st_mtime > existing.stat().st_mtime:
-                by_ci_path[key] = source
-
-        for source in by_ci_path.values():
-            if source.suffix.lower() == ".info":
-                base_path = source.with_suffix("")
-                if base_path.exists() and base_path.is_file():
-                    continue
-
-            if filter_func and not filter_func(source):
-                continue
-
-            rel_path = source.relative_to(source_dir)
-            amiga_rel_path = unix_to_amiga_path(str(rel_path))
-            if dest_dir:
-                dest_path = f"{dest_dir}/{amiga_rel_path}"
-            else:
-                dest_path = amiga_rel_path
-
-            self.add(source, dest_path, device)
-
-
-def unix_to_amiga_path(path: str) -> str:
-    """Unix path -> Amiga-style (already Amiga if it contains colon)"""
-    if ":" in path:
-        return path
-
-    path = path.replace("\\", "/")
-
-    if path.startswith("./"):
-        path = path[2:]
-
-    path = path.lstrip("/")
-
-    return path
-
-
 def prepare_staging_directory(
     staging_dir: Path,
     devices: list[str],
@@ -294,29 +197,30 @@ def prepare_staging_directory(
     return device_dirs
 
 
-def stage_files(
-    mapping: FileMapping,
-    staging_dir: Path,
-) -> int:
-    """copy files into the staging tree"""
-    count = 0
-
-    for amiga_file in mapping.files:
-        if not amiga_file.source_path.exists():
+def stage_workbench_files(source_dir: Path, boot_dir: Path) -> int:
+    """Copy Workbench files and icons, keeping the newest case-insensitive collision."""
+    by_ci_path: dict[str, Path] = {}
+    for source in source_dir.rglob("*"):
+        if not source.is_file():
             continue
+        key = source.relative_to(source_dir).as_posix().lower()
+        existing = by_ci_path.get(key)
+        if existing is None or source.stat().st_mtime > existing.stat().st_mtime:
+            by_ci_path[key] = source
 
-        device_dir = staging_dir / amiga_file.device
-        dest = resolve_staging_path(device_dir, amiga_file.dest_path)
+    count = 0
+    for source in by_ci_path.values():
+        if source.suffix.lower() == ".info" and source.with_suffix("").is_file():
+            continue
+        if not source.exists():
+            continue
+        relative = source.relative_to(source_dir).as_posix().replace("\\", "/")
+        dest = resolve_staging_path(boot_dir, relative)
         dest.parent.mkdir(parents=True, exist_ok=True)
-
-        # main file
-        shutil.copy2(amiga_file.source_path, dest)
+        shutil.copy2(source, dest)
         count += 1
-
-        # copy icon if present
-        if amiga_file.has_icon:
-            icon_dest = Path(str(dest) + ".info")
-            shutil.copy2(amiga_file.icon_path, icon_dest)
+        icon = Path(str(source) + ".info")
+        if icon.exists():
+            shutil.copy2(icon, Path(str(dest) + ".info"))
             count += 1
-
     return count

@@ -13,10 +13,10 @@ from emu68hatcher.utils.host_tools import (
     find_7z,
     find_hst_imager,
     list_7z_member_sizes,
+    localize_for_hst,
     run_7z,
     run_hst_extract,
 )
-from emu68hatcher.utils.paths import get_extracted_dir
 
 
 class ArchiveFormat(str, Enum):
@@ -45,8 +45,20 @@ class ExtractionResult:
 # progress callback type
 ExtractProgressCallback = Callable[[str, int, int], None]
 
+# single-suffix extensions detect_format maps to an extractor
+_SUFFIX_FORMATS = {
+    ".zip": ArchiveFormat.ZIP,
+    ".7z": ArchiveFormat.SEVENZIP,
+    ".lha": ArchiveFormat.LHA,
+    ".lzh": ArchiveFormat.LHA,
+    ".tar": ArchiveFormat.TAR,
+    ".gz": ArchiveFormat.GZIP,
+    ".tgz": ArchiveFormat.TAR_GZ,
+    ".tbz2": ArchiveFormat.TAR_BZ2,
+}
+
 # extensions recognized as extractable archives
-ARCHIVE_EXTENSIONS = {".lha", ".lzh", ".zip", ".7z", ".tar", ".gz", ".tgz"}
+ARCHIVE_EXTENSIONS = frozenset(_SUFFIX_FORMATS)
 
 # 8 GiB cap on uncompressed output to defuse zip/tar bombs - well above any legit asset
 DEFAULT_MAX_EXTRACTED_BYTES = 8 * 1024 * 1024 * 1024
@@ -89,17 +101,8 @@ def detect_format(path: Path) -> ArchiveFormat:
     if name.endswith(".tar.bz2") or name.endswith(".tbz2"):
         return ArchiveFormat.TAR_BZ2
 
-    ext_map = {
-        ".zip": ArchiveFormat.ZIP,
-        ".7z": ArchiveFormat.SEVENZIP,
-        ".lha": ArchiveFormat.LHA,
-        ".lzh": ArchiveFormat.LHA,
-        ".tar": ArchiveFormat.TAR,
-        ".gz": ArchiveFormat.GZIP,
-    }
-
-    if suffix in ext_map:
-        return ext_map[suffix]
+    if suffix in _SUFFIX_FORMATS:
+        return _SUFFIX_FORMATS[suffix]
 
     try:
         with open(path, "rb") as f:
@@ -122,7 +125,7 @@ def detect_format(path: Path) -> ArchiveFormat:
 
 def extract_archive(
     archive_path: Path,
-    output_dir: Path | None = None,
+    output_dir: Path,
     progress_callback: ExtractProgressCallback | None = None,
 ) -> ExtractionResult:
     """extract archive to dir - detects format, picks extractor"""
@@ -137,12 +140,6 @@ def extract_archive(
         )
 
     fmt = detect_format(archive_path)
-
-    if output_dir is None:
-        base_name = archive_path.stem
-        if base_name.endswith(".tar"):
-            base_name = base_name[:-4]
-        output_dir = get_extracted_dir() / base_name
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -238,13 +235,15 @@ def _extract_lha(
     if not seven_z:
         raise RuntimeError("7z not found. Cannot verify the LHA expanded size.")
     _check_external_archive_size(seven_z, archive_path)
+    archive_path = localize_for_hst(archive_path, output_dir.parent / "network_media")
 
     hst = find_hst_imager()
     if hst:
         result = run_hst_extract(
             hst,
-            f"{archive_path}/*",
-            str(output_dir) + "/",
+            # hst-imager rejects mixed separators like C:\x\a.lha/*, then 7z mangles latin-1 names
+            f"{archive_path.as_posix()}/*",
+            output_dir.as_posix() + "/",
             uaemetadata="None",
             recursive=True,
             timeout=None,
@@ -283,16 +282,8 @@ def _extract_tar(
     progress_callback: ExtractProgressCallback | None = None,
     max_bytes: int = DEFAULT_MAX_EXTRACTED_BYTES,
 ) -> int:
-    """extract TAR archive (.tar.gz + .tar.bz2)"""
-    mode = "r"
-    name = archive_path.name.lower()
-
-    if name.endswith(".gz") or name.endswith(".tgz"):
-        mode = "r:gz"
-    elif name.endswith(".bz2") or name.endswith(".tbz2"):
-        mode = "r:bz2"
-
-    with tarfile.open(archive_path, mode) as tf:
+    """Extract a TAR archive with automatic compression detection."""
+    with tarfile.open(archive_path, "r:*") as tf:
         members = tf.getmembers()
         total = len(members)
 

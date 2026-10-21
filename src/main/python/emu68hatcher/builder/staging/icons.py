@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
+from emu68hatcher.builder.staging.files import ci_match_child, resolve_source_path
 from emu68hatcher.data.package_loader import get_local_packages_dir
 from emu68hatcher.utils.host_tools import find_hst_imager, run_hst_extract
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # roots that get auto-generated drawer icons; system dirs (C/, S/, Libs/, Devs/) stay icon-less
-_ICON_ROOTS: tuple[str, ...] = ("Programs", "Prefs")
+_ICON_ROOTS: tuple[str, ...] = ("Programs", "Prefs", "Emu68-Hatcher")
 
 # runtime-state subdirs to leave alone even when under an icon root
 _ICON_SKIP: tuple[str, ...] = ("Prefs/Env-Archive",)
@@ -38,7 +39,7 @@ def ensure_dirs_for_orphan_drawer_icons(boot_staging: Path) -> int:
         if len(data) < 49 or data[0:2] != b"\xe3\x10" or data[48] != 2:
             continue
         drawer = info_path.with_suffix("")
-        if drawer.exists():
+        if ci_match_child(drawer.parent, drawer.name) is not None:
             continue
         drawer.mkdir(parents=True, exist_ok=True)
         created += 1
@@ -49,15 +50,15 @@ def ensure_dirs_for_orphan_drawer_icons(boot_staging: Path) -> int:
 def _iter_drawer_dirs(boot_staging: Path):
     """yield every directory under the icon roots that should have an icon"""
     for root_name in _ICON_ROOTS:
-        root = boot_staging / root_name
-        if not root.exists():
+        root = resolve_source_path(boot_staging, root_name)
+        if root is None:
             continue
         yield root
         for sub in root.rglob("*"):
             if not sub.is_dir():
                 continue
-            rel = sub.relative_to(boot_staging).as_posix()
-            if any(rel == s or rel.startswith(s + "/") for s in _ICON_SKIP):
+            rel = sub.relative_to(boot_staging).as_posix().lower()
+            if any(rel == s.lower() or rel.startswith(s.lower() + "/") for s in _ICON_SKIP):
                 continue
             yield sub
 
@@ -71,9 +72,9 @@ def ensure_drawer_icons(boot_staging: Path) -> int:
 
     created = 0
     for d in _iter_drawer_dirs(boot_staging):
-        info = d.with_name(d.name + ".info")
-        if info.exists():
+        if ci_match_child(d.parent, d.name + ".info") is not None:
             continue
+        info = d.with_name(d.name + ".info")
         shutil.copy2(template, info)
         created += 1
         logger.debug("created drawer icon %s", info.relative_to(boot_staging))
@@ -152,8 +153,9 @@ def apply_icon_set_drawer(
         template_bytes = template.read_bytes()
         replaced = 0
         for d in _iter_drawer_dirs(boot_staging):
-            info = d.with_name(d.name + ".info")
-            if not info.exists() or not info.is_file():
+            info_name = ci_match_child(d.parent, d.name + ".info")
+            info = d.with_name(info_name) if info_name else None
+            if info is None or not info.is_file():
                 continue
             if info.read_bytes() != template_bytes:
                 continue

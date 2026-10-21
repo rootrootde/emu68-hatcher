@@ -57,4 +57,4 @@ IF EXISTS S:Hatcher-FirstBoot
    C:Execute S:Hatcher-FirstBoot
 ENDIF
 
-FailAt 21
+FailAt 10

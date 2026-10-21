@@ -53,6 +53,11 @@ def _get_home() -> Path:
     return _ensure(p)
 
 
+def get_extra_packages_dir() -> Path:
+    """'<home>/packages': the user's own package files, not created"""
+    return _get_home() / "packages"
+
+
 @cache
 def get_cache_dir() -> Path:
     """return '<home>/cache'"""
@@ -63,12 +68,6 @@ def get_cache_dir() -> Path:
 def get_downloads_dir() -> Path:
     """dir for downloaded packages"""
     return _ensure(get_cache_dir() / "downloads")
-
-
-@cache
-def get_extracted_dir() -> Path:
-    """dir for extracted package contents"""
-    return _ensure(get_cache_dir() / "extracted")
 
 
 @cache
@@ -120,7 +119,6 @@ def reset_runtime_data() -> list[Path]:
     for d in (
         get_cache_dir(),
         get_downloads_dir(),
-        get_extracted_dir(),
         get_dotnet_bundle_dir(),
         get_tools_dir(),
     ):

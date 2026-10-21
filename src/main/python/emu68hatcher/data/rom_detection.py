@@ -10,6 +10,12 @@ from emu68hatcher.data.install_media import walk_files_capped
 # valid Kickstart ROM file sizes
 KICKSTART_ROM_SIZES: tuple[int, ...] = (262144, 524288, 1048576)
 
+# Cloanto encrypted dumps prepend an 11-byte AMIROMTYPE1 header
+_ENCRYPTED_HEADER_SIZE = 11
+_IDENTIFIABLE_SIZES = frozenset(KICKSTART_ROM_SIZES) | {
+    size + _ENCRYPTED_HEADER_SIZE for size in KICKSTART_ROM_SIZES
+}
+
 
 def _version_sort_key(v: str) -> tuple:
     """parse '3.2.3' / '1.3' / 'AROS' into a sortable tuple (unparseable suffixes sort first)"""
@@ -22,7 +28,6 @@ def _version_sort_key(v: str) -> tuple:
     return tuple(parts)
 
 
-# >>> sync-hashes:KICKSTART_CHECKSUMS
 KICKSTART_CHECKSUMS: dict[str, dict] = {
     "93b2a0f1af4a6ac373d6da2cd4f76c3b": {
         "version": "3.2.2.1",
@@ -57,7 +62,7 @@ KICKSTART_CHECKSUMS: dict[str, dict] = {
         "model": "A1200",
         "sequence": 4,
         "excluded": True,
-        "exclude_message": "Emu68 Imager does not support encrypted AmigaForever ROMs. You will need to either find an unencrypted version or decrypt the ROM. The file found was:",
+        "exclude_message": "Emu68 Hatcher does not support encrypted AmigaForever ROMs. You will need to either find an unencrypted version or decrypt the ROM. The file found was:",
     },
     "1c953f4337b450b24b108df19fccb788": {
         "version": "3.1",
@@ -87,7 +92,6 @@ KICKSTART_CHECKSUMS: dict[str, dict] = {
         "sequence": 1,
     },
 }
-# <<< sync-hashes:KICKSTART_CHECKSUMS
 
 
 _EXTRA_KICKSTART_CHECKSUMS: dict[str, dict] = {
@@ -240,6 +244,11 @@ def identify_kickstart(path: Path) -> dict | None:
     """ID Kickstart ROM - checksum lookup first, header parse as fallback"""
     if not path.exists():
         return None
+    try:
+        if path.stat().st_size not in _IDENTIFIABLE_SIZES:
+            return None
+    except OSError:
+        return None
 
     data = path.read_bytes()
     md5 = hashlib.md5(data).hexdigest()
@@ -336,19 +345,10 @@ def find_whdload_kickstarts(directory: Path) -> dict[str, Path]:
 ROM_VERSION_ALIAS = {"3.9": "3.1"}
 
 
-def find_kickstart_for_version(
-    directories: Path | list[Path] | tuple[Path, ...], version: str
-) -> Path | None:
-    """find a Kickstart ROM matching the specified version (across one or more dirs), preferring A1200 variants"""
+def pick_boot_rom(found_roms: list[dict], version: str) -> Path | None:
+    """boot ROM for a version from scan results: usable match, A1200 first"""
     version = ROM_VERSION_ALIAS.get(version, version)
-    roms, _ = scan_for_kickstart_roms(directories)
-
-    matching = [r for r in roms if r["version"] == version and not r.get("excluded")]
+    matching = [r for r in found_roms if r["version"] == version and not r.get("excluded")]
     if not matching:
         return None
-
-    for rom in matching:
-        if "1200" in rom["model"]:
-            return rom["path"]
-
-    return matching[0]["path"]
+    return next((r["path"] for r in matching if "1200" in r["model"]), matching[0]["path"])

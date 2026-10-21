@@ -3,7 +3,7 @@
 
 usage (linux/macos - on windows replace 'python3' with 'python'):
     python3 bootstrap.py              # create venv + install, drop into activated shell
-    python3 bootstrap.py --dev        # also install dev deps (pytest etc)
+    python3 bootstrap.py --dev        # also install dev deps (ruff)
     python3 bootstrap.py --no-shell   # skip the shell drop, just print hint
 
 """

@@ -2,6 +2,7 @@ name: fonts_roboto
 friendly_name: Roboto
 group: Fonts
 description: 'Roboto 2.138 and Roboto Condensed, static TrueType styles'
+upstream_version: '2.138'
 bundle: fonts_scalable
 requires:
 - ttflib

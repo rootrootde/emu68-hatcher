@@ -48,23 +48,23 @@ hst-imager:
   type: platform-url
   platforms:
     darwin-arm64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_macos_arm64.zip"
-      hash: "73f5b412fd7511294a2fef0c96d943e7"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_macos_arm64.zip"
+      hash: "26ee256d385b52457f91057fed49c6d0"
     darwin-x64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_macos_x64.zip"
-      hash: "eebf0839307a9984895b41f3afbf9e04"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_macos_x64.zip"
+      hash: "15f60873573f59b17e88a5632bd24116"
     linux-x64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_linux_x64.zip"
-      hash: "9c79c4e1d9de1745babca3f5a59ef8f4"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_linux_x64.zip"
+      hash: "7f4a28bc86797665e6053288177e58f8"
     linux-arm64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_linux_arm64.zip"
-      hash: "b88a7a14cd32df3412a994fb9b9f096c"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_linux_arm64.zip"
+      hash: "c7341d68db30dc4b6af0e56f2fe08d42"
     windows-x64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_windows_x64.zip"
-      hash: "76d186c6898fdb286027acffedb78956"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_windows_x64.zip"
+      hash: "60a2674104c7c2df46956ac746d238fa"
     windows-arm64:
-      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.2/hst-imager_v1.7.649-hatcher.2_console_windows_arm64.zip"
-      hash: "f6a8a461b2e83754141db21b578c4a5f"
+      url: "https://github.com/rootrootde/hst-imager-hatcher/releases/download/1.7.649-hatcher.3/hst-imager_v1.7.649-hatcher.3_console_windows_arm64.zip"
+      hash: "55b1a956ff4162b6da6e1b0883b695ae"
 
 pfs3aio:
   type: direct-url

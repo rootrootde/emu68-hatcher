@@ -15,6 +15,7 @@ from emu68hatcher.config.boot_models import (
     UnicamDevice,
 )
 from emu68hatcher.data.data_manager import load_yaml_data
+from emu68hatcher.data.emu68_releases import kernel_table
 from emu68hatcher.utils.paths import ensure_dir
 
 
@@ -29,23 +30,7 @@ def get_screen_modes() -> list[dict]:
 
 
 # kernel filenames per release. modern = pistorm32-lite/16, classic = old PiStorm. 1.1+ ships .gz
-EMU68_KERNELS: dict[str, dict[str, str]] = {
-    "1.0.7": {
-        "modern": "Emu68-pistorm32lite",
-        "classic": "Emu68-pistorm",
-        "pistorm16": "Emu68-pistorm",
-    },
-    "1.1.0-alpha.1": {
-        "modern": "Emu68-pistorm.gz",
-        "classic": "Emu68-pistorm-classic.gz",
-        "pistorm16": "Emu68-pistorm.gz",
-    },
-    "1.1.0-beta.1": {
-        "modern": "Emu68-pistorm.gz",
-        "classic": "Emu68-pistorm-classic.gz",
-        "pistorm16": "Emu68-pistorm.gz",
-    },
-}
+EMU68_KERNELS: dict[str, dict[str, str]] = kernel_table()
 
 
 def _is_emu68_11(emu68_version: str) -> bool:
@@ -155,7 +140,8 @@ def _config_overlays(
         if config.framethrower_scaling == FramethrowerScaling.SMOOTH:
             params.extend(("smooth", f"b={config.framethrower_b}", f"c={config.framethrower_c}"))
         elif config.framethrower_scaling == FramethrowerScaling.INTEGER:
-            params.append("integer")
+            # beta.1's unicam.dtbo renamed the override to "int"; alpha.1 still uses "integer"
+            params.append("int" if beta_overlays else "integer")
         if config.unicam_device == UnicamDevice.C790:
             params.append("type=c790")
         suffix = "," + ",".join(params) if params else ""
@@ -281,6 +267,7 @@ def generate_config_txt(
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
     include_diagnostics: bool = True,
+    rgb2rtg_video: str | None = None,
 ) -> str:
     """generate Emu68 boot config.txt with GPIO-based detection for PiStorm variants"""
     # load available screen modes from YAML
@@ -299,6 +286,18 @@ def generate_config_txt(
 
     kernels = EMU68_KERNELS.get(emu68_version, EMU68_KERNELS["1.0.7"])
     boot_settings = boot_settings or Emu68BootSettings()
+    values = _config_values(boot_settings, emu68_version)
+    extra_keys = [
+        line.split("=", 1)[0].strip().lower() for line in boot_settings.config_txt.extra_lines
+    ]
+    # upstream adds both only where config.txt says nothing itself; force_turbo next to an
+    # over_voltage would set the SoC's warranty bit
+    rgb2rtg_soft_limit = bool(rgb2rtg_video) and "temp_soft_limit" not in extra_keys
+    rgb2rtg_force_turbo = (
+        bool(rgb2rtg_video)
+        and not values["cpu_turbo"]
+        and not any(key == "force_turbo" or key.startswith("over_voltage") for key in extra_keys)
+    )
 
     content = render_template(
         "config_txt.j2",
@@ -314,7 +313,10 @@ def generate_config_txt(
         storage_overlays=_storage_overlays(boot_settings.cmdline_txt, emu68_version),
         overlays=_config_overlays(boot_settings, emu68_version, include_diagnostics),
         extra_config_lines=boot_settings.config_txt.extra_lines,
-        **_config_values(boot_settings, emu68_version),
+        rgb2rtg_video=rgb2rtg_video,
+        rgb2rtg_soft_limit=rgb2rtg_soft_limit,
+        rgb2rtg_force_turbo=rgb2rtg_force_turbo,
+        **values,
     )
     return re.sub(r"\n{3,}", "\n\n", content)
 
@@ -327,6 +329,7 @@ def generate_boot_partition_files(
     emu68_version: str = "1.0.7",
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
+    rgb2rtg_video: str | None = None,
 ) -> None:
     """generate files for the EMU68BOOT (FAT32) partition"""
     boot_dir = ensure_dir(staging_dir / "EMU68BOOT")
@@ -338,6 +341,7 @@ def generate_boot_partition_files(
         emu68_version=emu68_version,
         usb_otg=usb_otg,
         boot_settings=boot_settings,
+        rgb2rtg_video=rgb2rtg_video,
     ).items():
         (boot_dir / filename).write_text(content, encoding="utf-8", newline="\n")
 
@@ -349,6 +353,7 @@ def render_boot_partition_files(
     emu68_version: str = "1.0.7",
     usb_otg: bool = False,
     boot_settings: Emu68BootSettings | None = None,
+    rgb2rtg_video: str | None = None,
 ) -> dict[str, str]:
     """Render the boot partition text files without writing them."""
 
@@ -362,6 +367,7 @@ def render_boot_partition_files(
         emu68_version=emu68_version,
         usb_otg=usb_otg,
         boot_settings=boot_settings,
+        rgb2rtg_video=rgb2rtg_video,
     )
 
     base_tokens = _cmdline_tokens(boot_settings, emu68_version, False)
@@ -380,6 +386,7 @@ def render_boot_partition_files(
             usb_otg=usb_otg,
             boot_settings=boot_settings,
             include_diagnostics=False,
+            rgb2rtg_video=rgb2rtg_video,
         )
     elif bus_test:
         files["cmdlineBAK.txt"] = " ".join(base_tokens) + "\n"

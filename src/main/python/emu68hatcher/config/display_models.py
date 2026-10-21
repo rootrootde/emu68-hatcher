@@ -34,12 +34,6 @@ class CustomScreenMode(BaseModel):
         )
 
 
-class WorkbenchTheme(str, Enum):
-    DEFAULT = "default"
-    HATCHER_LIGHT = "hatcher_light"
-    HATCHER_DARK = "hatcher_dark"
-
-
 class WorkbenchScreenMode(str, Enum):
     NATIVE = "native"
     VIDEOCORE_800X600 = "videocore_800x600"
@@ -101,25 +95,9 @@ class DisplayConfig(BaseModel):
     hdmi_mode: str = "1280*720-50"
     custom: CustomScreenMode | None = None
     workbench_mode: WorkbenchScreenMode = WorkbenchScreenMode.VIDEOCORE_1280X720
-    workbench_theme: WorkbenchTheme = WorkbenchTheme.DEFAULT
     picasso96_archive: Path | None = None
 
     model_config = ConfigDict(extra="forbid")
-
-    @model_validator(mode="before")
-    @classmethod
-    def _migrate_workbench_palette(cls, value):
-        if not isinstance(value, dict) or "workbench_palette" not in value:
-            return value
-        value = dict(value)
-        palette = value.pop("workbench_palette")
-        value.setdefault("workbench_theme", palette)
-        return value
-
-    @field_validator("workbench_theme", mode="before")
-    @classmethod
-    def _rename_dusk_theme(cls, value):
-        return WorkbenchTheme.HATCHER_LIGHT if value == "hatcher_dusk" else value
 
     @field_validator("picasso96_archive", mode="before")
     @classmethod

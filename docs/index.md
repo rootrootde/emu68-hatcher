@@ -15,7 +15,7 @@ Runs on macOS, Linux and Windows.
 - Partition layout editor (PFS3 + FFS), optional per-partition "extra content" directory to pre-load Work / Data volumes (WHDLoad games, backups, ...)
 - Build configs as JSON (save / load)
 - Build to **.img** file (sparse by default), flash to SD card after build, or write straight to SD card
-- Application and signed package-list update checks
+- Update checks for the app and its package list
 
 ## Known issues / limitations
 

@@ -1,13 +1,15 @@
-"""Eleven-stage build workflow from validation through optional flashing."""
+"""Twelve-stage build workflow from validation through optional flashing."""
 
 import logging
 import platform as _platform
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
 from emu68hatcher.builder.host.elevation import cleanup_elevation
+from emu68hatcher.builder.staging.receipts import StagingWriteLog
 from emu68hatcher.builder.state import (
     BuildLogCallback,
     BuildProgressCallback,
@@ -56,12 +58,32 @@ class BuildWorkflow:
         self._log_callback = log_callback
         self.state = BuildState()
         self._resolution: Resolution | None = None
+        # package and extras file writes on the boot partition, for the build receipts
+        self.write_log: StagingWriteLog | None = None
+        self.work_dir: Path | None = None
+        self.unfinished_image: Path | None = None
         self.logger = get_logger()
         self._cancelled = False
 
     def cancel(self) -> None:
         """request build cancellation"""
         self._cancelled = True
+
+    def is_cancelled(self) -> bool:
+        return self._cancelled
+
+    @property
+    def resolution(self) -> Resolution:
+        """package resolution, computed once per build"""
+        if self._resolution is None:
+            from emu68hatcher.builder.pipeline._selection import resolve_selection
+
+            self._resolution = resolve_selection(
+                self.config,
+                self.config.kickstart.version.value,
+                self.config.emu68_version.value,
+            )
+        return self._resolution
 
     def _update_state(
         self,
@@ -115,7 +137,7 @@ class BuildWorkflow:
         # log the chosen path BEFORE attach so the GUI log records it even if open fails
         self.logger.info(f"buildlog target: {path}")
         handler = attach_file_handler(
-            self.logger.logger,
+            self.logger,
             path,
             mode="w",
             fmt="%(asctime)s %(levelname)-7s %(message)s",
@@ -134,15 +156,19 @@ class BuildWorkflow:
 
     def _check_cancelled(self) -> None:
         """raise BuildCancelledError if cancelled"""
-        if self._cancelled:
+        if self.is_cancelled():
             raise BuildCancelledError("Build was cancelled by user")
 
     def _bring_target_disk_online(self) -> None:
         """windows: undo the Set-Disk -IsOffline applied at unmount"""
         from emu68hatcher.builder.host.disk_enum import find_disk, online_disk
         from emu68hatcher.config.schema import OutputType
+        from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
 
-        if self.config.output is None:
+        if get_platform_info().os != OperatingSystem.WINDOWS or self.config.output is None:
+            return
+        # without the helper the disk was never taken offline, and set-disk would be denied
+        if self.state.elevation is None:
             return
         targets: list[str] = []
         if self.config.output.type == OutputType.DEVICE:
@@ -205,7 +231,6 @@ class BuildWorkflow:
         src = image.image_path
         if final is None or src is None or src == final:
             return image
-        import shutil
 
         self._milestone(f"Moving image to {final}")
         final.parent.mkdir(parents=True, exist_ok=True)
@@ -216,6 +241,18 @@ class BuildWorkflow:
         from dataclasses import replace
 
         return replace(image, image_path=final, final_output_path=None)
+
+    def _remove_work_dir(self, image: CreatedImage | None) -> None:
+        """delete the work dir; a finished image built there still goes to the chosen path"""
+        if self.work_dir is None:
+            return
+        if image is not None and image.final_output_path is not None:
+            try:
+                self._finalize_output_move(image)
+            except OSError as error:
+                self.logger.warning(f"Image left at {image.image_path}, could not move it: {error}")
+                return
+        shutil.rmtree(self.work_dir, ignore_errors=True)
 
     def build(self) -> BuildResult:
         with use_catalog(self.catalog):
@@ -228,9 +265,11 @@ class BuildWorkflow:
         # GUI handler first: the buildlog probe below touches the output location, and its
         # breadcrumbs must reach the dialog if that goes wrong (console is invisible when frozen)
         gui_log_handler = BuildLogHandler(self)
-        self.logger.logger.addHandler(gui_log_handler)
+        self.logger.addHandler(gui_log_handler)
         buildlog_handler = None
         buildlog_path = None
+        phase = None
+        finalized = False
 
         try:
             buildlog_handler, buildlog_path = self._attach_build_log()
@@ -242,9 +281,9 @@ class BuildWorkflow:
             )
             self._log_platform_info()
 
-            phase = None
             for definition in PIPELINE_STAGES:
                 phase = definition.function(self, phase)
+                finalized = finalized or definition.stage == BuildStage.FINALIZE
                 self._check_cancelled()
 
             assert isinstance(phase, CreatedImage)
@@ -296,7 +335,14 @@ class BuildWorkflow:
             self._bring_target_disk_online()
             cleanup_elevation(self.state.elevation)
             self.state.elevation = None
-            self.logger.logger.removeHandler(gui_log_handler)
+            if self.unfinished_image is not None and not finalized:
+                try:
+                    self.unfinished_image.unlink(missing_ok=True)
+                    self.logger.info(f"Removed unfinished image {self.unfinished_image}")
+                except OSError as error:
+                    self.logger.warning(f"Could not remove unfinished image: {error}")
+            self._remove_work_dir(phase if finalized else None)
+            self.logger.removeHandler(gui_log_handler)
             if buildlog_handler is not None:
-                self.logger.logger.removeHandler(buildlog_handler)
+                self.logger.removeHandler(buildlog_handler)
                 buildlog_handler.close()

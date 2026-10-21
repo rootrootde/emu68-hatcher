@@ -118,9 +118,8 @@ class PartitionEditorModel:
             if part.bootable and boot_extra is not None:
                 part.extra_content_directory = boot_extra
 
-    def change_disk_size(self, disk_size: int) -> bool:
+    def change_disk_size(self, disk_size: int) -> None:
         self.disk_size = disk_size
-        return self.free_space < 0
 
     def set_boot_size_mb(self, size_mb: int) -> None:
         self.boot_size = round_to_mbr_sector(size_mb * 1024 * 1024)
@@ -210,30 +209,31 @@ class PartitionEditorModel:
             return
         self.partitions[row].filesystem = Filesystem(value)
 
-    def resize_pair(self, left: int, left_size: int, right: int, right_size: int) -> None:
+    def resize_pair(self, left: int, left_size: int, right: int, right_size: int) -> bool:
         if not 0 <= left < len(self.partitions):
-            return
+            return False
         left_part = self.partitions[left]
         if left_part.ags_reservation:
-            return
+            return False
         if left_size < self.minimum_size(left) or left_size % CYLINDER_SIZE:
-            return
+            return False
         if left_part.filesystem == Filesystem.PFS3 and left_size > PFS3_MAX_PARTITION_SIZE:
-            return
+            return False
         if 0 <= right < len(self.partitions):
             right_part = self.partitions[right]
             if right_part.ags_reservation:
-                return
+                return False
             if right_size < self.minimum_size(right) or right_size % CYLINDER_SIZE:
-                return
+                return False
             if right_part.filesystem == Filesystem.PFS3 and right_size > PFS3_MAX_PARTITION_SIZE:
-                return
+                return False
             if left_size + right_size != left_part.size + right_part.size:
-                return
+                return False
             right_part.size = right_size
         elif left_size > left_part.size + max(0, self.free_space):
-            return
+            return False
         left_part.size = left_size
+        return True
 
     def set_bootable(self, row: int, bootable: bool) -> None:
         if self.partitions[row].ags_reservation:

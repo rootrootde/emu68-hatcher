@@ -7,14 +7,12 @@ from PySide6.QtCore import QRegularExpression, Qt
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import (
     QFormLayout,
-    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QRadioButton,
-    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -29,6 +27,7 @@ from emu68hatcher.config.schema import (
 from emu68hatcher.data.package_loader import get_package_by_name
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.widgets.status_row import StatusRow
+from emu68hatcher.gui.work_areas import scroll_page
 
 # permissive dotted-quad: lets the field be typed; the schema does the real IPv4 check
 _IP_RE = QRegularExpression(r"^(\d{1,3})(\.\d{1,3}){0,3}$")
@@ -70,12 +69,8 @@ class NetworkTab(QWidget):
         # scroll wrapper so short windows scroll instead of squashing the field rows
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
         content = QWidget()
-        scroll.setWidget(content)
-        outer.addWidget(scroll)
+        outer.addWidget(scroll_page(content))
 
         layout = page_layout(content)
 
@@ -295,8 +290,11 @@ class NetworkTab(QWidget):
     def get_network_settings(self) -> NetworkSettings:
         # only read the IP fields in static mode, so a stale/half-typed value left in a
         # dhcp-mode field never reaches (and fails) schema validation
+        # address rows are shown only for roadshow and amitcp_ng; hidden rows read as dhcp
+        static_visible = self.radio_roadshow.isChecked() or self.radio_amitcp_ng.isChecked()
+
         def _iface(static: QRadioButton, addr: QLineEdit, mask: QLineEdit) -> InterfaceIp:
-            if not static.isChecked():
+            if not static_visible or not static.isChecked():
                 return InterfaceIp(mode=IpMode.DHCP)
             return InterfaceIp(
                 mode=IpMode.STATIC,
@@ -388,15 +386,13 @@ class NetworkTab(QWidget):
         ssid = self.wifi_ssid.text().strip()
         if not ssid:
             return None
-        password = self.wifi_password.text().strip()
+        password = self.wifi_password.text()
         if password and len(password) < 8:
             return None  # WPA needs >=8; treat a too-short password as incomplete
         return WifiConfig(ssid=ssid, password=password)
 
     def set_wifi_config(self, wifi: WifiConfig | None):
-        if wifi:
+        """None keeps the typed fields: saved configs never carry wifi credentials"""
+        if wifi is not None:
             self.wifi_ssid.setText(wifi.ssid)
             self.wifi_password.setText(wifi.password)
-        else:
-            self.wifi_ssid.clear()
-            self.wifi_password.clear()

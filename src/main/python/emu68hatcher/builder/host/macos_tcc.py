@@ -1,43 +1,23 @@
-"""trigger tccd to file hst-imager so it appears in full disk access"""
+"""full disk access for the app on macOS"""
 
 from __future__ import annotations
 
 import logging
-import shlex
+import os
 import subprocess
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
-def register_hst_imager_with_tcc(hst_imager: Path) -> bool:
-    """one osascript prompt + a deliberate eperm probe files the binary with tccd"""
-    if not hst_imager.is_file():
-        return False
-    # probe /dev/disk0 (always present); root + tcc denial registers the subject
-    inner = f"{shlex.quote(str(hst_imager))} info /dev/disk0 >/dev/null 2>&1 ; true"
-    escaped = inner.replace("\\", "\\\\").replace('"', '\\"')
-    prompt = (
-        "Emu68 Hatcher needs to register hst-imager with macOS "
-        "so it appears in Full Disk Access.\n\n"
-        "Enter your password once, then enable hst-imager "
-        "in the settings pane that opens next."
-    )
-    prompt_esc = prompt.replace("\\", "\\\\").replace('"', '\\"')
-    script = f'do shell script "{escaped}" with administrator privileges with prompt "{prompt_esc}"'
+def has_full_disk_access() -> bool:
+    """the system tcc folder is listable only with full disk access"""
     try:
-        result = subprocess.run(
-            ["osascript", "-e", script],
-            timeout=120,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-    except (OSError, subprocess.SubprocessError) as e:
-        logger.warning(f"tcc registration probe failed: {e}")
+        os.listdir("/Library/Application Support/com.apple.TCC")
+    except FileNotFoundError:
+        return True
+    except OSError:
         return False
-    # rc != 0 = user cancelled the prompt; nothing was registered
-    return result.returncode == 0
+    return True
 
 
 def open_full_disk_access_pane() -> bool:

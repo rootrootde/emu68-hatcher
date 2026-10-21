@@ -40,11 +40,6 @@ class AGSEntry:
 class AGSComponentInventory:
     role: AGSRole
     partition: AGSPartition
-    source_subpath: str
-    entries: tuple[AGSEntry, ...]
-    content_bytes: int
-    file_count: int
-    directory_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,7 +51,6 @@ class AGSInventory:
     partitions: tuple[AGSPartition, ...]
     components: tuple[AGSComponentInventory, ...]
     marker_hashes: Mapping[str, str]
-    warnings: tuple[str, ...]
     source_scripts: Mapping[str, bytes] = field(default_factory=lambda: MappingProxyType({}))
 
     def component(self, role: AGSRole) -> AGSComponentInventory:
@@ -68,24 +62,6 @@ class AGSInventory:
     @property
     def whdload(self) -> AGSPartition:
         return self.component("whdload").partition
-
-    @property
-    def entries(self) -> tuple[AGSEntry, ...]:
-        return self.component("whdload").entries
-
-    @property
-    def content_bytes(self) -> int:
-        return sum(component.content_bytes for component in self.components)
-
-    @property
-    def file_count(self) -> int:
-        return sum(component.file_count for component in self.components)
-
-    @property
-    def required_bytes(self) -> int:
-        from emu68hatcher.builder.ags_requirements import calculate_ags_requirements
-
-        return sum(r.minimum_partition_bytes for r in calculate_ags_requirements(self.components))
 
 
 def _check_cancel(cancel_check: CancelCheck) -> None:
@@ -207,7 +183,7 @@ def _entry_path(raw: dict) -> str:
     return "/".join(components)
 
 
-def _entry(raw: dict, *, host_defaults: bool = False) -> AGSEntry:
+def _entry(raw: dict) -> AGSEntry:
     path = _entry_path(raw)
     kind = raw.get("type")
     size = raw.get("size")
@@ -217,11 +193,7 @@ def _entry(raw: dict, *, host_defaults: bool = False) -> AGSEntry:
     if not isinstance(properties, dict):
         raise BuildError(f"AGS image has no metadata for {path}")
     try:
-        protection = int(
-            properties.get("$ProtectionBits", "0")
-            if host_defaults
-            else properties["$ProtectionBits"]
-        )
+        protection = int(properties["$ProtectionBits"])
     except (KeyError, ValueError, TypeError) as exc:
         raise BuildError(f"AGS image has no protection bits for {path}") from exc
     comment = properties.get("Comment", "")
@@ -334,7 +306,7 @@ def inspect_ags_component(
             required_menu = {"ags2", "ags2menu", "ags2.conf", "os", "scripts"}
             if required_menu - names:
                 raise BuildError("AGS source is missing portable menu files")
-    return AGSComponentInventory(role, partition, "", (), partition.size, 0, 0)
+    return AGSComponentInventory(role, partition)
 
 
 def inspect_ags_source(

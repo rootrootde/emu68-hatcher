@@ -36,7 +36,6 @@ def list_disks() -> list[DiskInfo]:
                 device=f"/dev/{identifier}",
                 name=name or identifier,
                 size_bytes=size,
-                is_removable=True,
                 is_system_disk=bool(info.get("SystemImage"))
                 or any(mount in ("/", "/System/Volumes/Data") for mount in mounted),
                 mounted_partitions=mounted,

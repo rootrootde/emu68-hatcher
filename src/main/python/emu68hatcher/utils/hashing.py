@@ -1,44 +1,25 @@
-"""file hashing utils"""
+"""MD5 and sha256 checks for downloads and install media."""
 
 import hashlib
-from collections.abc import Callable
-from enum import Enum
 from pathlib import Path
 
 
-class HashAlgorithm(str, Enum):
-    """supported hash algorithms"""
-
-    MD5 = "md5"
-
-
-def calculate_hash(
-    path: Path,
-    algorithm: HashAlgorithm = HashAlgorithm.MD5,
-    chunk_size: int = 65536,
-    progress_callback: Callable[[int, int], None] | None = None,
-) -> str:
-    """calculate hash of a file"""
-    hasher = hashlib.new(algorithm.value)
-    file_size = path.stat().st_size
-    bytes_read = 0
-
-    with open(path, "rb") as f:
-        while chunk := f.read(chunk_size):
+def _file_digest(path: Path, algorithm: str) -> str:
+    hasher = hashlib.new(algorithm)
+    with path.open("rb") as file:
+        while chunk := file.read(65536):
             hasher.update(chunk)
-            bytes_read += len(chunk)
-            if progress_callback:
-                progress_callback(bytes_read, file_size)
-
     return hasher.hexdigest()
 
 
-def verify_hash(
-    path: Path,
-    expected: str,
-    algorithm: HashAlgorithm = HashAlgorithm.MD5,
-) -> bool:
-    """case-insensitive check; return False if path missing / hash mismatch"""
-    if not path.exists():
-        return False
-    return calculate_hash(path, algorithm).lower() == expected.lower()
+def calculate_hash(path: Path) -> str:
+    return _file_digest(path, "md5")
+
+
+def calculate_sha256(path: Path) -> str:
+    return _file_digest(path, "sha256")
+
+
+def verify_hash(path: Path, expected: str) -> bool:
+    """Case-insensitive check; return False if the path is missing."""
+    return path.exists() and calculate_hash(path).lower() == expected.lower()

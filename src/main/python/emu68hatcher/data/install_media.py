@@ -3,7 +3,10 @@
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
+
+from emu68hatcher.data.data_manager import load_yaml_data
 
 # dirs pruned from tree-scans so they don't eat the max_files budget
 SCAN_SKIP_DIRS = {".git", ".venv", "__pycache__", "node_modules", ".tox", ".mypy_cache"}
@@ -43,14 +46,43 @@ class IdentifiedInstallMedia:
     workbench_version: str  # e.g., "3.1", "3.2"
 
 
+@dataclass
+class InstallMediaInfo:
+    """information about install media"""
+
+    workbench_version: str
+    adf_name: str
+    friendly_name: str
+
+
+@cache
+def _install_media_by_hash() -> dict[str, InstallMediaInfo]:
+    """lowercased md5 hash -> InstallMediaInfo, loaded from install_media_hashes.yaml"""
+    out: dict[str, InstallMediaInfo] = {}
+    for entry in load_yaml_data("install_media_hashes"):
+        hash_val = (entry.get("hash") or "").lower()
+        if not hash_val:
+            continue
+        out[hash_val] = InstallMediaInfo(
+            workbench_version=str(entry.get("version") or ""),
+            adf_name=entry.get("adf_name") or "",
+            friendly_name=entry.get("friendly_name") or "",
+        )
+    return out
+
+
+def lookup_install_media(md5_hash: str) -> InstallMediaInfo | None:
+    """look up install media by md5 hash"""
+    return _install_media_by_hash().get(md5_hash.lower())
+
+
 def scan_install_media_by_hash(
     directories: Path | list[Path] | tuple[Path, ...],
     max_files: int = 5000,
     cancel_check: Callable[[], bool] | None = None,
 ) -> tuple[list["IdentifiedInstallMedia"], bool]:
     """scan one or more dirs for install media, MD5-identify via install_media_hashes.yaml"""
-    from emu68hatcher.data.data_manager import lookup_install_media
-    from emu68hatcher.utils.hashing import HashAlgorithm, calculate_hash
+    from emu68hatcher.utils.hashing import calculate_hash
 
     dirs = [directories] if isinstance(directories, Path) else list(directories)
 
@@ -88,7 +120,7 @@ def scan_install_media_by_hash(
         if cancel_check and cancel_check():
             break
         try:
-            md5 = calculate_hash(path, HashAlgorithm.MD5)
+            md5 = calculate_hash(path)
             info = lookup_install_media(md5)
 
             if info:
@@ -107,7 +139,7 @@ def scan_install_media_by_hash(
 
 
 def get_required_install_media(workbench_version: str) -> list[str]:
-    """required ADF_Names for a Workbench version (locale disks excluded)"""
+    """required ADF_Names for a Workbench version, including the English locale disks"""
     requirements = {
         "3.1": [
             "Workbench3_1",
@@ -125,6 +157,8 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Classes3_2",
             "DiskDoctor3_2",
             "Backdrops3_2",
+            "Locale3_2",
+            "LocaleEN3_2",
         ],
         "3.2.2.1": [
             # base 3.2 disks
@@ -140,6 +174,9 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Update3_2_2_1",
             "Classes3_2_2",
             "DiskDoctor3_2_2",
+            "Locale3_2",
+            "LocaleEN3_2",
+            "LocaleEN3_2_2",
         ],
         "3.2.3": [
             # base 3.2 disks
@@ -155,6 +192,9 @@ def get_required_install_media(workbench_version: str) -> list[str]:
             "Extras3_2_3",
             "Classes3_2_3",
             "DiskDoctor3_2_3",
+            "Locale3_2",
+            "LocaleEN3_2",
+            "LocaleEN3_2_3",
         ],
         "3.9": [
             # 3.9 installs from a single CD volume, not floppies

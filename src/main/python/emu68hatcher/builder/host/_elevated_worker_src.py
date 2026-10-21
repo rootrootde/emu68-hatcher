@@ -194,7 +194,6 @@ def main(ipc_dir):
     trace(f"worker started pid={__import__('os').getpid()}")
     (ipc_dir / "ready").touch()
     _grant_user_read(ipc_dir / "ready")
-    cancel_file = ipc_dir / "cancel"
     while True:
         if (ipc_dir / "quit").exists():
             break
@@ -208,6 +207,7 @@ def main(ipc_dir):
                 continue
             timeout = spec.get("timeout")
             seq = cmd_file.stem.split("-", 1)[-1]
+            cancel_file = ipc_dir / f"cancel-{seq}"
             trace(f"seq={seq} picked up cmd file")
             rc, out, err, cancelled = run_one(argv, timeout, ipc_dir, cancel_file, seq)
             if cancel_file.exists():

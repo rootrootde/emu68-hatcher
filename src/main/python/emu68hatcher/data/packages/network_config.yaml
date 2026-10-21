@@ -1,7 +1,7 @@
 name: network_config
-friendly_name: Network Config
+friendly_name: Network Settings
 group: System
-description: 'shared network settings and launchers'
+description: 'shared network settings and the Network Settings icon'
 versions:
 - '3.1'
 - '3.2'
@@ -11,21 +11,19 @@ versions:
 download:
   source: local
 install:
+# NetworkConfig.rexx has no launcher any more; kept as a Shell fallback
+# (rx S:NetworkConfig.rexx, rx S:NetworkConfig.rexx ONLINE WIFI|ETHERNET) and for
+# the licensed Roadshow boot-time SYNCTIME call
 - from: System/S/NetworkConfig.rexx
   to: S/
-- from: System/Utilities/Network Config
+- from: System/Utilities/Network Settings
   to: Utilities/
-- from: System/Utilities/Network Config.info
+- from: System/Utilities/Network Settings.info
   to: Utilities/
-- from: System/Utilities/Connect WiFi
-  to: Utilities/
-- from: System/Utilities/Connect WiFi.info
-  to: Utilities/
-- from: System/Utilities/Connect Ethernet
-  to: Utilities/
-- from: System/Utilities/Connect Ethernet.info
-  to: Utilities/
+  stack: 65536
 requires:
+- hatcher_prefs
+# only the fallback script still needs rexxreqtools; drop both together
 - rexxreqtools
 - ethernet_driver
 - emu68_wifi

@@ -70,7 +70,11 @@ def _ensure_wbstartup_autorun(workflow: BuildWorkflow, dest_dir: Path, exe_name:
         workflow.logger.info(f"relocate: gave {exe_name} a WBStartup icon (DONOTWAIT)")
         return
     # an icon came across (3.1/3.2): make sure DONOTWAIT is set so WB backgrounds it
-    tooltypes = read_info_tooltypes(info)
+    try:
+        tooltypes = read_info_tooltypes(info)
+    except (ValueError, OSError) as exc:
+        workflow.logger.warning(f"relocate: cannot read {info.name} ({exc}); DONOTWAIT not checked")
+        return
     if not any(t.upper().startswith("DONOTWAIT") for t in tooltypes):
         write_info_tooltypes(info, [*tooltypes, "DONOTWAIT"])
         workflow.logger.info(f"relocate: added DONOTWAIT to {exe_name}.info")

@@ -12,15 +12,17 @@ from emu68hatcher.builder.pipeline.validate_archives import (
 )
 from emu68hatcher.builder.pipeline.validate_output import validate_output_target
 from emu68hatcher.builder.state import BuildStage, ValidatedInputs
+from emu68hatcher.config.partition_helpers import validate_partition_layout
 from emu68hatcher.config.schema import NetworkStack
+from emu68hatcher.data.icon_sets import format_adf_name
 from emu68hatcher.data.install_media import (
     check_install_media_complete,
     get_required_install_media,
     scan_install_media_by_hash,
 )
 from emu68hatcher.data.rom_detection import (
-    find_kickstart_for_version,
     identify_kickstart,
+    pick_boot_rom,
     scan_for_kickstart_roms,
 )
 
@@ -30,9 +32,15 @@ if TYPE_CHECKING:
 
 def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
     workflow._update_state(BuildStage.VALIDATE, 0.0, "Validating configuration...")
+    from emu68hatcher.builder.rgb2rtg import validate_rgb2rtg
+
+    validate_rgb2rtg(workflow)
+    _check_partition_layout(workflow)
     existing_dirs = _existing_asset_directories(workflow)
     kickstart_version = workflow.config.kickstart.version.value
-    rom_path, rom_info = _resolve_rom(workflow, existing_dirs, kickstart_version)
+    rom_path, rom_info, whdload_roms = _resolve_rom(workflow, existing_dirs, kickstart_version)
+    if workflow.config.rgb2rtg.enabled and rom_info.get("model") != "A1200":
+        raise BuildError("RGB2RTG requires an A1200 ROM and A1200/PiStorm32-lite hardware")
     found_media = _resolve_media(workflow, existing_dirs, kickstart_version)
     _check_icon_set_adf(workflow, found_media, kickstart_version)
     _check_optional_package_adfs(workflow, found_media, kickstart_version)
@@ -77,7 +85,22 @@ def stage_validate(workflow: BuildWorkflow, _previous=None) -> ValidatedInputs:
         roadshow_archive_kind=roadshow_kind,
         picasso96_archive_path=picasso96_path,
         ags_plan=ags_plan,
+        whdload_roms=whdload_roms,
     )
+
+
+def _check_partition_layout(workflow: BuildWorkflow) -> None:
+    partitions = workflow.config.partitions
+    if partitions is None:
+        return
+    boot, id76 = partitions.layout
+    errors = validate_partition_layout(partitions.disk_size, boot.size, id76.amiga_partitions or [])
+    if errors:
+        raise BuildError(
+            "The partition layout is not valid:\n"
+            + "\n".join(f"  {error}" for error in errors)
+            + "\n\nFix the partition layout under Storage."
+        )
 
 
 def _existing_asset_directories(workflow: BuildWorkflow) -> list[Path]:
@@ -97,15 +120,21 @@ def _resolve_rom(
     workflow: BuildWorkflow,
     directories: list[Path],
     kickstart_version: str,
-) -> tuple[Path, dict]:
+) -> tuple[Path, dict, dict[str, Path]]:
     workflow._update_state(progress=20.0)
     workflow._milestone(f"Scanning {len(directories)} asset directories for Kickstart ROM")
-    rom_path = find_kickstart_for_version(directories, kickstart_version)
-    if rom_path:
-        workflow.logger.info(f"Auto-detected Kickstart ROM: {rom_path}")
-        return rom_path, identify_kickstart(rom_path)
-
     found, truncated = scan_for_kickstart_roms(directories)
+    whdload_roms: dict[str, Path] = {}
+    for rom in found:
+        name = rom.get("whdload_name")
+        if name and not rom.get("excluded"):
+            whdload_roms.setdefault(name, rom["path"])
+
+    rom_path = pick_boot_rom(found, kickstart_version)
+    if rom_path is not None:
+        workflow.logger.info(f"Auto-detected Kickstart ROM: {rom_path}")
+        return rom_path, identify_kickstart(rom_path), whdload_roms
+
     cap_hint = (
         " A scanned directory hit the 5000-file limit, so the ROM may have been skipped."
         if truncated
@@ -129,20 +158,23 @@ def _resolve_media(
     workflow._update_state(progress=40.0)
     workflow._milestone("Scanning for install media (ADFs/ISOs)")
     found, truncated = scan_install_media_by_hash(directories)
+    workflow.logger.info(f"Found {len(found)} install media files")
     _, missing = check_install_media_complete(found, kickstart_version)
-    cap_hint = " (scan limit reached)" if truncated else ""
-    if found:
-        workflow.logger.info(f"Found {len(found)} install media files")
-        if missing:
-            workflow.logger.warning(
-                f"Missing install media for {kickstart_version}: {missing}{cap_hint}"
-            )
-    else:
-        required = get_required_install_media(kickstart_version)
-        workflow.logger.warning(
-            f"No install media found. Required for {kickstart_version}: {required}{cap_hint}"
-        )
-    return found
+    if not missing:
+        return found
+    cap_hint = (
+        " A scanned directory hit the 5000-file limit, so some media may have been skipped."
+        if truncated
+        else ""
+    )
+    raise BuildError(
+        f"Missing install media for AmigaOS {kickstart_version}: "
+        + ", ".join(format_adf_name(name) for name in missing)
+        + ". Scanned: "
+        + ", ".join(str(path) for path in directories)
+        + f".{cap_hint} Copy the missing files into one of these directories, or add "
+        "the directory that holds them under System > AmigaOS & files."
+    )
 
 
 def _check_optional_package_adfs(
@@ -152,29 +184,23 @@ def _check_optional_package_adfs(
 ) -> None:
     from emu68hatcher.builder.pipeline._selection import get_resolution
     from emu68hatcher.data.package_loader import get_adf_rules_for_version
+    from emu68hatcher.data.package_selection import missing_optional_adfs
 
-    enabled = get_resolution(workflow).selected
-    core_required = set(get_required_install_media(kickstart_version))
-    found_names = {media.adf_name for media in found_media}
-    missing: dict[str, list[str]] = {}
-    for rule in get_adf_rules_for_version(kickstart_version):
-        if rule.mandatory or not rule.package:
-            continue
-        if rule.package.lower() not in enabled:
-            continue
-        if rule.adf in core_required or rule.adf in found_names:
-            continue
-        missing.setdefault(rule.adf, []).append(rule.package)
+    missing = missing_optional_adfs(
+        get_adf_rules_for_version(kickstart_version),
+        get_resolution(workflow).selected,
+        workflow.config.icon_set,
+        {media.adf_name for media in found_media},
+        set(get_required_install_media(kickstart_version)),
+    )
     if not missing:
         return
-    lines = [
-        f"  {adf}  (required by: {', '.join(sorted(set(packages)))})"
-        for adf, packages in sorted(missing.items())
-    ]
+    lines = [f"  {adf}  (required by: {', '.join(packages)})" for adf, packages in missing.items()]
     raise BuildError(
         "Enabled package(s) need install media that wasn't found:\n"
         + "\n".join(lines)
-        + "\n\nAdd the missing ADFs or disable the packages in the Software tab."
+        + "\n\nAdd the missing ADFs, or untick the packages on the Software page or the "
+        "languages under System > AmigaOS & files > Languages."
     )
 
 

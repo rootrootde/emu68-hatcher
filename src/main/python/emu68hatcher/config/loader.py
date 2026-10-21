@@ -14,6 +14,26 @@ class ConfigurationError(Exception):
     pass
 
 
+# keys older saves may carry that the schema no longer has
+_RETIRED_KEYS: tuple[tuple[str, ...], ...] = (
+    ("display", "workbench_theme"),
+    ("display", "workbench_palette"),
+    ("ags_import", "legacy_content_device"),
+    ("kickstart", "rom_directory"),
+    ("install_media",),
+)
+
+
+def _drop_retired_keys(data: dict[str, Any]) -> dict[str, Any]:
+    for *parents, key in _RETIRED_KEYS:
+        node = data
+        for name in parents:
+            node = node.get(name) if isinstance(node, dict) else None
+        if isinstance(node, dict):
+            node.pop(key, None)
+    return data
+
+
 def _migrate_1_0(data: dict[str, Any]) -> dict[str, Any]:
     migrated = deepcopy(data)
     migrated.pop("metadata", None)
@@ -39,13 +59,12 @@ def _migrate_1_1(data: dict[str, Any]) -> dict[str, Any]:
     migrated = deepcopy(data)
     ags = migrated.get("ags_import")
     if isinstance(ags, dict) and "content_device" in ags:
-        device = ags.pop("content_device")
+        ags.pop("content_device")
         ags.pop("scope", None)
         ags.update(
             enabled=True,
             components={"whdload": True, "games": False, "emulators": False, "media": False},
             allocation_state="pending",
-            legacy_content_device=device,
         )
     migrated["version"] = "1.2.0"
     return migrated
@@ -107,7 +126,7 @@ def load_config(path: str | Path) -> BuildConfig:
 
     try:
         raw = json.loads(content)
-        return BuildConfig.model_validate(migrate_config_data(raw))
+        return BuildConfig.model_validate(_drop_retired_keys(migrate_config_data(raw)))
     except ConfigurationError:
         raise
     except Exception as e:

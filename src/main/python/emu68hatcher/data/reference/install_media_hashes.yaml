@@ -2,1301 +2,743 @@
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: e31fa35ea803e0904fd55177934668cd
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: a0946b3892f19add33c7e9d09164b2d7
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 4002bdc6209e1eeef533b4c7cfbc5726
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: c1c673eba985e9ab0888c5762cfa3d8f
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: f69233117f2d0145bcfb976df65a251e
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: 2d02e4ef01da3879afb2df6618e157fa
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: 3efe8aecb0e5d3e795454412f0817e18
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 86c1bbfc9abc55762a69570e207509ad
   version: '3.1'
   adf_name: Extras3_1
   friendly_name: Extras 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 38d9ba1365a290b458d9727084ecf04a
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: 6fae8b94bde75497021a044bdbf51abc
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: 3dea31af880c974ba3c32abdf221e507
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: 49fc786cffd18544b76d72059c9fd9e1
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: c3f0dac18d762bc9ad048e617c8781b3
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 81a7347d0f1ddd2e80b275cf0311c008
   version: '3.1'
   adf_name: Fonts3_1
   friendly_name: Fonts 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 3de185569a39137bd93fb52c514451ff
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: 7e33df625ea699e8987f05839bc1203d
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: a737196914c34b4792512c0407d01dc8
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: e719f14eb1ddb96a803cefd8247b3274
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: f92b33882bb809839e94b7324c9a0cd9
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: c5be06daf40d4c3ace4eac874d9b48b1
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: b6135339611848f26b426bc2d688899a
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: d541232932ebbb5682572ff770920703
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: e862173504862dba2f43f0faef5a9715
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 87d85b40d0dc408a7c800a2085a62bd3
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 2c48acf88445ace751397fb3b43a1f42
   version: '3.1'
   adf_name: Install3_1
   friendly_name: Install 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: f96ae483310bfe768202792810774356
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: d124194e27d38cf26931c42f260d2c61
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: d0bbc7d1f6a5edb826753a850c74305f
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 3a1c0c1320b1d209db7d29e059a5333e
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: b53c9ff336e168643b10c4a9cfff4276
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: 08f87d494ea4b1d30fa71116a6590176
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: 9dac9e2ac45c0d7fb0c3e7cfc594595e
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: 14a9db231ba264bd226c2cf9fa471a25
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 126a9fd044f7b357e694620a35cec5dd
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: f4874c52ce56fd0bd9133b1540a2c892
   version: '3.1'
   adf_name: Locale3_1
   friendly_name: Locale 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: a223ca45c6bc684c3d2616c925c531d9
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: 376a42ff2b4a96d3b4350aa371507aba
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 3e7b4b677892e3463cf90a6ad03a99e0
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 9a842d2972707c7d95d908e06355e418
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: ca72f1fe62cffbecd849230cb12c89bb
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 4fa1401aeb814d3ed138f93c54a5caef
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: dd218806cf2460789f8d7ac5ffd4d15d
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: a98dc790dc63b92f114512589ef2b983
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: 3cc356ab7efceb4176c0d646777677b0
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 1f13edb7c85204e687a7c263806af9fd
   version: '3.1'
   adf_name: Storage3_1
   friendly_name: Storage 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 1fb61921fcaebe926d78257ff658431b
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 1
 - hash: 5c134bfb89b1022c810486f54dba9976
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: b00f6f4189086943e9c5347a79695bc1
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: df591e3df2ce8ff1cddcdf1aaf5d01dd
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: d98ec6ea56b669ad64fd2f9a985560bd
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: 5fe33149f3721926976bf8c165416e57
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Commodore
-  media_type: Disk
-  sequence: 2
 - hash: e7b3a83df665a85e7ec27306a152b171
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 3
 - hash: d9f5a43f16bb21c3efb1cde85c2dac39
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Cloanto
-  media_type: Disk
-  sequence: 4
 - hash: 4a91c7da8482725d6f8881927d391325
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 5
 - hash: db8f3fcb10b06ed2292dc190454ecc62
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 15de044e692f69920b4143b832f8d112
   version: '3.1'
   adf_name: Workbench3_1
   friendly_name: Workbench 3.1
-  source: Escom
-  media_type: Disk
-  sequence: 6
 - hash: 2236629e7c316ff907b7e0cb1ee0ad18
   version: '3.2'
   adf_name: Backdrops3_2
   friendly_name: Backdrops 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: fd11e54b038d5f236248a941125065db
   version: '3.2'
   adf_name: Classes3_2
   friendly_name: Classes 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 497d0aa96229a0e7fd2c475163d7462a
   version: '3.2'
   adf_name: DiskDoctor3_2
   friendly_name: DiskDoctor 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 4f0c3383a10e62fdea5e5758a9238223
   version: '3.2'
   adf_name: Extras3_2
   friendly_name: Extras 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: e03eb0505fb244aaf1c7486f6fe61ede
   version: '3.2'
   adf_name: Fonts3_2
   friendly_name: Fonts 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 26ef4d09cf71b7fdbd9cc68f333b7373
   version: '3.2'
   adf_name: GlowIcons3_2
   friendly_name: GlowIcons 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 9b03a0c0ee996704449c8a1a318bfab6
   version: '3.2'
   adf_name: HDSetup3_2
   friendly_name: HDSetup 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 71edc1249c013d60380d3db81fd87ae7
   version: '3.2'
   adf_name: Install3_2
   friendly_name: Install 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: b697a03f0620b5e06947b5e9d7b16142
   version: '3.2'
   adf_name: Locale3_2
   friendly_name: Locale 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 3d36568bce19234b84fe88aa9629f5bf
   version: '3.2'
   adf_name: LocaleDE3_2
   friendly_name: LocaleDE 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 3a80e4f6b0d2d95f727dc45f99068ad8
   version: '3.2'
   adf_name: LocaleDK3_2
   friendly_name: LocaleDK 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 7170c0bc81b7daeee39552279dada58c
   version: '3.2'
   adf_name: LocaleEN3_2
   friendly_name: LocaleEN 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 5e2eb9acef8e7b062d103db3fd270a27
   version: '3.2'
   adf_name: LocaleES3_2
   friendly_name: LocaleES 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 9f65d321d92d72e17d1f744f47d16323
   version: '3.2'
   adf_name: LocaleFR3_2
   friendly_name: LocaleFR 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: f93f2cd799ad1356adf4db01e20218f1
   version: '3.2'
   adf_name: LocaleGR3_2
   friendly_name: LocaleGR 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: ad728c377ce3d7f4bd6adba8419a81ae
   version: '3.2'
   adf_name: LocaleIT3_2
   friendly_name: LocaleIT 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: e7b7b5a6583fca0d302201a1cb0b2829
   version: '3.2'
   adf_name: LocaleNL3_2
   friendly_name: LocaleNL 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 1a9b83a7385c1aab8094fc1d72123437
   version: '3.2'
   adf_name: LocaleNO3_2
   friendly_name: LocaleNO 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 1aaa138753cec33a55f48d869780b7c8
   version: '3.2'
   adf_name: LocalePL3_2
   friendly_name: LocalePL 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 425bbeb03c74fb275d643644bdd1af9a
   version: '3.2'
   adf_name: LocalePT3_2
   friendly_name: LocalePT 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: c45409fca931fc1ce76f6713f27ccd00
   version: '3.2'
   adf_name: LocaleRU3_2
   friendly_name: LocaleRU 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: a588dbc1ee7bf43e0e79694e10e48669
   version: '3.2'
   adf_name: LocaleSE3_2
   friendly_name: LocaleSE 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 6f9a623611fd19e084f7be2106ecfd99
   version: '3.2'
   adf_name: LocaleTR3_2
   friendly_name: LocaleTR 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 8d88812406cbf373cdb38148096972b9
   version: '3.2'
   adf_name: LocaleUK3_2
   friendly_name: LocaleUK 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 66c46918b7005167f1b65e444d0b95f7
   version: '3.2'
   adf_name: MMULibs3_2
   friendly_name: MMULibs 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 2d46a2856152256771883f212a4e462d
   version: '3.2'
   adf_name: ModulesA12003_2
   friendly_name: ModulesA1200 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 9b18dea310bf073ef9cae2a120254d92
   version: '3.2'
   adf_name: ModulesA20003_2
   friendly_name: ModulesA2000 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 99fdc21e434c2b2a988ba96b69d46389
   version: '3.2'
   adf_name: ModulesA30003_2
   friendly_name: ModulesA3000 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 729ddf87056936d77ee8287f9ad090a7
   version: '3.2'
   adf_name: ModulesA4000D3_2
   friendly_name: ModulesA4000D 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: f8eddbca10560582b99a2f4555ad0620
   version: '3.2'
   adf_name: ModulesA4000T3_2
   friendly_name: ModulesA4000T 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 2af6b84449996440211e9547660b10b6
   version: '3.2'
   adf_name: ModulesA5003_2
   friendly_name: ModulesA500 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: c6474df1d52300a4993f13a394701697
   version: '3.2'
   adf_name: ModulesA6003_2
   friendly_name: ModulesA600 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 00b2c4d420c933894151c43dc3a24155
   version: '3.2'
   adf_name: ModulesCD323_2
   friendly_name: ModulesCD32 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 3726fab6ec5cfc48f7c2368005964d90
   version: '3.2'
   adf_name: Storage3_2
   friendly_name: Storage 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 5edf0b7a10409ef992ea351565ef8b6c
   version: '3.2'
   adf_name: Workbench3_2
   friendly_name: Workbench 3.2
-  source: Hyperion (3.2 base)
-  media_type: Disk
-  sequence: 1
 - hash: 727c5adca47611ae1b6ed5155808a054
   version: '3.2.2'
   adf_name: Classes3_2_2
   friendly_name: Classes 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 884bd1b279b19e4d351f321e35a0e776
   version: '3.2.2'
   adf_name: Classes3_2_2
   friendly_name: Classes 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 10c22b666dd9cb2dff369cec28e500be
   version: '3.2.2'
   adf_name: DiskDoctor3_2_2
   friendly_name: DiskDoctor 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: b5e88900328258627da1d03000b82c5a
   version: '3.2.2'
   adf_name: DiskDoctor3_2_2
   friendly_name: DiskDoctor 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 7056763dc073e5c5320c9fea2e9bd8f6
   version: '3.2.2'
   adf_name: LocaleCZ3_2_2
   friendly_name: LocaleCZ 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: bfe78fe5710f643632ebcab2d8f39358
   version: '3.2.2'
   adf_name: LocaleCZ3_2_2
   friendly_name: LocaleCZ 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 56fa3189b21eeffcaf2c9ba385c30671
   version: '3.2.2'
   adf_name: LocaleDE3_2_2
   friendly_name: LocaleDE 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: c21563f7fa0844bcb84855ff339a5cbf
   version: '3.2.2'
   adf_name: LocaleDE3_2_2
   friendly_name: LocaleDE 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: f3d9420a0d31ec4c91cc97614eac2a83
   version: '3.2.2'
   adf_name: LocaleDK3_2_2
   friendly_name: LocaleDK 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 3a1f3bfe138b3556b05791864bd908db
   version: '3.2.2'
   adf_name: LocaleDK3_2_2
   friendly_name: LocaleDK 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: bde7058f25e80eb602ae0176c08e7250
   version: '3.2.2'
   adf_name: LocaleEN3_2_2
   friendly_name: LocaleEN 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 965218b79f20579e1a9b82e5ad5293d2
   version: '3.2.2'
   adf_name: LocaleEN3_2_2
   friendly_name: LocaleEN 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 6a0786f5d1c5582a7cc0f5c270132fc1
   version: '3.2.2'
   adf_name: LocaleES3_2_2
   friendly_name: LocaleES 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 476c5028ece378553648892b491d016e
   version: '3.2.2'
   adf_name: LocaleES3_2_2
   friendly_name: LocaleES 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: c832567c3afb3f77394672fb73fed605
   version: '3.2.2'
   adf_name: LocaleFR3_2_2
   friendly_name: LocaleFR 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 7091e70daa56329d68850ec9f1f3e851
   version: '3.2.2'
   adf_name: LocaleFR3_2_2
   friendly_name: LocaleFR 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 4d4436a7a8f7e877493aca8c0cab4157
   version: '3.2.2'
   adf_name: LocaleGR3_2_2
   friendly_name: LocaleGR 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: f277608a1fdf558be104a2950c737dee
   version: '3.2.2'
   adf_name: LocaleGR3_2_2
   friendly_name: LocaleGR 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 2cc003e0fd14635fce4c131df636eb60
   version: '3.2.2'
   adf_name: LocaleIT3_2_2
   friendly_name: LocaleIT 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 2c68842d036c54eafa98a335e19ec1fe
   version: '3.2.2'
   adf_name: LocaleIT3_2_2
   friendly_name: LocaleIT 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: d4ab095c78242711234ff809258d4755
   version: '3.2.2'
   adf_name: LocaleNL3_2_2
   friendly_name: LocaleNL 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 524b92f4ded39d6e16f04d5fb0b2f435
   version: '3.2.2'
   adf_name: LocaleNL3_2_2
   friendly_name: LocaleNL 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 47877472b06c94bd604c7520f53e84e2
   version: '3.2.2'
   adf_name: LocaleNO3_2_2
   friendly_name: LocaleNO 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: c94355c792bada78e18dc841a5b4eb50
   version: '3.2.2'
   adf_name: LocaleNO3_2_2
   friendly_name: LocaleNO 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 34517e9c943758294ce6f1ba69d5c187
   version: '3.2.2'
   adf_name: LocalePL3_2_2
   friendly_name: LocalePL 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 306c3cb0519abe6707c4c209cdd35189
   version: '3.2.2'
   adf_name: LocalePL3_2_2
   friendly_name: LocalePL 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 486191f2d8ab0da97fe9f04fbe4640bd
   version: '3.2.2'
   adf_name: LocalePT3_2_2
   friendly_name: LocalePT 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 3a9f89d6538f070170749d33ec001ae2
   version: '3.2.2'
   adf_name: LocalePT3_2_2
   friendly_name: LocalePT 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: e015012a08a84c7c915322d7e3452cb3
   version: '3.2.2'
   adf_name: LocaleRS3_2_2
   friendly_name: LocaleRS 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: feef154ac89e967b2f9f2fc9f83482c3
   version: '3.2.2'
   adf_name: LocaleRS3_2_2
   friendly_name: LocaleRS 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: e70c377d579a5171bfef7b3bc937038c
   version: '3.2.2'
   adf_name: LocaleRU3_2_2
   friendly_name: LocaleRU 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 2f05bd84ca7141196d0976ce83e51178
   version: '3.2.2'
   adf_name: LocaleRU3_2_2
   friendly_name: LocaleRU 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: df2d452056d9ba0706839cc7fd94190b
   version: '3.2.2'
   adf_name: LocaleSE3_2_2
   friendly_name: LocaleSE 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: a0c1d3c398e853e4a47afa74524fc3d2
   version: '3.2.2'
   adf_name: LocaleSE3_2_2
   friendly_name: LocaleSE 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: ca19a6c8c1b268fbdce7df1653257ec5
   version: '3.2.2'
   adf_name: LocaleTR3_2_2
   friendly_name: LocaleTR 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 10490f2d49a4e6eba3ede9ca77928029
   version: '3.2.2'
   adf_name: LocaleTR3_2_2
   friendly_name: LocaleTR 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 8709488ad6be922b3c746904d71b7a3f
   version: '3.2.2'
   adf_name: LocaleUK3_2_2
   friendly_name: LocaleUK 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: df95cdaefbdf7db9302289bcc20b5865
   version: '3.2.2'
   adf_name: LocaleUK3_2_2
   friendly_name: LocaleUK 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: ea8ca10dd6ee55cd123d8e9eb2a034ca
   version: '3.2.2'
   adf_name: ModulesA12003_2_2
   friendly_name: ModulesA1200 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: ee388739de555821012f8ca75e3e8e6e
   version: '3.2.2'
   adf_name: ModulesA12003_2_2
   friendly_name: ModulesA1200 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 9c5afd6bf49a7886a09f7494e93921f5
   version: '3.2.2'
   adf_name: ModulesA20003_2_2
   friendly_name: ModulesA2000 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: df84fcbae4d1c5466d5b5445e82f0019
   version: '3.2.2'
   adf_name: ModulesA20003_2_2
   friendly_name: ModulesA2000 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 7d0ee5c4d9187074ba98f209bc7411cc
   version: '3.2.2'
   adf_name: ModulesA30003_2_2
   friendly_name: ModulesA3000 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 74bec54cf0c6c49f6910dce6c8846e02
   version: '3.2.2'
   adf_name: ModulesA30003_2_2
   friendly_name: ModulesA3000 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 9c307fde4bf80c92d2ce010e5783f1d1
   version: '3.2.2'
   adf_name: ModulesA4000D3_2_2
   friendly_name: ModulesA4000D 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 504f9b3166948e7a3537f5e81efa30e7
   version: '3.2.2'
   adf_name: ModulesA4000D3_2_2
   friendly_name: ModulesA4000D 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: c7e6ec3220109185d3019fba30bedef9
   version: '3.2.2'
   adf_name: ModulesA4000T3_2_2
   friendly_name: ModulesA4000T 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: b430b4ddb9d30c57cc82374dd2ddd889
   version: '3.2.2'
   adf_name: ModulesA4000T3_2_2
   friendly_name: ModulesA4000T 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 1e3f7f3172d4133f33b12c681542337e
   version: '3.2.2'
   adf_name: ModulesA5003_2_2
   friendly_name: ModulesA500 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 1c1d1dbd19023fe47f08ff7bc7c2517b
   version: '3.2.2'
   adf_name: ModulesA5003_2_2
   friendly_name: ModulesA500 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 58af498bf9611bfa625ea722f82a21fc
   version: '3.2.2'
   adf_name: ModulesA6003_2_2
   friendly_name: ModulesA600 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: bd2d32a3a96dc6e2ee945f87b00a7646
   version: '3.2.2'
   adf_name: ModulesA6003_2_2
   friendly_name: ModulesA600 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 4573b4794b80fa9189dc9fd3ac18eb48
   version: '3.2.2'
   adf_name: ModulesCD323_2_2
   friendly_name: ModulesCD32 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 317a1e4e072e05e363a00cd1b05f4a14
   version: '3.2.2'
   adf_name: ModulesCD323_2_2
   friendly_name: ModulesCD32 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: b83e74d6fc87c40eebc102355bcf1382
   version: '3.2.2'
   adf_name: Update3_2_2
   friendly_name: Update 3.2.2
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 17257b34ff0047df27263a5a9104e190
   version: '3.2.2'
   adf_name: Update3_2_2
   friendly_name: Update 3.2.2
-  source: Hyperion (3.2.2 Update)
-  media_type: Disk
-  sequence: 2
 - hash: 9ee0f110645413020d6d18b1e4302122
   version: '3.2.2.1'
   adf_name: Update3_2_2_1
   friendly_name: Update 3.2.2.1
-  source: Hyperion (3.2.2.1 Hotfix Pack)
-  media_type: Disk
-  sequence: 1
 - hash: 56e9010178902a4bf2d8b1bfd791be0b
   version: '3.2.3'
   adf_name: 4ColorIcons3_2
   friendly_name: 4ColorIcons 3.2
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 58af923f36f1fe0ee16bb62216fbb44e
   version: '3.2.3'
   adf_name: Classes3_2_3
   friendly_name: Classes 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: cc19b8acf0fb41a7abd79304e224390a
   version: '3.2.3'
   adf_name: DiskDoctor3_2_3
   friendly_name: DiskDoctor 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 1be9c9a15900ee655564777d185c5929
   version: '3.2.3'
   adf_name: Extras3_2_3
   friendly_name: Extras 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 5be89147576c7953e7be039406b65910
   version: '3.2.3'
   adf_name: LocaleCZ3_2_3
   friendly_name: LocaleCZ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: f523dd8f7922761dfc87743e400b51e6
   version: '3.2.3'
   adf_name: LocaleDE3_2_3
   friendly_name: LocaleDE 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 2316fdc9f96b087cbd5ff6c0f0d58a5b
   version: '3.2.3'
   adf_name: LocaleDK3_2_3
   friendly_name: LocaleDK 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 4355f9fd19a05152289818ab19f7333d
   version: '3.2.3'
   adf_name: LocaleEN3_2_3
   friendly_name: LocaleEN 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 929f937fc9837c64e33fa6c90e246def
   version: '3.2.3'
   adf_name: LocaleES3_2_3
   friendly_name: LocaleES 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 156bc39b8b30141ecc32bcb06f69f1af
   version: '3.2.3'
   adf_name: LocaleFR3_2_3
   friendly_name: LocaleFR 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 655864477a98d59e7d608d92bca4e645
   version: '3.2.3'
   adf_name: LocaleGR3_2_3
   friendly_name: LocaleGR 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 523b818877aea73a79fcb330c06e2da9
   version: '3.2.3'
   adf_name: LocaleIT3_2_3
   friendly_name: LocaleIT 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 4023662f85856dfe1cb3a89b3a804143
   version: '3.2.3'
   adf_name: LocaleNL3_2_3
   friendly_name: LocaleNL 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 607531db32b4cb60a23f81a03e70e035
   version: '3.2.3'
   adf_name: LocaleNO3_2_3
   friendly_name: LocaleNO 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: d1c6b0536c532fa629ea5b7c70511394
   version: '3.2.3'
   adf_name: LocalePL3_2_3
   friendly_name: LocalePL 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 9389b8b1c3d73bbf3f694e1f85788ccd
   version: '3.2.3'
   adf_name: LocalePT3_2_3
   friendly_name: LocalePT 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: f699a62a04b0076b0c73c51a415b53b3
   version: '3.2.3'
   adf_name: LocaleRS3_2_3
   friendly_name: LocaleRS 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 97f54f938fc3ff909eaeaed9656137c7
   version: '3.2.3'
   adf_name: LocaleRU3_2_3
   friendly_name: LocaleRU 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 554fc350c906b2b5966d15f1fa43727f
   version: '3.2.3'
   adf_name: LocaleSE3_2_3
   friendly_name: LocaleSE 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: afab6a82afcdba73b5cffa762311ceb5
   version: '3.2.3'
   adf_name: LocaleTR3_2_3
   friendly_name: LocaleTR 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: b44138a4c96c7272f1e3e3f595fa6bad
   version: '3.2.3'
   adf_name: LocaleUK3_2_3
   friendly_name: LocaleUK 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: a44b18aa3aab9e0474e4b1b958365f28
   version: '3.2.3'
   adf_name: ModulesA1200_3_2_3
   friendly_name: ModulesA1200_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 51b85621e4d4df08a8ee0e4746c1923d
   version: '3.2.3'
   adf_name: ModulesA2000_3_2_3
   friendly_name: ModulesA2000_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 1a385ca1c824d7d82783e71a4bb96460
   version: '3.2.3'
   adf_name: ModulesA3000_3_2_3
   friendly_name: ModulesA3000_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 38ca3bcb99796be0d4c59301006a81f6
   version: '3.2.3'
   adf_name: ModulesA4000D_3_2_3
   friendly_name: ModulesA4000D_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 91da051276b26d56f59cc4de18c1f8ab
   version: '3.2.3'
   adf_name: ModulesA4000T_3_2_3
   friendly_name: ModulesA4000T_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 371ef369b13dc7234043b0e95c08aa46
   version: '3.2.3'
   adf_name: ModulesA500_3_2_3
   friendly_name: ModulesA500_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 4b489adf76a41c72d8850028d298cf48
   version: '3.2.3'
   adf_name: ModulesA600_3_2_3
   friendly_name: ModulesA600_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 3cafa62831d8e1b617f8a52bfc136eea
   version: '3.2.3'
   adf_name: ModulesCD32_3_2_3
   friendly_name: ModulesCD32_ 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 58aff9a5c27d8bb0c5d7c43ceeeadd6b
   version: '3.2.3'
   adf_name: Update3_2_3
   friendly_name: Update 3.2.3
-  source: Hyperion (3.2.3)
-  media_type: Disk
-  sequence: 1
 - hash: 9cba9d7ea40e24813f7dbdb3d1794056
   version: '3.9'
   adf_name: AmigaOS3_9
   friendly_name: AmigaOS 3.9
-  source: Haage and Partners (3.9)
-  media_type: CD
-  sequence: 1
 - hash: fb5cef9c8f43d6480f6eee1928d30e02
   version: '3.9'
   adf_name: AmigaOS3_9
   friendly_name: AmigaOS 3.9
-  source: Haage and Partners (3.9)
-  media_type: CD
-  sequence: 1
 - hash: 3cb96e77d922a4f8eb696e525a240448
   version: '3.9'
   adf_name: AmigaOS3_9
   friendly_name: AmigaOS 3.9
-  source: Haage and Partners (3.9)
-  media_type: CD
-  sequence: 2
 - hash: b0f30837c0f0ce86a9a2ea543c22aa68
   version: '3.9'
   adf_name: AmigaOS3_9
   friendly_name: AmigaOS 3.9
-  source: Haage and Partners (3.9)
-  media_type: CD
-  sequence: 2
 - hash: 71353d4aeb9af1f129545618d013a8c8
   version: '3.9'
   adf_name: AmigaOS3_9BB1
   friendly_name: AmigaOS 3.9 BB1 Update
-  source: Haage and Partners (3.9)
-  media_type: Archive
-  sequence: 1
 - hash: fd45d24bb408203883a4c9a56e968e28
   version: '3.9'
   adf_name: AmigaOS3_9BB2
   friendly_name: AmigaOS 3.9 BB2 Update
-  source: Haage and Partners (3.9)
-  media_type: Archive
-  sequence: 1
 - hash: 4e48f80573554385a6fbc274d8ae328b
   version: '3.9'
   adf_name: AmigaOS3_9BB34
   friendly_name: AmigaOS 3.9 BB3 & BB4 Update
-  source: Haage and Partners (3.9)
-  media_type: Archive
-  sequence: 1

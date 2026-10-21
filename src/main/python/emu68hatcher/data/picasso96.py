@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import struct
 from pathlib import Path
@@ -163,26 +162,3 @@ def _mode_ids(data: bytes, depth: int, format_bits: int) -> dict[tuple[int, int]
     if not modes:
         raise ValueError(f"P96S settings contain no active {depth}-bit modes")
     return modes
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=("inspect", "generate"))
-    parser.add_argument("source", type=Path)
-    parser.add_argument("destination", type=Path)
-    args = parser.parse_args()
-    try:
-        if args.operation == "inspect":
-            text = json.dumps(
-                decode_settings(args.source.read_bytes()), indent=2, ensure_ascii=True
-            )
-            args.destination.write_text(text + "\n", encoding="utf-8")
-        else:
-            settings = json.loads(args.source.read_text(encoding="utf-8"))
-            args.destination.write_bytes(encode_settings(settings))
-    except (OSError, ValueError, KeyError, TypeError) as exc:
-        parser.exit(1, f"{exc}\n")
-
-
-if __name__ == "__main__":
-    main()

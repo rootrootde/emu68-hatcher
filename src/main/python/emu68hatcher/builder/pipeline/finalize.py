@@ -26,6 +26,11 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
 
         verify_ags_staging(workflow, image)
 
+    # after install_extras, before the copy: the receipts describe the image's bytes
+    from emu68hatcher.builder.pipeline.build_records import write_build_records
+
+    write_build_records(workflow, image)
+
     output = workflow.config.output
     assert output is not None
     # windows physical-drive paths lie in exists() once the disk is offline; in DEVICE mode
@@ -37,8 +42,9 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
     workflow._milestone("Copying staged files to image")
     _copy_staged_files_to_image(workflow, image)
 
-    from emu68hatcher.builder.pipeline.import_ags import verify_ags_target
+    from emu68hatcher.builder.pipeline.import_ags import remove_ags_files, verify_ags_target
 
+    remove_ags_files(workflow, image)
     verify_ags_target(workflow, image)
     workflow._update_state(progress=90.0)
     workflow._milestone("Cleaning up")
@@ -50,7 +56,7 @@ def stage_finalize(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage
                 shutil.rmtree(cleanup_path, ignore_errors=True)
 
     workflow._update_state(progress=100.0)
-    workflow._milestone("Build complete")
+    workflow._milestone("Image finalized")
     return image
 
 
@@ -79,14 +85,15 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
         and workflow.config.output.type != OutputType.DEVICE
         and not Path(image.image_path).exists()
     ):
-        workflow.logger.warning("No image file found, skipping file copy")
-        return
+        raise BuildError(f"Disk image not found at {image.image_path}; cannot copy staged files")
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
 
     if not runner.is_available():
-        workflow.logger.warning("HST Imager not available, skipping file copy")
-        return
+        raise BuildError(
+            "HST Imager is not available, so the staged files cannot be copied to the image. "
+            "Open the Start tab and download the required tools."
+        )
 
     image_path = image.image_path
     posix = image_path.as_posix() if isinstance(image_path, Path) else image_path
@@ -112,7 +119,7 @@ def _copy_staged_files_to_image(workflow: BuildWorkflow, image: CreatedImage) ->
         if not is_ags_overlay and device_dir.name != EMU68_BOOT_PARTITION_NAME:
             prepare_workbench_metadata(
                 device_dir,
-                cancel_check=lambda: workflow._cancelled,
+                cancel_check=workflow.is_cancelled,
                 allow_stale_metadata=device_dir.name == workflow.config.boot_device,
             )
         file_count, total_bytes = _staging_inventory(device_dir)

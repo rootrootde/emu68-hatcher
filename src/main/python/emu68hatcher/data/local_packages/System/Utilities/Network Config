@@ -1,3 +1,0 @@
-; Network Config launcher - launched via IconX so a CLI exists for 'address command'.
-; CLOSE dropped so the window stays open after the script exits.
-SYS:Rexxc/rx >CON:0/20/680/400/NetworkConfig/AUTO/WAIT s:NetworkConfig.rexx

@@ -35,6 +35,7 @@ nav:
   - Download: download.md
   - Installation: installation.md
   - Usage: usage.md
+  - AGS import: ags.md
   - Packages: packages.md
   - Troubleshooting: troubleshooting.md
 

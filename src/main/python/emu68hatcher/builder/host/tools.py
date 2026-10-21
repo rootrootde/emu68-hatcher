@@ -4,14 +4,12 @@ import logging
 import os
 import shutil
 import subprocess
-import tarfile
 import tempfile
 from pathlib import Path
 from urllib.request import urlopen
 
 from emu68hatcher.builder.host.archive import (
-    DEFAULT_MAX_EXTRACTED_BYTES,
-    _validate_tar_member,
+    _extract_tar,
     extract_archive,
 )
 from emu68hatcher.data.data_manager import load_yaml_data
@@ -25,12 +23,11 @@ logger = logging.getLogger(__name__)
 def resolve_tool_download(name: str) -> dict | None:
     """tools.yaml entry -> dict with at least 'url' (+optional filename, hash, extract_method). None if unresolvable"""
     try:
-        tools = load_yaml_data("tools")
+        entry = load_yaml_data("tools").get(name)
     except Exception as e:
         logger.error(f"failed to load tools.yaml: {e}")
         return None
 
-    entry = tools.get(name)
     if not entry:
         return None
 
@@ -151,7 +148,8 @@ def download_7zip(force: bool = False, progress_callback=None) -> Path | None:
         if extract_method == "self-installer-win":
             wanted = _extract_7z_installer(archive_path, extract_dir, temp_path)
         elif extract_method == "tar-xz":
-            wanted = _extract_7z_tarxz(archive_path, extract_dir)
+            _extract_tar(archive_path, extract_dir)
+            wanted = ["7zz", "License.txt"]
         else:
             logger.error(f"Unknown 7-Zip extract method: {extract_method}")
             return None
@@ -165,6 +163,8 @@ def download_7zip(force: bool = False, progress_callback=None) -> Path | None:
                 logger.error(f"Could not find {name} in extracted archive")
                 return None
             dest = tools_dir / name
+            # a fresh inode; macos kills a signed binary rewritten in place after it ran
+            dest.unlink(missing_ok=True)
             shutil.copy2(found, dest)
             if dest.suffix.lower() in (".exe",) or dest.suffix == "" and dest.name == "7zz":
                 os.chmod(dest, 0o755)
@@ -206,25 +206,6 @@ def _extract_7z_installer(
     return ["7z.exe", "7z.dll", "License.txt"]
 
 
-def _extract_7z_tarxz(archive_path: Path, extract_dir: Path) -> list[str]:
-    """extract the unix tar.xz build with a zip-bomb guard; return wanted files"""
-    with tarfile.open(archive_path, "r:xz") as tar:
-        members = tar.getmembers()
-        cumulative = 0
-        for member in members:
-            _validate_tar_member(member, extract_dir)
-            cumulative += getattr(member, "size", 0) or 0
-            if cumulative > DEFAULT_MAX_EXTRACTED_BYTES:
-                raise RuntimeError(
-                    f"tar would exceed {DEFAULT_MAX_EXTRACTED_BYTES} bytes uncompressed (bomb?)"
-                )
-        try:
-            tar.extractall(extract_dir, filter="data")
-        except TypeError:
-            tar.extractall(extract_dir)
-    return ["7zz", "License.txt"]
-
-
 def _first_in_tree(root: Path, name: str) -> Path | None:
     """return the first file named 'name' anywhere under 'root', or None"""
     for candidate in root.rglob(name):
@@ -249,10 +230,9 @@ TOOL_LABELS = {
 # binary; an app upgrade that bumps tools.yaml then re-fetches the new version.
 def _tool_target_path(tool_name: str) -> Path | None:
     """path our downloader installs 'tool_name' to inside the tools dir"""
-    suf = _exe_suffix()
-    names = {"hst-imager": f"hst-imager{suf}"}
-    name = names.get(tool_name)
-    return get_tools_dir() / name if name else None
+    if tool_name != "hst-imager":
+        return None
+    return get_tools_dir() / f"hst-imager{_exe_suffix()}"
 
 
 def _stamp_path(target_path: Path) -> Path:
@@ -286,7 +266,7 @@ def tool_needs_download(tool_name: str) -> bool:
     resolved = finder()
     if resolved is None:
         return True  # not installed anywhere
-    # only the two pinned GitHub tools are version-managed; 7z is any-recent-version
+    # only hst-imager is version-managed; 7z is any-recent-version
     target = _tool_target_path(tool_name)
     if target is None or resolved != target:
         return False  # 7z, or resolved from system PATH - not ours to version-manage
@@ -308,18 +288,13 @@ def download_tool(
     suf = _exe_suffix()
     label = TOOL_LABELS.get(tool_name, tool_name)
 
-    # target path + published-archive name candidates per tool
-    layout = {
-        "hst-imager": (
-            f"hst-imager{suf}",
-            [f"hst.imager{suf}", f"Hst.Imager.Console{suf}"],
-        ),
-    }
-    if tool_name not in layout:
+    if tool_name != "hst-imager":
         logger.error(f"Unknown tool: {tool_name}")
         return None
 
-    target_name, archive_names = layout[tool_name]
+    # target path + published-archive name candidates
+    target_name = f"hst-imager{suf}"
+    archive_names = [f"hst.imager{suf}", f"Hst.Imager.Console{suf}"]
     if not suf:
         # unix zips sometimes ship the hyphenated name directly
         archive_names = [target_name] + archive_names
@@ -378,6 +353,8 @@ def download_tool(
             logger.error("Could not find binary in archive")
             return None
 
+        # a fresh inode; macos kills a signed binary rewritten in place after it ran
+        target_path.unlink(missing_ok=True)
         shutil.copy2(binary_path, target_path)
         os.chmod(target_path, 0o755)
         _write_stamp(target_path, url)

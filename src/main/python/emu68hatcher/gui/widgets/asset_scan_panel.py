@@ -208,6 +208,7 @@ class AssetScanPanel(QWidget):
     def _worker_finished(self, worker) -> None:
         self._workers.discard(worker)
         self._set_active(-1)
+        worker.deleteLater()
 
     def _set_active(self, delta: int) -> None:
         self._active = max(0, self._active + delta)
@@ -227,11 +228,9 @@ class AssetScanPanel(QWidget):
 
     @Slot(list, bool)
     def _show_rom_results(self, found_roms: list, truncated: bool = False) -> None:
-        from emu68hatcher.data.rom_detection import find_kickstart_for_version
+        from emu68hatcher.data.rom_detection import pick_boot_rom
 
-        boot_path = (
-            find_kickstart_for_version(self.scan_directories, self._version) if found_roms else None
-        )
+        boot_path = pick_boot_rom(found_roms, self._version)
         self._rom_rows = self._build_rom_rows(found_roms, boot_path)
         self._update_whdload_status(found_roms)
         self._refresh_details_button()

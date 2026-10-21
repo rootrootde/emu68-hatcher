@@ -1,4 +1,4 @@
-"""elevated helper - one long-lived worker, file-based IPC for hst-imager calls (windows UAC, macOS osascript)"""
+"""elevated helper - one long-lived worker, file IPC for hst-imager (UAC, osascript, pkexec)"""
 
 from __future__ import annotations
 
@@ -10,24 +10,18 @@ import sys
 import tempfile
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
 
 from emu68hatcher.builder.host._elevated_worker_src import WORKER_SCRIPT
+from emu68hatcher.builder.host._elevation_common import ElevatedResult, ElevationDenied
 from emu68hatcher.utils.platform import OperatingSystem, get_platform_info, is_root
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class HelperResult:
-    """subprocess.CompletedProcess-shaped return"""
-
-    args: list[str]
-    returncode: int
-    stdout: str
-    stderr: str
-    cancelled: bool = False
+_PKEXEC_EXIT_REASONS = {
+    126: "the authentication dialog was dismissed",
+    127: "authentication failed or no polkit agent is running",
+}
 
 
 class ElevatedHelper:
@@ -35,12 +29,15 @@ class ElevatedHelper:
 
     POLL = 0.2
     READY_TIMEOUT = 30.0
+    AUTH_TIMEOUT = 300.0
     HEARTBEAT_SECONDS = 10.0  # interval for "still running" log line
 
     def __init__(self) -> None:
         self.ipc_dir: Path | None = None
         self.worker_script: Path | None = None
         self._seq = 0
+        self._any_failed = False
+        self._process: subprocess.Popen | None = None
 
     def spawn(self) -> bool:
         """one auth prompt, start the worker; True when ready"""
@@ -51,6 +48,8 @@ class ElevatedHelper:
             return self._spawn_windows()
         if info.os == OperatingSystem.MACOS:
             return self._spawn_macos()
+        if info.os == OperatingSystem.LINUX:
+            return self._spawn_linux()
         return False
 
     def _spawn_windows(self) -> bool:
@@ -100,7 +99,8 @@ class ElevatedHelper:
         self.worker_script.write_text(WORKER_SCRIPT)
 
         spawn_log = self.ipc_dir / "_spawn.log"
-        py = "/usr/bin/python3"
+        # frozen builds re-launch their own exe as the worker (main.py dispatch)
+        py = sys.executable if getattr(sys, "frozen", False) else "/usr/bin/python3"
         logger.info(f"elevated helper using python: {py}")
 
         # no nohup - it chokes without a controlling tty inside osascripts shell context
@@ -144,6 +144,91 @@ class ElevatedHelper:
             self._cleanup_files()
         return ok
 
+    def _spawn_linux(self) -> bool:
+        pkexec = shutil.which("pkexec")
+        if pkexec is None:
+            logger.warning("elevated helper needs pkexec, which is not on PATH")
+            return False
+        if getattr(sys, "frozen", False):
+            py = sys.executable
+        elif Path("/usr/bin/python3").is_file():
+            py = "/usr/bin/python3"
+        else:
+            py = shutil.which("python3")
+        if not py:
+            logger.warning("elevated helper found no python3 to run the worker")
+            return False
+        logger.info(f"elevated helper using python: {py}")
+
+        self.ipc_dir = Path(tempfile.mkdtemp(prefix="emu68hatcher-helper-"))
+        self.worker_script = Path(tempfile.mkstemp(prefix="emu68hatcher-worker-", suffix=".py")[1])
+        self.worker_script.write_text(WORKER_SCRIPT)
+        spawn_log = self.ipc_dir / "_spawn.log"
+        try:
+            with open(spawn_log, "wb") as log:
+                # pkexec execs the worker in place, so this handle becomes the root worker
+                self._process = subprocess.Popen(
+                    [pkexec, py, str(self.worker_script), str(self.ipc_dir)],
+                    stdin=subprocess.DEVNULL,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+        except OSError as e:
+            logger.warning(f"elevated helper pkexec failed: {e}")
+            self._cleanup_files()
+            return False
+        return self._wait_pkexec_ready(spawn_log)
+
+    def _wait_pkexec_ready(self, spawn_log: Path) -> bool:
+        """wait through the polkit dialog; fail fast once pkexec has exited"""
+        assert self.ipc_dir is not None and self._process is not None
+        ready_file = self.ipc_dir / "ready"
+        deadline = time.time() + self.AUTH_TIMEOUT + self.READY_TIMEOUT
+        while time.time() < deadline:
+            if ready_file.exists():
+                logger.info(f"elevated helper ready at {self.ipc_dir}")
+                return True
+            rc = self._process.poll()
+            if rc is not None:
+                tail = ""
+                try:
+                    tail = spawn_log.read_text(errors="replace").strip()
+                except OSError:
+                    pass
+                if tail:
+                    logger.warning(f"elevated worker spawn log:\n{tail}")
+                self._process = None
+                self._cleanup_files()
+                reason = _PKEXEC_EXIT_REASONS.get(rc, "the elevated worker did not start")
+                raise ElevationDenied(f"pkexec exited with code {rc}: {reason}")
+            time.sleep(self.POLL)
+        logger.warning("elevated helper was not authorised or ready in time")
+        try:
+            (self.ipc_dir / "quit").touch()
+        except OSError:
+            pass
+        self._stop_process()
+        self._cleanup_files()
+        return False
+
+    def _stop_process(self) -> None:
+        process = self._process
+        self._process = None
+        if process is None:
+            return
+        try:
+            process.wait(timeout=5)
+            return
+        except subprocess.TimeoutExpired:
+            pass
+        try:
+            process.terminate()
+            process.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            # a root worker ignores signals from the user; the quit sentinel is the real stop
+            logger.warning(f"elevated worker pid {process.pid} did not stop: {e}")
+
     def _wait_ready(self, cleanup_on_fail: bool = True) -> bool:
         assert self.ipc_dir is not None
         ready_file = self.ipc_dir / "ready"
@@ -164,16 +249,33 @@ class ElevatedHelper:
         timeout: float | None = None,
         cancel_check: Callable[[], bool] | None = None,
         on_line: Callable[[str, str], None] | None = None,
-    ) -> HelperResult:
+    ) -> ElevatedResult:
         """send cmd to worker; on_line(stream, line) fires per stdout/stderr line as the subprocess writes"""
         if self.ipc_dir is None:
             raise RuntimeError("ElevatedHelper.run called before spawn() succeeded")
+        try:
+            result = self._exchange(argv, timeout, cancel_check, on_line)
+        except Exception:
+            self._any_failed = True
+            raise
+        if result.returncode != 0 or result.cancelled:
+            self._any_failed = True
+        return result
 
+    def _exchange(
+        self,
+        argv: list[str],
+        timeout: float | None,
+        cancel_check: Callable[[], bool] | None,
+        on_line: Callable[[str, str], None] | None,
+    ) -> ElevatedResult:
+        """write one cmd file and wait for its result"""
+        assert self.ipc_dir is not None
         self._seq += 1
         cmd_seq = self._seq
         cmd_path = self.ipc_dir / f"cmd-{cmd_seq}.json"
         result_path = self.ipc_dir / f"cmd-{cmd_seq}.result.json"
-        cancel_path = self.ipc_dir / "cancel"
+        cancel_path = self.ipc_dir / f"cancel-{cmd_seq}"
 
         tmp = cmd_path.with_suffix(".tmp")
         tmp.write_text(json.dumps({"argv": argv, "timeout": timeout}))
@@ -216,8 +318,7 @@ class ElevatedHelper:
                         )
                 result_path.unlink(missing_ok=True)
                 self._cleanup_chunks(cmd_seq)
-                return HelperResult(
-                    args=argv,
+                return ElevatedResult(
                     returncode=data["rc"],
                     stdout=data.get("stdout", ""),
                     stderr=data.get("stderr", ""),
@@ -287,6 +388,7 @@ class ElevatedHelper:
         for pattern in (f"cmd-{cmd_seq}.out.*", f"cmd-{cmd_seq}.err.*"):
             for path in self.ipc_dir.glob(pattern):
                 path.unlink(missing_ok=True)
+        (self.ipc_dir / f"cancel-{cmd_seq}").unlink(missing_ok=True)
 
     def shutdown(self) -> None:
         if self.ipc_dir is None:
@@ -297,11 +399,12 @@ class ElevatedHelper:
             time.sleep(0.5)
         except OSError:
             pass
-        # keep _trace.log around so a slow run can be diagnosed after the fact
+        self._stop_process()
+        # the IPC dir and its _trace.log survive only when some command failed
         trace = self.ipc_dir / "_trace.log"
-        if trace.exists():
+        if self._any_failed and trace.exists():
             logger.info(f"elevated worker trace log: {trace}")
-        self._cleanup_files(keep_ipc_dir=trace.exists())
+        self._cleanup_files(keep_ipc_dir=self._any_failed)
 
     def _cleanup_files(self, keep_ipc_dir: bool = False) -> None:
         if self.ipc_dir is not None and not keep_ipc_dir:

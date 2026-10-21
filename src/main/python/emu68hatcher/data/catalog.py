@@ -52,6 +52,8 @@ class CatalogData(BaseModel):
                 validate_relative_path(rule.dest)
                 if getattr(rule, "rename", None):
                     validate_relative_path(rule.rename)
+            if package.upstream_version and any(ord(c) < 32 for c in package.upstream_version):
+                raise ValueError(f"{key}: upstream_version must be one line")
             for script in package.scripts:
                 validate_relative_path(script.target)
                 script.content.encode("iso-8859-1")
@@ -80,11 +82,10 @@ class CatalogData(BaseModel):
                         r"[\w][\w.-]*/[\w][\w.-]*", download.repo or ""
                     ):
                         raise ValueError(f"{key}: invalid GitHub repository")
-                for url in (download.url, download.backup_url):
-                    if url:
-                        from pydantic import AnyHttpUrl, TypeAdapter
+                if download.url:
+                    from pydantic import AnyHttpUrl, TypeAdapter
 
-                        TypeAdapter(AnyHttpUrl).validate_python(url)
+                    TypeAdapter(AnyHttpUrl).validate_python(download.url)
         for key, bundle in self.bundles.items():
             if key != bundle.id:
                 raise ValueError(f"bundle index differs from id: {key}")
@@ -213,6 +214,58 @@ def get_catalog_snapshot() -> CatalogSnapshot:
     snapshot = _catalog_context.get()
     if snapshot is not None:
         return snapshot
-    from emu68hatcher.data.update_manifest import get_active_selection
+    from emu68hatcher.data.manifest_state import get_active_selection
 
-    return get_active_selection().catalog or bundled_catalog()
+    return with_extra_packages(get_active_selection().catalog or bundled_catalog())
+
+
+_EXTRA_SUFFIX = "+local"
+_extra_cache: dict[tuple, CatalogSnapshot] = {}
+
+
+# package files the user drops into <hatcher data>/packages join the active catalog on this
+# machine only: the publish generator and the frozen app never see that directory
+def with_extra_packages(snapshot: CatalogSnapshot) -> CatalogSnapshot:
+    from emu68hatcher.utils.paths import get_extra_packages_dir
+
+    if snapshot.id.endswith(_EXTRA_SUFFIX):
+        return snapshot
+    directory = get_extra_packages_dir()
+    files = sorted(directory.glob("*.yaml")) if directory.is_dir() else []
+    if not files:
+        return snapshot
+    key = (snapshot.id, snapshot.revision, snapshot.source_commit) + tuple(
+        (path.name, path.stat().st_mtime_ns, path.stat().st_size) for path in files
+    )
+    merged = _extra_cache.get(key)
+    if merged is None:
+        merged = _merge_extra_packages(snapshot, files)
+        _extra_cache.clear()
+        _extra_cache[key] = merged
+    return merged
+
+
+def _merge_extra_packages(snapshot: CatalogSnapshot, files: list[Path]) -> CatalogSnapshot:
+    import logging
+
+    logger = logging.getLogger(__name__)
+    data = snapshot.data()
+    packages = dict(data.packages)
+    for path in files:
+        try:
+            package = Package.model_validate(read_catalog_yaml(path))
+            packages[package.name] = package
+        except (OSError, ValueError, yaml.YAMLError) as error:
+            logger.warning(f"Ignoring package file {path}: {error}")
+    try:
+        merged = CatalogData(packages=packages, bundles=data.bundles, adf_rules=data.adf_rules)
+    except ValueError as error:
+        logger.warning(f"Ignoring the packages in {files[0].parent}: {error}")
+        return snapshot
+    logger.info(f"Added {len(files)} package file(s) from {files[0].parent}")
+    return CatalogSnapshot.create(
+        merged,
+        id=snapshot.id + _EXTRA_SUFFIX,
+        revision=snapshot.revision,
+        source_commit=snapshot.source_commit,
+    )

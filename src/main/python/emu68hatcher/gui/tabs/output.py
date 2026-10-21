@@ -197,6 +197,7 @@ class OutputTab(QWidget):
         self._disk_workers.discard(worker)
         if worker is self._disk_worker:
             self._disk_worker = None
+        worker.deleteLater()
 
     def _accept_disks(self, generation: int, disks: list) -> None:
         if generation == self._disk_generation:

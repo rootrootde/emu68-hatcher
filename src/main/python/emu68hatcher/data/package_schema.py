@@ -28,7 +28,6 @@ class DownloadInfo(CatalogModel):
     # for aminet/web sources
     path: str | None = None  # aminet path like "util/libs/mui38usr.lha"
     url: str | None = None  # full URL for web downloads
-    backup_url: str | None = None  # fallback URL
 
     # for GitHub sources
     repo: str | None = None  # format: "owner/repo"
@@ -52,6 +51,14 @@ class DownloadInfo(CatalogModel):
         return self
 
 
+class BytePatch(CatalogModel):
+    """one byte of the installed file replaced; expect guards against a changed download"""
+
+    offset: int = Field(ge=0)
+    expect: int = Field(ge=0, le=255)
+    value: int = Field(ge=0, le=255)
+
+
 class InstallRule(CatalogModel):
     """rule for installing files from an extracted package"""
 
@@ -66,6 +73,7 @@ class InstallRule(CatalogModel):
     rename: str | None = None  # rename file on install
     stack: int | None = None  # patch a .info icon's do_StackSize (workbench launch stack)
     xor_byte: int | None = Field(default=None, alias="xor", ge=0, le=255)
+    patch: list[BytePatch] = Field(default_factory=list)  # byte patches on the copied file
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -111,6 +119,9 @@ class Package(CatalogModel):
     # links (optional, surfaced in the GUI where relevant)
     purchase_url: str | None = None
 
+    # upstream release label for display only; never used to order updates
+    upstream_version: str | None = Field(default=None, min_length=1, max_length=63)
+
     # compatibility
     versions: list[str] = Field(default_factory=list)  # kickstart versions
     emu68_versions: list[str] | None = None  # if set, gate on the chosen Emu68 release
@@ -125,7 +136,6 @@ class Package(CatalogModel):
     # dependency resolution. names may be a concrete package name or a virtual token
     # declared by some package's provides (a package implicitly provides its own name).
     requires: list[str] = Field(default_factory=list)  # hard deps, pulled in + locked
-    recommends: list[str] = Field(default_factory=list)  # soft deps, pre-ticked but removable
     conflicts: list[str] = Field(default_factory=list)  # cannot coexist (symmetric at resolve)
     provides: list[str] = Field(default_factory=list)  # virtual capability tokens, e.g. "mui"
 
@@ -147,7 +157,7 @@ class Package(CatalogModel):
     menu_entry: MenuEntry | None = None
     menu_entries: list[MenuEntry] = Field(default_factory=list)
 
-    @field_validator("requires", "recommends", "conflicts", "provides")
+    @field_validator("requires", "conflicts", "provides")
     @classmethod
     def _validate_tokens(cls, values: list[str]) -> list[str]:
         import re

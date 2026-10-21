@@ -37,7 +37,20 @@ install:
   to: Locale/Help/
 - from: ViNCEd/Guides/ViNCEd.guide.info
   to: Locale/Help/
-- from: ViNCEd/LOCALE/Catalogs/*
+# one per language: the archive also carries a utf-8 named copy of the french catalogs
+- from: ViNCEd/LOCALE/Catalogs/deutsch
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/Français
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/italiano
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/polski
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/slovensko
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/suomi
+  to: Locale/Catalogs/
+- from: ViNCEd/LOCALE/Catalogs/svenska
   to: Locale/Catalogs/
 - from: ViNCEd/Extras/StringSnip
   to: C/

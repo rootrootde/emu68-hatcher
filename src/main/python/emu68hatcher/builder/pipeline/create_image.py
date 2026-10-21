@@ -41,6 +41,9 @@ def stage_create_image(
         read_source_blocks(workspace.validated.ags_plan.inventory.source_path)
         check_source_destination(workflow)
         check_elevated_source_access(workflow, workspace.validated.ags_plan)
+    from emu68hatcher.builder.pipeline.adf_extract import extract_ffs_handler
+
+    ffs_handler = extract_ffs_handler(workflow, workspace)
     output_type = output.type
     raw_target = output.path
     # device targets are strings on purpose (see OutputConfig.path); re-wrapping in Path
@@ -65,6 +68,8 @@ def stage_create_image(
         final_output_path = None
         image_path = target_path
 
+    if output_type == OutputType.IMG:
+        workflow.unfinished_image = Path(image_path)
     if output_type == OutputType.DEVICE:
         workflow._milestone(f"Initialising SD card on {image_path}")
         _prepare_device_target(workflow, image_path)
@@ -86,14 +91,8 @@ def stage_create_image(
                 "This should have been downloaded during the DOWNLOAD stage."
             )
         fs_handler_paths[Filesystem.PFS3] = downloaded.pfs3_handler_path
-    if partitions.uses_ffs:
-        if not downloaded.ffs_handler_path:
-            raise BuildError(
-                "FFS filesystem handler not available. L/FastFileSystem "
-                "should have been extracted from Install3.x.adf during the "
-                "DOWNLOAD stage."
-            )
-        fs_handler_paths[Filesystem.FFS] = downloaded.ffs_handler_path
+    if ffs_handler is not None:
+        fs_handler_paths[Filesystem.FFS] = ffs_handler
 
     script = generate_disk_creation_script(
         workflow.config,
@@ -103,21 +102,18 @@ def stage_create_image(
         ags_plan=workspace.validated.ags_plan,
     )
 
-    runner = HSTRunner(cancel_check=lambda: workflow._cancelled)
+    runner = HSTRunner(cancel_check=workflow.is_cancelled)
 
     def progress_cb(current: int, total: int, desc: str, status):
         progress = (current / total) * 100
         workflow._update_state(progress=progress, message=desc)
 
     if workspace.validated.ags_plan is None:
-        result = runner.run_script(
+        failure = runner.run_script(
             script, progress_callback=progress_cb, elevation=workflow.state.elevation
         )
-        if not result.success:
-            failed = result.failed_commands
-            raise BuildError(
-                f"Image creation failed: {failed[0].error if failed else 'unknown error'}"
-            )
+        if failure is not None:
+            raise BuildError(f"Image creation failed: {failure.error}")
     else:
         from emu68hatcher.builder.ags_blocks import copy_creation_script
 
@@ -144,12 +140,11 @@ def _prepare_sparse_image(workflow: BuildWorkflow, path: Path) -> None:
     size = workflow.config.partitions.disk_size
     try:
         allocate_sparse(path, size)
-    except SparseUnsupportedError as e:
-        workflow.logger.warning(
-            f"Sparse allocation unsupported on this filesystem ({e}); "
-            "disable 'Sparse' in the Output tab to silence this."
-        )
-        raise
+    except (SparseUnsupportedError, OSError) as e:
+        raise BuildError(
+            f"Cannot allocate a sparse image at {path}: {e}. Turn off 'Save disk space with "
+            "a sparse image' under Storage, or choose a folder on an NTFS, APFS or ext4 volume."
+        ) from e
 
 
 def _prepare_device_target(workflow: BuildWorkflow, image_path: Path | str) -> None:

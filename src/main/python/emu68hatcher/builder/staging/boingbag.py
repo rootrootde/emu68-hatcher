@@ -4,17 +4,20 @@ from __future__ import annotations
 
 import logging
 import shutil
+import subprocess
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildError
-from emu68hatcher.builder.staging.files import resolve_staging_path
+from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.builder.staging.packages import _merge_tree
 from emu68hatcher.utils.host_tools import find_7z, run_7z
 
 logger = logging.getLogger(__name__)
 
 _INNER_ARCHIVE = "AmigaOS-Update"
+_EXTRACT_TIMEOUT = 600
 
 # the curated per-item install list the original imager applies from each
 # boingbag's password-locked AmigaOS-Update payload (from its ListofPackagestoInstall
@@ -66,13 +69,20 @@ _BOINGBAGS = (
 )
 
 
-def apply_boingbags(extracted_paths: dict, boot_staging: Path) -> None:
+def apply_boingbags(
+    extracted_paths: dict,
+    boot_staging: Path,
+    *,
+    cancel_check: Callable[[], None] | None = None,
+) -> None:
     """apply BoingBag 1 then 2 onto boot_staging from the downloaded, extracted archives"""
     seven_z = find_7z()
     if not seven_z:
         raise BuildError("7z not found; cannot apply the AmigaOS 3.9 BoingBags")
 
     for bb in _BOINGBAGS:
+        if cancel_check:
+            cancel_check()
         bb_dir = extracted_paths.get(bb["package"])
         if not bb_dir:
             raise BuildError(f"{bb['package']} was not downloaded; cannot apply the 3.9 update")
@@ -86,7 +96,18 @@ def _apply_one(seven_z, bb_dir: Path, password: str, items, boot_staging: Path) 
 
     with tempfile.TemporaryDirectory() as td:
         payload = Path(td)
-        r = run_7z(seven_z, ["x", "-y", f"-p{password}", f"-o{td}", str(inner)])
+        try:
+            r = run_7z(
+                seven_z,
+                ["x", "-y", f"-p{password}", f"-o{td}", str(inner)],
+                timeout=_EXTRACT_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise BuildError(
+                f"BoingBag payload extraction timed out after {_EXTRACT_TIMEOUT} s; "
+                f"7z did not finish unpacking {inner}. Check that the BoingBag download "
+                "is complete and the disk is not full, then build again."
+            ) from exc
         if r.returncode != 0:
             raise BuildError(
                 f"failed to open BoingBag payload: {(r.stderr or r.stdout).strip()[:300]}"
@@ -98,8 +119,8 @@ def _apply_one(seven_z, bb_dir: Path, password: str, items, boot_staging: Path) 
 def _apply_item(
     payload: Path, boot_staging: Path, src_rel: str, dest_sub: str, new_name: str | None
 ) -> None:
-    src = resolve_staging_path(payload, src_rel)
-    if not src.exists():
+    src = resolve_source_path(payload, src_rel)
+    if src is None:
         logger.warning(f"boingbag item not in payload, skipping: {src_rel}")
         return
     parent = resolve_staging_path(boot_staging, dest_sub) if dest_sub else boot_staging
