@@ -53,6 +53,11 @@ def _get_home() -> Path:
     return _ensure(p)
 
 
+def get_app_log_path() -> Path:
+    """'<home>/hatcher.log'; reset_runtime_data leaves it alone"""
+    return _get_home() / "hatcher.log"
+
+
 def get_extra_packages_dir() -> Path:
     """'<home>/packages': the user's own package files, not created"""
     return _get_home() / "packages"

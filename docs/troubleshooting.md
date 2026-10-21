@@ -3,6 +3,9 @@
 ## Emu68 Hatcher (host)
 
 Build failures write **buildlog.txt** next to the **.img** file. Direct-to-SD builds put it in the **cache** folder of the Hatcher data folder (see [Own packages](usage.md#own-packages) for where that is); the build dialog's log shows the full path. Please attach it to bug reports.
+The app itself writes **hatcher.log** into the Hatcher data folder and keeps the
+previous run as **hatcher.log.1**; when the app closes on its own or a tool
+download fails, attach that file as well.
 
 ### macOS: build fails with "Operation not permitted" on /dev/disk\*
 
