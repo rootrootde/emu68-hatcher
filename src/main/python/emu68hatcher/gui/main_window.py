@@ -471,6 +471,9 @@ class _WheelGuard(QObject):
     """hand wheel events over spin boxes and combos to the parent so the page scrolls"""
 
     def eventFilter(self, obj, event):
+        # qt hands focus to a WheelFocus widget before any filter sees the wheel event
+        if event.type() == QEvent.Type.Polish and isinstance(obj, (QAbstractSpinBox, QComboBox)):
+            obj.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         if event.type() == QEvent.Type.Wheel and isinstance(obj, (QAbstractSpinBox, QComboBox)):
             # a resent event is not spontaneous, so Qt does not propagate it by itself
             parent = obj.parentWidget()
