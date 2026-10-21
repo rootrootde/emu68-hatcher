@@ -22,7 +22,7 @@ from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.forms import add_form_row, form_layout
 from emu68hatcher.gui.tabs.emu68_advanced import AdvancedBootSettings
 from emu68hatcher.gui.tabs.rgb2rtg_panel import RGB2RTGPanel
-from emu68hatcher.gui.widgets import select_release_option, set_release_default
+from emu68hatcher.gui.widgets import select_combo_by_data, set_release_default
 from emu68hatcher.gui.work_areas import scroll_page
 
 
@@ -217,5 +217,5 @@ class Emu68Tab(QWidget):
         return self.advanced.get_settings(antenna=self.antenna_combo.currentData())
 
     def set_settings(self, settings: Emu68BootSettings):
-        select_release_option(self.antenna_combo, settings.config_txt.antenna.value)
+        select_combo_by_data(self.antenna_combo, settings.config_txt.antenna.value)
         self.advanced.set_settings(settings)

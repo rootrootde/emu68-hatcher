@@ -20,13 +20,5 @@ def set_release_default(combo: QComboBox, value, label: str = "") -> None:
             label = combo.itemText(i)
         combo.view().setRowHidden(i, duplicate)
         model.item(i).setEnabled(not duplicate)
+    # an explicit choice stays selected while hidden, so switching release back keeps it
     combo.setItemText(0, f"{label} (default)")
-    if not model.item(combo.currentIndex()).isEnabled():
-        combo.setCurrentIndex(0)
-
-
-def select_release_option(combo: QComboBox, value) -> None:
-    """select_combo_by_data, mapping a hidden duplicate of the release default to item 0"""
-    select_combo_by_data(combo, value)
-    if not combo.model().item(combo.currentIndex()).isEnabled():
-        combo.setCurrentIndex(0)

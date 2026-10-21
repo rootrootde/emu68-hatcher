@@ -18,11 +18,7 @@ from PySide6.QtWidgets import (
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.schema import Emu68Version
 from emu68hatcher.gui.forms import add_form_row, form_layout, set_widget_help
-from emu68hatcher.gui.widgets import (
-    select_combo_by_data,
-    select_release_option,
-    set_release_default,
-)
+from emu68hatcher.gui.widgets import select_combo_by_data, set_release_default
 
 
 def paired_field(primary: QWidget, secondary: QWidget) -> QWidget:
@@ -641,20 +637,20 @@ class AdvancedBootSettings:
         cmdline = settings.cmdline_txt
         self.boot_delay_spin.setValue(config.boot_delay)
         self.bootcode_delay_spin.setValue(config.bootcode_delay)
-        select_release_option(self.avoid_warnings_combo, config.avoid_warnings)
+        select_combo_by_data(self.avoid_warnings_combo, config.avoid_warnings)
 
         if config.memory_limit_mb in (None, 0):
-            select_release_option(self.memory_limit_combo, config.memory_limit_mb)
+            select_combo_by_data(self.memory_limit_combo, config.memory_limit_mb)
         else:
             select_combo_by_data(self.memory_limit_combo, "custom")
             self.memory_limit_spin.setValue(config.memory_limit_mb)
         if config.gpu_memory_mb in (None, 0):
-            select_release_option(self.gpu_memory_combo, config.gpu_memory_mb)
+            select_combo_by_data(self.gpu_memory_combo, config.gpu_memory_mb)
         else:
             select_combo_by_data(self.gpu_memory_combo, "custom")
             self.gpu_memory_spin.setValue(config.gpu_memory_mb)
 
-        select_release_option(self.cpu_turbo_combo, config.cpu_turbo.value)
+        select_combo_by_data(self.cpu_turbo_combo, config.cpu_turbo.value)
         self.arm_freq_spin.setValue(config.arm_freq_mhz)
         self.over_voltage_spin.setValue(config.over_voltage)
         self.arm_boost_check.setChecked(config.arm_boost_pi4)
@@ -678,7 +674,7 @@ class AdvancedBootSettings:
         select_combo_by_data(self.z2_ram_combo, cmdline.z2_ram_size_mb)
         self.vc4_memory_spin.setValue(cmdline.vc4_memory_mb or 0)
         select_combo_by_data(self.swap_df0_combo, cmdline.swap_df0.value)
-        select_release_option(self.bus_test_combo, cmdline.bus_test.value)
+        select_combo_by_data(self.bus_test_combo, cmdline.bus_test.value)
         self.bus_test_size_spin.setValue(cmdline.bus_test_size_kb)
         self.bus_test_iterations_spin.setValue(cmdline.bus_test_iterations)
         self.extra_cmdline_edit.setText(" ".join(cmdline.extra_tokens))

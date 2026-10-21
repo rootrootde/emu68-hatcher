@@ -25,7 +25,7 @@ def capture_draft(window):
     ):
         for widget in owner.findChildren(QWidget):
             if isinstance(widget, QComboBox):
-                value = widget.currentData(), widget.currentText()
+                value = widget.currentData(), widget.currentText(), widget.currentIndex()
             elif isinstance(widget, QSpinBox):
                 value = widget.value()
             elif isinstance(widget, QLineEdit):
@@ -78,7 +78,8 @@ def restore_draft(controller, draft):
             continue
         if isinstance(widget, QComboBox):
             index = widget.findData(value[0]) if value[0] is not None else widget.findText(value[1])
-            widget.setCurrentIndex(index)
+            # a release default entry changes its text with the release
+            widget.setCurrentIndex(index if index >= 0 else value[2])
         elif isinstance(widget, QSpinBox):
             widget.setValue(value)
         elif isinstance(widget, QLineEdit):
