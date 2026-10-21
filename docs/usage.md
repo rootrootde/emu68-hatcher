@@ -134,10 +134,10 @@ updates. A file that does not load is reported in the log and skipped.
 
 ## RGB2RTG
 
-RGB2RTG v0.76 is an optional experimental installation for an A1200 with
+RGB2RTG v0.77 is an optional experimental installation for an A1200 with
 PiStorm32-lite and a Raspberry Pi 4 or CM4. Pi 3 is not tested. Enable it in
 **System → Hardware & Emu68** and browse to your local
-**RGB2RTG_A1200_v0.76.7z** release from
+**RGB2RTG_A1200_v0.77.7z** release from
 [the author](https://astair86.itch.io/rgb2rtg-amiga1200). The archive is not
 included or downloaded automatically.
 
@@ -149,7 +149,9 @@ The desktop menu is **System → RGB2RTG**, with **Init...**, **Settings...**,
 **Sound...** and **About...**. New installations start with the picture off: the
 RTG desktop shows, but native Amiga screens stay black on HDMI. Turn the picture
 on through **Init...** or with **C:rgb2rtg ON**; the choice is saved for later
-boots.
+boots. The sound monitor from **Sound...** is also
+**SYS:Utilities/RGB2RTG-SoundMonitor**. The upstream installer's optional
+RGB2RTG-Native launcher is not installed.
 
 Power cycle the Amiga after installation and after changing the video standard
 or HDMI rate.

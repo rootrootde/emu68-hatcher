@@ -72,4 +72,6 @@ IF EXISTS DEVS:AHI/rgb2rtg-hdmi.audio
 ENDIF
 Delete >NIL: ENVARC:RGB2RTG ENV:RGB2RTG ALL QUIET FORCE
 Delete >NIL: ENVARC:RGB2RTG.prefs ENV:RGB2RTG.prefs C:rgb2rtg QUIET
+Delete >NIL: ENVARC:RGB2RTG_#? ENV:RGB2RTG_#? QUIET FORCE
+Delete >NIL: SYS:Utilities/RGB2RTG-SoundMonitor SYS:Utilities/RGB2RTG-SoundMonitor.info QUIET FORCE
 Echo "Baseline kernel and driver restored. Power cycle the Amiga."
