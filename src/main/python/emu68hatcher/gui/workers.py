@@ -119,9 +119,14 @@ class ToolDownloadWorker(QThread):
                 break
             self.tool_started.emit(tool_name)
 
-            # close over tool_name so the start tab can label the bar
-            def _cb(downloaded: int, total: int, _name=tool_name):
-                self.tool_progress.emit(_name, downloaded, total)
+            # one signal per percent, not per 8 KiB chunk: a linux a11y bridge aborted under the flood
+            sent = [-1]
+
+            def _cb(downloaded: int, total: int, _name=tool_name, _sent=sent):
+                step = downloaded * 100 // total if total else downloaded >> 20
+                if step != _sent[0]:
+                    _sent[0] = step
+                    self.tool_progress.emit(_name, downloaded, total)
 
             try:
                 if tool_name == "7z":

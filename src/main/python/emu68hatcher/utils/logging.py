@@ -1,6 +1,8 @@
 """Console logging and shared file handler helper."""
 
+import faulthandler
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 _logger = logging.getLogger("emu68hatcher")
@@ -34,6 +36,23 @@ def attach_file_handler(
     handler.setFormatter(logging.Formatter(fmt, datefmt))
     logger.addHandler(handler)
     return handler
+
+
+def start_app_log(path: Path) -> None:
+    """log this run to path, keep the previous run as path.1, native crashes land there too"""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        handler = RotatingFileHandler(path, backupCount=1, encoding="utf-8")
+        if path.stat().st_size:
+            handler.doRollover()
+    except Exception as e:
+        _logger.warning(f"could not open log file at {path}: {type(e).__name__}: {e}")
+        return
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(message)s"))
+    _logger.addHandler(handler)
+    # a segfault or abort skips every python handler; faulthandler writes straight to the fd
+    faulthandler.enable(file=handler.stream)
 
 
 def get_logger() -> logging.Logger:
