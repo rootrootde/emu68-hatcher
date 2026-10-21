@@ -1,4 +1,4 @@
-RGB2RTG v0.76 installed by Emu68 Hatcher
+RGB2RTG v0.77 installed by Emu68 Hatcher
 
 System -> RGB2RTG opens the Init, Settings, Sound and About windows.
 Use these menus to change settings. C:rgb2rtg APPLY runs at startup.
