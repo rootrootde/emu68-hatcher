@@ -42,7 +42,7 @@
 
     ```bash
     # from a release tarball
-    tar xf emu68hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
+    tar xf emu68-hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
 
     # or from git
     git clone https://github.com/rootrootde/emu68-hatcher.git && cd emu68-hatcher
@@ -72,7 +72,7 @@
 
     ```bash
     # from a release tarball
-    tar xf emu68hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
+    tar xf emu68-hatcher-<version>.tar.gz && cd emu68-hatcher-<version>
 
     # or from git
     git clone https://github.com/rootrootde/emu68-hatcher.git && cd emu68-hatcher
@@ -98,7 +98,7 @@
 
     ```powershell
     # from a release tarball (Windows 10+ has tar built in)
-    tar xf emu68hatcher-<version>.tar.gz; cd emu68-hatcher-<version>
+    tar xf emu68-hatcher-<version>.tar.gz; cd emu68-hatcher-<version>
 
     # or from git
     git clone https://github.com/rootrootde/emu68-hatcher.git; cd emu68-hatcher

@@ -127,7 +127,7 @@ also needs Full Disk Access; see [Installation](installation.md#macos).
 
 Package files you put into **packages** inside the Hatcher data folder join the
 catalog on that machine: **Library/Application Support/Emu68 Hatcher** on macOS,
-**LOCALAPPDATA** on Windows, **.local/share/emu68hatcher** on Linux, or
+**LOCALAPPDATA\Emu68 Hatcher** on Windows, **.local/share/emu68hatcher** on Linux, or
 **hatcher_data** in a source checkout. They use the same YAML form as the
 bundled packages, show up in the Software work area and survive catalog
 updates. A file that does not load is reported in the log and skipped.
