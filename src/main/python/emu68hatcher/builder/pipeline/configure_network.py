@@ -41,6 +41,7 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
         return
     network = workflow.config.network
     amitcp = workflow.config.network_stack == NetworkStack.AMITCP_NG
+    lwip = workflow.config.network_stack == NetworkStack.LWIP_AMIGA
     for name, settings in (("genet", network.ethernet), ("wifipi", network.wifi)):
         path = resolve_source_path(boot_staging, f"Devs/NetInterfaces/{name}")
         if path is None:
@@ -51,18 +52,28 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
             settings.mode.value,
             settings.address,
             settings.netmask,
-            gateway=network.gateway if amitcp else None,
+            gateway=network.gateway if amitcp or lwip else None,
             dns_servers=network.dns_servers if amitcp else None,
         )
 
-    if network.gateway:
-        _write_default_route(
-            resolve_staging_path(boot_staging, "Devs/Internet/routes"), network.gateway
-        )
-    if network.dns_servers:
-        _write_name_resolution(
-            resolve_staging_path(boot_staging, "Devs/Internet/name_resolution"), network.dns_servers
-        )
+    if lwip:
+        # lwip reads neither Devs/Internet file; DNS is stack-wide in netstack.prefs
+        if network.dns_servers:
+            _write_netstack_dns(
+                resolve_staging_path(boot_staging, "Prefs/Env-Archive/netstack.prefs"),
+                network.dns_servers,
+                workflow.logger,
+            )
+    else:
+        if network.gateway:
+            _write_default_route(
+                resolve_staging_path(boot_staging, "Devs/Internet/routes"), network.gateway
+            )
+        if network.dns_servers:
+            _write_name_resolution(
+                resolve_staging_path(boot_staging, "Devs/Internet/name_resolution"),
+                network.dns_servers,
+            )
 
     if amitcp:
         package = get_package_by_name("amitcp_ng")
@@ -70,7 +81,7 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
         if package and package.download and package.download.tag:
             marker += f" {package.download.tag.removeprefix('v')}"
         _write_lines(resolve_staging_path(boot_staging, "Libs/AmiTCP_NG.version"), [marker])
-    label = "AmiTCP_NG" if amitcp else "network"
+    label = workflow.config.network_stack.value if amitcp or lwip else "network"
     workflow.logger.info(
         f"Configured {label}: ethernet={network.ethernet.mode.value} "
         f"wifi={network.wifi.mode.value} gateway={network.gateway or '-'} "
@@ -182,6 +193,20 @@ def _write_default_route(path: Path, gateway: str) -> None:
 
 def _write_name_resolution(path: Path, dns_servers: list[str]) -> None:
     _write_lines(path, [_MANAGED_TAG, *(f"nameserver {ip}" for ip in dns_servers)])
+
+
+def _write_netstack_dns(path: Path, dns_servers: list[str], logger) -> None:
+    if len(dns_servers) > 2:
+        logger.warning("lwip-amiga takes two DNS servers; extra entries dropped")
+    tag = _MANAGED_TAG.replace("#", ";", 1)
+    kept: list[str] = []
+    if path.exists():
+        for line in path.read_text(encoding="iso-8859-1").splitlines():
+            key = line.split("=", 1)[0].strip().upper() if line[:1] not in ("", ";", "#") else ""
+            if key not in ("DNS1", "DNS2") and line != tag:
+                kept.append(line)
+    kept += [tag, *(f"DNS{index} = {ip}" for index, ip in enumerate(dns_servers[:2], 1))]
+    _write_lines(path, kept)
 
 
 def _write_lines(path: Path, lines: list[str]) -> None:

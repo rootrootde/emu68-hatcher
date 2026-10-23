@@ -16,6 +16,7 @@ from pydantic import (
 class NetworkStack(str, Enum):
     ROADSHOW = "Roadshow"
     AMITCP_NG = "AmiTCP_NG"
+    LWIP_AMIGA = "lwip_amiga"
     MIAMIDX = "MiamiDX"
 
 
