@@ -1,0 +1,18 @@
+name: screennotify
+friendly_name: screennotify.library
+group: Libraries
+description: 'notifies programs when the Workbench or a public screen closes or opens'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+download:
+  source: aminet
+  path: util/libs/ScreenNotify10.lha
+  hash: 9D4730DD16FA92DD02F041792DCDAC40
+  filename: ScreenNotify10.lha
+install:
+- from: ScreenNotify/libs/screennotify.library
+  to: Libs/
