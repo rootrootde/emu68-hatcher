@@ -202,7 +202,9 @@ def _write_netstack_dns(path: Path, dns_servers: list[str], logger) -> None:
     kept: list[str] = []
     if path.exists():
         for line in path.read_text(encoding="iso-8859-1").splitlines():
-            key = line.split("=", 1)[0].strip().upper() if line[:1] not in ("", ";", "#") else ""
+            # lwip takes "KEY = value" and "KEY value"
+            words = line.replace("=", " ").split() if line[:1] not in (";", "#") else []
+            key = words[0].upper() if words else ""
             if key not in ("DNS1", "DNS2") and line != tag:
                 kept.append(line)
     kept += [tag, *(f"DNS{index} = {ip}" for index, ip in enumerate(dns_servers[:2], 1))]
