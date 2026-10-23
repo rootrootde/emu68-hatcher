@@ -3467,10 +3467,10 @@
             "id": "whdload"
           }
         },
-        "catalog_schema_version": 1003001,
-        "id": "hatcher-1-3-1",
+        "catalog_schema_version": 1003002,
+        "id": "hatcher-1-3-2",
         "max_hatcher_version_exclusive": null,
-        "min_hatcher_version": "1.3.1",
+        "min_hatcher_version": "1.3.2",
         "packages": {
           "additem": {
             "archive_package": null,
@@ -12326,57 +12326,57 @@
           }
         },
         "revision": 1,
-        "source_commit": "68e892ee79db6513e28646c2d325f4ba68d7aa2c"
+        "source_commit": "dd4d4d3dba4bbd6efdc9d1bdab541a9654c11f8d"
       }
     ],
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.3.1-linux-arm64.deb",
-          "sha256": "c0d621c3211db39f0358b70938568724935d8d19b12419791d18b6e839074824",
-          "size": 69395684,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-linux-arm64.deb"
+          "filename": "emu68hatcher-1.3.2-linux-arm64.deb",
+          "sha256": "a596cfdb0268a863e4b4ed88d163902b927bf518192348ff1e049e8cbe1b9810",
+          "size": 69393672,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.3.1-linux-x64.deb",
-          "sha256": "4a16f441774eb364f452329d70110f52524a0c9d55ec45cfa16c424dcaf80aac",
-          "size": 73603128,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-linux-x64.deb"
+          "filename": "emu68hatcher-1.3.2-linux-x64.deb",
+          "sha256": "2460f344ff8b28e301ed5e87b76f3fe692abca4a3fee0e37ccb8f8c8e4455a31",
+          "size": 73281492,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.3.1-macos-arm64.dmg",
-          "sha256": "fa304abd96389320d7ef9a90337c1f9c902ecaa6287b219c27b4e53c51f580be",
-          "size": 35181255,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.3.2-macos-arm64.dmg",
+          "sha256": "89619a6f764d8537ae5a3c37ffd685d294ca75aa5e86db2f74d5548e812ceab2",
+          "size": 34685002,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.3.1-macos-x64.dmg",
-          "sha256": "092ada3fbc81378754b8554e04357506be682dd3c21ddf8aa9dbf5e9ddad175e",
-          "size": 37283840,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-macos-x64.dmg"
+          "filename": "emu68hatcher-1.3.2-macos-x64.dmg",
+          "sha256": "459470440af6f00fb6f7d32efd653115028e2586b053ae4558cedf909cbfb95d",
+          "size": 36721529,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.3.1-windows-arm64.exe",
-          "sha256": "f8002c2cb2f0096e11289146e39ab17468cea716e071cb3962129170315d642c",
-          "size": 39189517,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-windows-arm64.exe"
+          "filename": "emu68hatcher-1.3.2-windows-arm64.exe",
+          "sha256": "753ae7c0ddcd8c5c9028f85f163328138246b70af755a2e3269d82edcc351126",
+          "size": 38842978,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.3.1-windows-x64.exe",
-          "sha256": "b07750a3141fc22e47bce7ee3ebc14f30105335226dc64a089158d11dc6ec4f1",
-          "size": 50028584,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.1/emu68hatcher-1.3.1-windows-x64.exe"
+          "filename": "emu68hatcher-1.3.2-windows-x64.exe",
+          "sha256": "f8ac54d0541ab9737722af9ac6a6e96b4f9ae62343e2254ece083a61da04c647",
+          "size": 49630240,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.2/emu68hatcher-1.3.2-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.3.1",
-      "version": "1.3.1"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.3.2",
+      "version": "1.3.2"
     },
-    "revision": 1792627665,
+    "revision": 1792718514,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "g5tphkZtqy3PeaC0y2q8xBtDHXF65Xn8SZbgjtVp8AHyR7FsGqqXz6KaViJ/H4ni33hdcyQx2Ex/4/HkxHwdCw=="
+    "value": "nwm7fP2K92B0SYdfVEmwvxS9RyVYV6skUbsQFrbcunaXNWrjPYX2vuLSl7zCkJvEEL54qk+nL93y0xSFjBVuDQ=="
   }
 }
