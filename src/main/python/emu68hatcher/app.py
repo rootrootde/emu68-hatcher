@@ -13,7 +13,7 @@ def run():
     start_app_log(get_app_log_path())
     get_logger().info(f"Emu68 Hatcher {__version__} on {get_platform_info().platform_string}")
     # the gtk3 theme in the linux bundle brings its own atk-bridge, which registers a second,
-    # empty application on the a11y bus next to qt's; a mint box with a11y on aborted in malloc
+    # empty application on the a11y bus next to qt's; one registration per process is enough
     if sys.platform.startswith("linux"):
         os.environ.setdefault("NO_AT_BRIDGE", "1")
 
