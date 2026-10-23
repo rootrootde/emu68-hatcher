@@ -8,7 +8,7 @@ versions:
 - 3.2.2.1
 - 3.2.3
 - '3.9'
-# archive synced from the hatcher-tools repo by scripts/sync-native-tools.py
+# archive synced from the hatcher-prefs repo by scripts/sync-native-tools.py
 download:
   source: local
   path: Hatcher-Prefs.lha
