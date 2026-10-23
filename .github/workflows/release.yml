@@ -149,6 +149,11 @@ jobs:
           set -euo pipefail
           pip install "$FBS_PRO_PATH"
           pip install PyInstaller
+          # newer pyside6 aarch64 wheels are manylinux_2_39 (glibc 2.39): too new for this runner
+          # and for raspberry pi os bookworm (2.36). 6.8.0.2 is the last one that runs there
+          if [ "${{ matrix.os }}" = "linux" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
+            pip install "PySide6==6.8.0.2"
+          fi
           pip install -e .
 
       # fbs wants per-OS settings stubs next to base.json; create empty ones if missing

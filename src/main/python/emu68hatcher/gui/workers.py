@@ -119,7 +119,7 @@ class ToolDownloadWorker(QThread):
                 break
             self.tool_started.emit(tool_name)
 
-            # one signal per percent, not per 8 KiB chunk: a linux a11y bridge aborted under the flood
+            # one signal per percent, not per 8 KiB chunk: pyside6 6.12.0 lost a reference per emit
             sent = [-1]
 
             def _cb(downloaded: int, total: int, _name=tool_name, _sent=sent):
