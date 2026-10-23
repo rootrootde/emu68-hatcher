@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the Hatcher-Prefs archive from the sibling hatcher-tools repo into local_packages."""
+"""Copy the Hatcher-Prefs archive from the sibling hatcher-prefs repo into local_packages."""
 
 import argparse
 import hashlib
@@ -16,7 +16,8 @@ LOCAL = DATA / "local_packages"
 LOCK = LOCAL / "native-tools.json"
 
 NAME = "hatcher-prefs"  # key in native-tools.json
-REPO = "hatcher-tools"
+REPO = "hatcher-prefs"
+SUBMODULES = ("lib",)  # git archive skips gitlinks, so these are exported separately
 ARCHIVE = ".build/Hatcher-Prefs.lha"  # relative to the repo root
 BUILD_DIR = ".build"  # relative to the repo root
 SEED = ("deps",)  # dependency paths under BUILD_DIR copied into a clean export
@@ -53,6 +54,20 @@ def _clean_build(repo: Path, commit: str, work: Path) -> Path:
         capture_output=True,
     ).stdout
     subprocess.run(["tar", "-x", "-C", str(export)], input=archive, check=True)
+    for rel in SUBMODULES:
+        sub = repo / rel
+        if not (sub / ".git").exists():
+            raise SystemExit(
+                f"{REPO}: submodule {rel} not checked out; run git submodule update --init"
+            )
+        pinned = _git(repo, "rev-parse", f"{commit}:{rel}")
+        tree = subprocess.run(
+            ["git", "-C", str(sub), "archive", "--format=tar", pinned],
+            check=True,
+            capture_output=True,
+        ).stdout
+        (export / rel).mkdir(exist_ok=True)
+        subprocess.run(["tar", "-x", "-C", str(export / rel)], input=tree, check=True)
     for rel in SEED:
         src = repo / BUILD_DIR / rel
         if not src.exists():
