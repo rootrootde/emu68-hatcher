@@ -66,9 +66,8 @@ NVMe are offered only for Emu68 versions that support them.
 **Hatcher Prefs** in the **Utilities** group is Hatcher's own network window for
 the Amiga: connect, disconnect, check the connection, WiFi name and password,
 addresses and DNS. Every network stack installs it. Open it from **Network →
-Network Settings** or the **Network Settings** icon in **SYS:Utilities**. Before it
-changes a file it keeps the old one under **SYS:Emu68-Hatcher/Backup/** and offers
-to undo the last change.
+Network Settings** or the **Network Settings** icon in **SYS:Utilities**. Save keeps
+the replaced files under **SYS:Emu68-Hatcher/Backup/Network/**.
 
 The **Fonts** group has four optional packs: Workbench (Apparent, Dina,
 Terminus), MagicWB (XEN, XHelvetica, XCourier), Retro, and Scalable (Bitstream

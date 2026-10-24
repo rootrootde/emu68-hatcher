@@ -2,11 +2,11 @@
   "hatcher-prefs": {
     "archive": ".build/Hatcher-Prefs.lha",
     "built_clean": true,
-    "commit": "2047e325ca9c491bb4e6725ecf0979a73af9d923",
+    "commit": "a39fab1b0d6b7ceec72e9e6b290a26f33697847e",
     "file": "Hatcher-Prefs.lha",
-    "md5": "0ff1086cef9084b996f813626864880c",
+    "md5": "526933a586a18b7c7aa6c79417d72b0c",
     "repository": "hatcher-prefs",
-    "sha256": "728da1230798f7f6fd6ed11bf26c82b97adff2ca4f4f77660377fa42e647636a",
-    "size": 47848
+    "sha256": "179c88e1a1615ccd79076e39e75175e5eb68b80e6c582e1bf4262ee284325c61",
+    "size": 49745
   }
 }
