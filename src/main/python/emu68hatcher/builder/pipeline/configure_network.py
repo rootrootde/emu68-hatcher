@@ -31,7 +31,6 @@ _MIAMI_KEY_SIZES = {"MIAMI.KEY1": 2048, "MIAMI.KEY2": 2048, "MIAMIDX.KEY": 4096}
 def generate_wireless_prefs(ssid: str, password: str) -> str:
     body = f'   ssid="{_wpa_escape(ssid)}"\n'
     body += f'   psk="{_wpa_escape(password)}"\n' if password else "   key_mgmt=NONE\n"
-    body += "   scan_ssid=1\n"
     return f"network={{\n{body}}}\n"
 
 

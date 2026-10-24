@@ -9,11 +9,12 @@ versions:
 - 3.2.3
 - '3.9'
 mandatory: false
+# prism2 2.8 with WirelessManager 1.3: the 1.5 in aminet's 2.9 leaves the AP
+# address unset on wifipi.device, so the WPA handshake fails
 download:
-  source: aminet
-  path: driver/net/prism2v2.lha
-  hash: 18EB7E3318659F77042A0C69F8A405FF
-  filename: prism2v2.lha
+  source: local
+  path: Prism2v2.lha
+  filename: Prism2v2.lha
 install:
 - from: prism2v2/C/WirelessManager
   to: C/
