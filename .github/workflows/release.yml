@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write  # needed for the release-upload step on tag builds
+  actions: read  # signpath pulls the unsigned artifacts through the actions api
 
 jobs:
   version-check:
@@ -120,34 +121,13 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip setuptools wheel
 
-      # fbs Pro sdist downloaded from a private repo via PAT (fine-grained, contents:read). secrets: FBS_PRO_REPO/TAG/ASSET/TOKEN
-      - name: Download fbs Pro tarball
-        env:
-          GH_TOKEN: ${{ secrets.FBS_PRO_TOKEN }}
-          FBS_PRO_REPO: ${{ secrets.FBS_PRO_REPO }}
-          FBS_PRO_TAG: ${{ secrets.FBS_PRO_TAG }}
-          FBS_PRO_ASSET: ${{ secrets.FBS_PRO_ASSET }}
+      # free fbs from pypi; --no-deps because it pins PyInstaller 3.4, patch_fbs.py makes it
+      # run on this python and pyinstaller and keeps fbs code out of the app
+      - name: Install fbs and Python dependencies
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${GH_TOKEN:-}" ] || [ -z "${FBS_PRO_REPO:-}" ] || [ -z "${FBS_PRO_TAG:-}" ] || [ -z "${FBS_PRO_ASSET:-}" ]; then
-            echo "::error::Missing one of FBS_PRO_TOKEN/FBS_PRO_REPO/FBS_PRO_TAG/FBS_PRO_ASSET secrets."
-            exit 1
-          fi
-          mkdir -p "$RUNNER_TEMP/fbspro"
-          gh release download "$FBS_PRO_TAG" \
-            --repo "$FBS_PRO_REPO" \
-            --pattern "$FBS_PRO_ASSET" \
-            --dir "$RUNNER_TEMP/fbspro"
-          ls -la "$RUNNER_TEMP/fbspro"
-          # Expose path for the next step
-          echo "FBS_PRO_PATH=$RUNNER_TEMP/fbspro/$FBS_PRO_ASSET" >> "$GITHUB_ENV"
-
-      - name: Install fbs Pro and Python dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          pip install "$FBS_PRO_PATH"
+          pip install --no-deps fbs==1.2.7
           pip install PyInstaller
           # newer pyside6 aarch64 wheels are manylinux_2_39 (glibc 2.39): too new for this runner
           # and for raspberry pi os bookworm (2.36). 6.8.0.2 is the last one that runs there
@@ -155,6 +135,12 @@ jobs:
             pip install "PySide6==6.8.0.2"
           fi
           pip install -e .
+          python scripts/patch_fbs.py
+
+      # fbs installer calls create-dmg from PATH (see scripts/patch_fbs.py)
+      - name: Install create-dmg (macOS)
+        if: matrix.os == 'macos'
+        run: brew install create-dmg
 
       # fbs wants per-OS settings stubs next to base.json; create empty ones if missing
       - name: Ensure per-OS fbs settings exist (bash)
@@ -243,6 +229,44 @@ jobs:
           rm -f Qt6Quick.dll Qt6Qml.dll Qt6QmlModels.dll Qt6QmlMeta.dll Qt6QmlWorkerScript.dll \
                 Qt6Pdf.dll Qt6VirtualKeyboard.dll Qt6VirtualKeyboardQml.dll
 
+      # defender flags the unsigned app exe, so it is signed before nsis packs it.
+      # skipped until the SIGNPATH_ORGANIZATION_ID repo variable exists
+      - name: Upload unsigned app exe (Windows)
+        id: upload-unsigned-app
+        if: matrix.os == 'windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-app-${{ matrix.label }}
+          path: target/Emu68 Hatcher/Emu68 Hatcher.exe
+          if-no-files-found: error
+          retention-days: 1
+
+      # waits for the manual approval on signpath.io
+      - name: Sign app exe (Windows)
+        if: steps.upload-unsigned-app.outcome == 'success'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: emu68-hatcher
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: app-exe
+          github-artifact-id: ${{ steps.upload-unsigned-app.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: ${{ runner.temp }}/signed-app
+
+      - name: Use signed app exe (Windows)
+        if: steps.upload-unsigned-app.outcome == 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = "target/Emu68 Hatcher/Emu68 Hatcher.exe"
+          Copy-Item -Force "$env:RUNNER_TEMP/signed-app/Emu68 Hatcher.exe" $exe
+          $sig = Get-AuthenticodeSignature $exe
+          if ($sig.Status -ne 'Valid') { throw "app exe signature: $($sig.Status) $($sig.StatusMessage)" }
+          $sig.SignerCertificate.Subject
+
       # signing reseals the bundle after trimming; do this before "Sign .app (macOS)"
       # translations exist in both Frameworks/ and Resources/ (one is a symlink); nuke both so xattr -cr in sign doesnt hit a dangling symlink
       - name: Slim PySide6 bundle (macOS)
@@ -277,6 +301,41 @@ jobs:
       # produces target/<AppName>Setup.exe (windows, NSIS) or target/<AppName>.deb (linux, fpm+dpkg on ubuntu)
       - name: Build installer
         run: fbs installer
+
+      - name: Upload unsigned installer (Windows)
+        id: upload-unsigned-installer
+        if: matrix.os == 'windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-installer-${{ matrix.label }}
+          path: target/Emu68 HatcherSetup.exe
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Sign installer (Windows)
+        if: steps.upload-unsigned-installer.outcome == 'success'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: emu68-hatcher
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: installer
+          github-artifact-id: ${{ steps.upload-unsigned-installer.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: ${{ runner.temp }}/signed-installer
+
+      - name: Use signed installer (Windows)
+        if: steps.upload-unsigned-installer.outcome == 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = "target/Emu68 HatcherSetup.exe"
+          Copy-Item -Force "$env:RUNNER_TEMP/signed-installer/Emu68 HatcherSetup.exe" $exe
+          $sig = Get-AuthenticodeSignature $exe
+          if ($sig.Status -ne 'Valid') { throw "installer signature: $($sig.Status) $($sig.StatusMessage)" }
+          $sig.SignerCertificate.Subject
 
       # fbs/fpm default = gzip; xz cuts the .deb by ~30 MB. Ubuntu 18.04+/Debian 10+ install xz debs fine.
       - name: Recompress .deb with xz (Linux)

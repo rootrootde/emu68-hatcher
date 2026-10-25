@@ -69,6 +69,17 @@ Bundled / downloaded at build time:
 - [Poseidon USB stack](https://wiki.icomp.de/wiki/RapidRoad) by Chris Hodges - downloaded from the iComp wiki at build time when USB support is selected
 - Aminet packages (MUI, HippoPlayer, IBrowse, akDatatypes, Picasso96, ...) - downloaded from [aminet.net](https://aminet.net) at build time; each ships its own readme with license
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+The Windows installers and the **Emu68 Hatcher.exe** inside them are signed. Both are built by the release workflow of this repository, and each signing request is approved by hand.
+
+- Authors and reviewers: [rootrootde](https://github.com/rootrootde)
+- Approvers: [rootrootde](https://github.com/rootrootde)
+
+Privacy: Emu68 Hatcher sends no personal data. At startup it fetches the update list from this GitHub repository. During a build it downloads the selected packages from their sources (Aminet, GitHub, the authors' websites), which see the usual request data such as your IP address. Nothing else is transferred.
+
 ## License
 
 [LICENSE](./LICENSE)
