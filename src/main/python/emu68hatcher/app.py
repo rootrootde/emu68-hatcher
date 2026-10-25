@@ -17,23 +17,6 @@ def run():
     if sys.platform.startswith("linux"):
         os.environ.setdefault("NO_AT_BRIDGE", "1")
 
-    try:  # frozen builds use fbs ApplicationContext
-        from fbs_runtime.application_context.PySide6 import ApplicationContext
-    except ImportError:
-        ApplicationContext = None
+    from emu68hatcher.gui.main_window import launch_gui
 
-    if ApplicationContext is None:
-        from emu68hatcher.gui.main_window import launch_gui
-
-        launch_gui()
-        return
-
-    class AppContext(ApplicationContext):
-        def run(self):
-            from emu68hatcher.gui.main_window import MainWindow
-
-            self.window = MainWindow()
-            self.window.show()
-            return self.app.exec()
-
-    sys.exit(AppContext().run())
+    launch_gui()

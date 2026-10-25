@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, Qt, QTimer
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QAbstractButton,
     QAbstractSpinBox,
@@ -32,6 +32,7 @@ from emu68hatcher.config.display_models import CustomScreenMode
 from emu68hatcher.config.loader import load_config, save_config
 from emu68hatcher.config.schema import OutputType
 from emu68hatcher.data.rom_detection import identify_kickstart
+from emu68hatcher.gui.app_icon import find_app_icon
 from emu68hatcher.gui.boot_preview import BootPreviewPane
 from emu68hatcher.gui.configuration_controller import ConfigurationController
 from emu68hatcher.gui.design import apply_design, style_sections
@@ -493,6 +494,10 @@ class _WheelGuard(QObject):
 def launch_gui():
     app = QApplication(sys.argv)
     app.setApplicationName("Emu68 Hatcher")
+    app.setApplicationVersion(__version__)
+    icon_path = find_app_icon()
+    if icon_path and sys.platform != "darwin":  # macos takes the icon from the bundle
+        app.setWindowIcon(QIcon(str(icon_path)))
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

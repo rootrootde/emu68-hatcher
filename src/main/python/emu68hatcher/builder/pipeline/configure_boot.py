@@ -169,16 +169,10 @@ def _write_hatcher_marker(emu68_boot_staging: Path) -> None:
     """drop a txt file on the FAT32 boot partition identifying the build tool"""
     from datetime import datetime, timezone
 
-    try:
-        from fbs_runtime import PUBLIC_SETTINGS
+    from emu68hatcher import __version__
 
-        app_name = PUBLIC_SETTINGS["app_name"]
-        version = PUBLIC_SETTINGS["version"]
-    except Exception:
-        from emu68hatcher import __version__
-
-        app_name = "Emu68 Hatcher"
-        version = __version__
+    app_name = "Emu68 Hatcher"
+    version = __version__
 
     text = (
         f"This SD card image was built with {app_name}.\n"
