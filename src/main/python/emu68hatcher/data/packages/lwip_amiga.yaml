@@ -67,3 +67,15 @@ install:
   to: Programs/lwip-amiga/
 - from: Documentation/lwip-amiga/LICENSE
   to: Programs/lwip-amiga/
+# lwip adds interfaces only through AddNetInterface and allows one at a time;
+# Hatcher-Prefs BOOT reads the choice from ENVARC:Hatcher-NetBoot
+scripts:
+- name: lwip-amiga TCP/IP
+  content: |
+    ;BEGIN lwip-amiga
+    If NOT EXISTS S:Network-disabled
+      If EXISTS C:Hatcher-Prefs
+        Run >NIL: C:Hatcher-Prefs BOOT
+      EndIf
+    EndIf
+    ;END lwip-amiga

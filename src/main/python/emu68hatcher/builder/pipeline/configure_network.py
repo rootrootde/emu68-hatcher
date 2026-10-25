@@ -63,6 +63,11 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
                 network.dns_servers,
                 workflow.logger,
             )
+        # one interface at a time: Hatcher-Prefs BOOT connects the one named here
+        _write_lines(
+            resolve_staging_path(boot_staging, "Prefs/Env-Archive/Hatcher-NetBoot"),
+            ["WIFI" if workflow.config.wifi else "ETHERNET"],
+        )
     else:
         if network.gateway:
             _write_default_route(
