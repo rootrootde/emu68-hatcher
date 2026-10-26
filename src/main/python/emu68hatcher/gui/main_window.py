@@ -330,15 +330,51 @@ class MainWindow(QMainWindow):
         path, _ = QFileDialog.getOpenFileName(
             self, "Open Configuration", "", "JSON Files (*.json);;All Files (*)"
         )
-        if not path:
-            return
+        if path:
+            self._load_config_file(path)
+
+    def _load_config_file(self, path) -> bool:
         try:
             self.controller.load(load_config(Path(path)))
             self.statusBar().showMessage(f"Loaded: {path}")
+            return True
         except Exception as error:
             QMessageBox.critical(
                 self, "Error", f"Failed to load config: {validation_message(error)}"
             )
+            return False
+
+    def start_from_cli(self, config: str | None, target: str | None, build: bool) -> None:
+        """command line start: load a config, pick an SD card, go to the build"""
+        if config and not self._load_config_file(config):
+            return
+        if not target:
+            if build:
+                self._build_when_ready()
+            return
+
+        def picked():
+            self.output_tab.disks_ready.disconnect(picked)
+            self._output_changed()
+            if self.output_tab.disk_combo.currentData() is None:
+                QMessageBox.warning(
+                    self, "SD card", f"{target} is not in the list of removable disks."
+                )
+                return
+            if build:
+                self._build_when_ready()
+
+        self.output_tab.disks_ready.connect(picked)
+        self.output_tab.select_disk(target)
+
+    def _build_when_ready(self) -> None:
+        # the rom/media scans and the ags check that a load starts must finish first
+        _, issues = self.controller.preflight()
+        if any(issue.severity == "pending" for issue in issues):
+            QTimer.singleShot(500, self._build_when_ready)
+            return
+        self.navigate("review")
+        self.build_image()
 
     def save_config_file(self):
         path, _ = QFileDialog.getSaveFileName(
@@ -490,11 +526,13 @@ class _WheelGuard(QObject):
         return False
 
 
-def launch_gui():
+def launch_gui(options=None):
     app = QApplication(sys.argv)
     app.setApplicationName("Emu68 Hatcher")
     window = MainWindow()
     window.show()
+    if options is not None:
+        QTimer.singleShot(0, lambda: window.start_from_cli(*options))
     sys.exit(app.exec())
 
 
