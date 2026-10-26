@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QProgressBar,
     QPushButton,
     QTextEdit,
@@ -185,6 +186,7 @@ class BuildProgressDialog(QDialog):
         self.worker.progress_updated.connect(self.on_progress)
         self.worker.log_event.connect(self.on_log_event)
         self.worker.build_finished.connect(self.on_finished)
+        self.worker.unverified_question.connect(self.on_unverified_question)
         self.worker.start()
 
     _STAGE_NAMES = STAGE_LABELS
@@ -222,6 +224,24 @@ class BuildProgressDialog(QDialog):
             shown = min(99, int(self._overall))
             self.overall_bar.setValue(shown)
             self.overall_label.setText(f"Overall  {shown}%")
+
+    @Slot(list)
+    def on_unverified_question(self, lines: list):
+        """optional packages whose download changed upstream: install anyway or skip"""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle("Changed downloads")
+        box.setText("These optional packages no longer match their checksums.")
+        box.setInformativeText(
+            "The author may have published a new version under the same name, or the file "
+            "was altered on the way. Their install rules were not checked against it.\n\n"
+            + "\n".join(lines)
+        )
+        install = box.addButton("Install anyway", QMessageBox.ButtonRole.AcceptRole)
+        skip = box.addButton("Skip them", QMessageBox.ButtonRole.RejectRole)
+        box.setDefaultButton(skip)
+        box.exec()
+        self.worker.answer_unverified(box.clickedButton() is install)
 
     @Slot(str, str)
     def on_log_event(self, stage: str, message: str):

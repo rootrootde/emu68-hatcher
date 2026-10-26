@@ -5,6 +5,7 @@ import platform as _platform
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
@@ -51,11 +52,14 @@ class BuildWorkflow:
         progress_callback: BuildProgressCallback | None = None,
         log_callback: BuildLogCallback | None = None,
         catalog: CatalogSnapshot | None = None,
+        confirm_unverified: Callable[[list[str]], bool] | None = None,
     ):
         self.catalog = catalog or get_catalog_snapshot()
         self.config = config
         self.progress_callback = progress_callback
         self._log_callback = log_callback
+        # asks whether to install optional packages that fail their checksum; None skips them
+        self.confirm_unverified = confirm_unverified
         self.state = BuildState()
         self._resolution: Resolution | None = None
         # package and extras file writes on the boot partition, for the build receipts
