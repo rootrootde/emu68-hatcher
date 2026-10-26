@@ -126,12 +126,32 @@ _SOURCE_HANDLERS = {
 }
 
 
+def download_filename(pkg) -> str:
+    """local file name of a package download"""
+    from pathlib import Path
+
+    if pkg.download.filename:
+        return pkg.download.filename
+    if pkg.download.path:
+        return Path(pkg.download.path).name
+    if pkg.download.url:
+        return pkg.download.url.split("/")[-1]
+    return f"{pkg.name}.lha"
+
+
+def package_download_item(pkg, logger, filename: str | None = None) -> _QueueResult:
+    """DownloadItem for one remote package, or None and the reason"""
+    handler = _SOURCE_HANDLERS.get(pkg.download.source)
+    if handler is None:
+        return None, f"unsupported download source {pkg.download.source!r}"
+    return handler(pkg, pkg.name, filename or download_filename(pkg), pkg.download.hash, logger)
+
+
 def get_package_downloads(
     package_names: list[str],
 ) -> tuple[list[DownloadItem], dict[str, str]]:
     """DownloadItems from package YAML defs, plus name -> reason for downloadable ones not queued"""
     import logging
-    from pathlib import Path
 
     logger = logging.getLogger("emu68hatcher")
 
@@ -150,35 +170,17 @@ def get_package_downloads(
             logger.debug(f"Package has no download info: {pkg_name}")
             continue
 
-        source = pkg.download.source
-
-        if source == SourceType.LOCAL:
+        if pkg.download.source == SourceType.LOCAL:
             logger.debug(f"Skipping local source for {pkg_name}")
             continue
 
-        if pkg.download.filename:
-            filename = pkg.download.filename
-        elif pkg.download.path:
-            filename = Path(pkg.download.path).name
-        elif pkg.download.url:
-            filename = pkg.download.url.split("/")[-1]
-        else:
-            filename = f"{pkg.name}.lha"
-
+        filename = download_filename(pkg)
         if filename.lower() in seen_filenames:
             logger.debug(f"Skipping duplicate download: {filename}")
             continue
         seen_filenames.add(filename.lower())
 
-        expected_hash = pkg.download.hash
-
-        handler = _SOURCE_HANDLERS.get(source)
-        if handler is None:
-            unqueued[pkg_name] = f"unsupported download source {source!r}"
-            logger.warning(f"Cannot queue {pkg_name}: {unqueued[pkg_name]}")
-            continue
-
-        item, reason = handler(pkg, pkg_name, filename, expected_hash, logger)
+        item, reason = package_download_item(pkg, logger, filename)
         if item:
             items.append(item)
         else:

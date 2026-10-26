@@ -75,3 +75,51 @@ jobs:
           elif [ -n "$issue" ]; then
             gh issue close "$issue" --comment "All configured package downloads pass again."
           fi
+
+  # copies every pinned archive of main and the latest release branch to the archive mirror,
+  # which the app falls back to when upstream replaces or drops a file
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check out the latest release branch beside main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --json tagName --jq .tagName -R "$GITHUB_REPOSITORY")
+          git worktree add --detach "$RUNNER_TEMP/release" "origin/${tag#v}" 2>/dev/null \
+            || git worktree add --detach "$RUNNER_TEMP/release" "$tag"
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Mirror pinned archives
+        env:
+          GH_TOKEN: ${{ secrets.ARCHIVE_MIRROR_TOKEN }}
+          MIRROR_REPO: rootrootde/emu68-hatcher-archives
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::ARCHIVE_MIRROR_TOKEN is not set, nothing mirrored"
+            exit 0
+          fi
+          gh release view archives -R "$MIRROR_REPO" --json assets --jq '.assets[].name' \
+            > "$RUNNER_TEMP/mirrored.txt"
+          packages=src/main/python/emu68hatcher/data/packages
+          HATCHER_HOME="$RUNNER_TEMP/hatcher" python scripts/mirror-package-archives.py \
+            --packages-dir "$packages" --packages-dir "$RUNNER_TEMP/release/$packages" \
+            --existing "$RUNNER_TEMP/mirrored.txt" --out "$RUNNER_TEMP/mirror" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+          shopt -s nullglob
+          files=("$RUNNER_TEMP"/mirror/*)
+          if [ ${#files[@]} -gt 0 ]; then
+            gh release upload archives "${files[@]}" -R "$MIRROR_REPO"
+          fi
