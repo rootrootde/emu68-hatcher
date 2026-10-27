@@ -26,14 +26,23 @@ if not exist ".venvwin\Scripts\python.exe" (
     goto :fail
 )
 
-if not exist ".venvwin\Scripts\emu68hatcher.exe" (
-    echo Installing emu68hatcher into .venvwin
-    ".venvwin\Scripts\python.exe" -m pip install -e .
-    if errorlevel 1 (
-        echo pip install failed.
-        goto :fail
-    )
+rem reinstall whenever pyproject.toml differs from the copy taken at the
+rem last install, so new dependencies reach an existing venv
+if not exist ".venvwin\Scripts\emu68hatcher.exe" goto :install
+fc /b "pyproject.toml" ".venvwin\pyproject.installed" >nul 2>nul
+if errorlevel 1 goto :install
+goto :run
+
+:install
+echo Installing emu68hatcher into .venvwin
+".venvwin\Scripts\python.exe" -m pip install -e .
+if errorlevel 1 (
+    echo pip install failed.
+    goto :fail
 )
+copy /y "pyproject.toml" ".venvwin\pyproject.installed" >nul
+
+:run
 
 ".venvwin\Scripts\python.exe" -m emu68hatcher
 if errorlevel 1 (
