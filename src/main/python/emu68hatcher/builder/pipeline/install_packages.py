@@ -40,7 +40,8 @@ def stage_install_packages(
     from emu68hatcher.builder.pipeline._selection import get_resolution
 
     resolution = get_resolution(workflow)
-    all_packages = resolution.install_order  # dep-before-dependent; independent order preserved
+    # dep-before-dependent; independent order preserved
+    all_packages = [n for n in resolution.install_order if n not in downloaded.skipped_packages]
     for name, reason in resolution.dropped.items():
         workflow.logger.info(f"dropped {name}: {reason}")
 

@@ -34,7 +34,7 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     env_archive = ensure_dir(resolve_staging_path(prefs_dir, "Env-Archive"))
     ensure_dir(resolve_staging_path(boot_staging, "Devs/DOSDrivers"))
 
-    all_packages = _collect_enabled_packages(workflow)
+    all_packages = _collect_enabled_packages(workflow, image)
 
     # phase 1: Script configuration (0-40%)
     workflow._check_cancelled()
@@ -83,8 +83,9 @@ def stage_configure(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImag
     return image
 
 
-def _collect_enabled_packages(workflow: BuildWorkflow) -> list[str]:
-    """all package names to install, in install order (user-selected + mandatory + resolved deps)"""
+def _collect_enabled_packages(workflow: BuildWorkflow, image: CreatedImage) -> list[str]:
+    """installed package names in install order, without optional ones whose download failed"""
     from emu68hatcher.builder.pipeline._selection import get_resolution
 
-    return get_resolution(workflow).install_order
+    skipped = image.extracted.downloaded.skipped_packages
+    return [name for name in get_resolution(workflow).install_order if name not in skipped]

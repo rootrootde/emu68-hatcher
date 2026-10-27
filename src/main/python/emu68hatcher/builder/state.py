@@ -81,6 +81,8 @@ class DownloadedArtifacts:
     required_artifacts: set[str] = field(default_factory=set)
     required_boot_artifacts: set[str] = field(default_factory=set)
     required_packages: set[str] = field(default_factory=set)
+    # optional packages whose download failed or was declined; later stages leave them out
+    skipped_packages: set[str] = field(default_factory=set)
     pfs3_handler_path: Path | None = None
 
 

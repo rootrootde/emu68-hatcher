@@ -79,7 +79,7 @@ def write_build_records(workflow: BuildWorkflow, image: CreatedImage) -> None:
         f"Wrote {len(receipts['packages'])} package receipts to SYS:{RECEIPTS_FILE}"
     )
 
-    selected = set(resolution.install_order)
+    selected = set(resolution.install_order) - image.extracted.downloaded.skipped_packages
     stack = workflow.config.network_stack
     licensed = "roadshow" in user_archives and "roadshow" in selected
     installation = {

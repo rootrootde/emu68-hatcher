@@ -169,6 +169,7 @@ def _record_package_results(
             workflow.logger.error(f"Mandatory package could not be queued: {name}: {reason}")
         else:
             optional_failures.append(f"{name}: {reason}")
+            artifacts.skipped_packages.add(name)
             workflow.logger.warning(f"Optional package could not be queued: {name}: {reason}")
     for name, result in results.items():
         if result.success:
@@ -182,6 +183,7 @@ def _record_package_results(
             workflow.logger.error(f"Mandatory package failed: {name}: {result.error}")
         else:
             optional_failures.append(f"{name}: {result.error}")
+            artifacts.skipped_packages.add(name)
             workflow.logger.warning(f"Optional package failed: {name}: {result.error}")
     if optional_failures:
         names = ", ".join(failure.split(":", 1)[0] for failure in optional_failures)
