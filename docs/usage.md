@@ -37,9 +37,10 @@ the CD **.iso** and a Kickstart 3.1 ROM. Do not mount the ISO.
 Roadshow archive and the MiamiDX registration keys go here, as do DHCP or
 static addresses, routing, DNS and WiFi. lwip-amiga is the fast stack from the
 Emu68 driver stack: it needs AmigaOS 3.2 and Emu68 1.1, uses the netdev genet
-driver and brings up one interface at a time. At boot it connects the
-interface chosen here (WiFi when a network name is set, else Ethernet);
-the Network Settings window on the Amiga can change that or turn it off.
+driver and brings up one interface at a time. No stack connects at boot by
+default; the Network Settings window on the Amiga connects and can turn on
+connect at boot (full Roadshow and lwip-amiga; lwip takes WiFi when a network
+name is set here, else Ethernet).
 
 [![Network](assets/screenshots/system-network.png)](assets/screenshots/system-network.png){ target="_blank" }
 

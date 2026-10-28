@@ -77,6 +77,11 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
                 network.dns_servers,
             )
 
+    # boot connect starts off; Hatcher-Prefs only toggles this exact marker text
+    _write_lines(
+        resolve_staging_path(boot_staging, "S/Network-disabled"),
+        ["; emu68hatcher: network skipped at boot"],
+    )
     label = workflow.config.network_stack.value if lwip else "network"
     workflow.logger.info(
         f"Configured {label}: ethernet={network.ethernet.mode.value} "
