@@ -12,7 +12,7 @@ from emu68hatcher.builder.host.download_catalog import (
     get_package_downloads,
     get_pfs3aio_download,
 )
-from emu68hatcher.builder.host.downloads import DownloadManager
+from emu68hatcher.builder.host.downloads import DownloadItem, DownloadManager, DownloadResult
 from emu68hatcher.builder.staging.files import prepare_staging_directory
 from emu68hatcher.builder.state import (
     BuildStage,
@@ -124,6 +124,35 @@ def _failure_kind(failures: list[str]) -> str:
     return "download failed"
 
 
+def _offer_unverified(
+    workflow: BuildWorkflow,
+    manager: DownloadManager,
+    items: list[DownloadItem],
+    results: dict[str, DownloadResult],
+    required: set[str],
+) -> None:
+    """let the user install optional packages whose download no longer matches its checksum"""
+    mandatory = {name.lower() for name in required}
+    pending = {
+        name: result
+        for name, result in results.items()
+        if not result.success and result.unverified_path and name.lower() not in mandatory
+    }
+    if not pending or workflow.confirm_unverified is None:
+        return
+    accepted = workflow.confirm_unverified([f"{name}: {r.error}" for name, r in pending.items()])
+    workflow._check_cancelled()
+    if not accepted:
+        return
+    by_name = {item.name: item for item in items}
+    for name, failed in pending.items():
+        result = DownloadResult(name=name, success=True, path=failed.unverified_path)
+        manager.extract(by_name[name], result)
+        if result.success:
+            workflow.logger.warning(f"Installing {name} from a file that fails its checksum")
+        results[name] = result
+
+
 def _record_package_results(
     workflow: BuildWorkflow,
     artifacts: DownloadedArtifacts,
@@ -140,6 +169,7 @@ def _record_package_results(
             workflow.logger.error(f"Mandatory package could not be queued: {name}: {reason}")
         else:
             optional_failures.append(f"{name}: {reason}")
+            artifacts.skipped_packages.add(name)
             workflow.logger.warning(f"Optional package could not be queued: {name}: {reason}")
     for name, result in results.items():
         if result.success:
@@ -153,6 +183,7 @@ def _record_package_results(
             workflow.logger.error(f"Mandatory package failed: {name}: {result.error}")
         else:
             optional_failures.append(f"{name}: {result.error}")
+            artifacts.skipped_packages.add(name)
             workflow.logger.warning(f"Optional package failed: {name}: {result.error}")
     if optional_failures:
         names = ", ".join(failure.split(":", 1)[0] for failure in optional_failures)
@@ -198,6 +229,7 @@ def _download_packages(
     if items:
         workflow.logger.info(f"Downloading {len(items)} packages...")
         results = manager.download_all(items, progress_callback, file_progress=file_progress)
+    _offer_unverified(workflow, manager, items, results, required)
     _record_package_results(workflow, artifacts, results, required, unqueued)
     handled = {name.lower() for name in (*results, *unqueued)}
     for package_name in package_names:

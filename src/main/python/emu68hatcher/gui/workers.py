@@ -19,6 +19,7 @@ class BuildWorker(QThread):
     progress_updated = Signal(str, float, str)  # stage, progress, message
     log_event = Signal(str, str)  # stage, message
     build_finished = Signal(bool, str, str)  # success, output_path, error
+    unverified_question = Signal(list)  # "name: reason" per failed optional package
 
     def __init__(self, config: BuildConfig, parent=None):
         super().__init__(parent)
@@ -26,6 +27,8 @@ class BuildWorker(QThread):
         self._lock = threading.Lock()
         self._cancelled = False
         self._workflow: BuildWorkflow | None = None
+        self._answered = threading.Event()
+        self._accept_unverified = False
 
     def run(self):
         """drive the workflow, forward callbacks as Qt signals"""
@@ -51,6 +54,7 @@ class BuildWorker(QThread):
             self.config,
             progress_callback=progress_callback,
             log_callback=log_callback,
+            confirm_unverified=self._confirm_unverified,
         )
 
         with self._lock:
@@ -73,6 +77,20 @@ class BuildWorker(QThread):
                 "",
                 result.error or "Unknown error",
             )
+
+    def _confirm_unverified(self, lines: list[str]) -> bool:
+        """ask the dialog on the gui thread and wait; a cancel counts as no"""
+        self._answered.clear()
+        self.unverified_question.emit(lines)
+        while not self._answered.wait(0.25):
+            with self._lock:
+                if self._cancelled:
+                    return False
+        return self._accept_unverified
+
+    def answer_unverified(self, accept: bool) -> None:
+        self._accept_unverified = accept
+        self._answered.set()
 
     def cancel(self):
         """thread-safe cancel request"""

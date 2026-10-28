@@ -29,6 +29,10 @@ from emu68hatcher.data.package_urls import (  # noqa: E402
 _MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 
+class IncompleteDownload(OSError):
+    pass
+
+
 @dataclass(frozen=True)
 class PackageSpec:
     name: str
@@ -126,14 +130,27 @@ def _remote_digest(url: str, timeout: float) -> Digest:
             if size > _MAX_DOWNLOAD_BYTES:
                 raise ValueError(f"download is larger than {_MAX_DOWNLOAD_BYTES} bytes")
             md5.update(chunk)
+    if length and size != int(length):
+        raise IncompleteDownload(f"incomplete response: received {size} of {length} bytes")
     return Digest(md5.hexdigest().upper(), size)
+
+
+def _remote_digest_retrying(url: str, timeout: float, attempts: int = 3) -> Digest:
+    """aminet cuts transfers short now and then; a short read is not a changed file"""
+    for attempt in range(attempts):
+        try:
+            return _remote_digest(url, timeout)
+        except IncompleteDownload:
+            if attempt == attempts - 1:
+                raise
+    raise AssertionError("unreachable")
 
 
 def _check_package(spec: PackageSpec, timeout: float) -> CheckResult:
     source = spec.download.source.value
     try:
         url, latest_tag = _download_url(spec, timeout)
-        digest = _remote_digest(url, timeout)
+        digest = _remote_digest_retrying(url, timeout)
     except urllib.error.HTTPError as error:
         return CheckResult(
             spec.name, source, "download failed", f"HTTP {error.code} at {error.url}"

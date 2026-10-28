@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from emu68hatcher.builder.host.disk_info import normalise_device
 from emu68hatcher.config.schema import OutputConfig, OutputType
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.workers import DiskListWorker
@@ -31,6 +32,7 @@ class OutputTab(QWidget):
     # multi-GB values on a 32-bit signed int signal
     target_size_changed = Signal(object, str)
     target_size_cleared = Signal()
+    disks_ready = Signal()  # a disk scan finished or failed
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -213,6 +215,7 @@ class OutputTab(QWidget):
         self.disk_combo.addItem(f"(disk scan failed: {message})", None)
         self.disk_combo.blockSignals(False)
         self._emit_target_size(force=True)
+        self.disks_ready.emit()
 
     def shutdown_workers(self, timeout_ms: int = 500) -> bool:
         workers = tuple(worker for worker in self._disk_workers if worker.isRunning())
@@ -239,11 +242,15 @@ class OutputTab(QWidget):
             for d in disks:
                 self.disk_combo.addItem(d.display_label, d.device)
             if desired:
-                index = self.disk_combo.findData(desired)
-                self.disk_combo.setCurrentIndex(index if index >= 0 else 0)
+                wanted = normalise_device(desired)
+                index = next(
+                    (i for i, d in enumerate(disks, 1) if normalise_device(d.device) == wanted), 0
+                )
+                self.disk_combo.setCurrentIndex(index)
         self.disk_combo.blockSignals(False)
         self._pending_device = None
         self._emit_target_size()
+        self.disks_ready.emit()
 
     def _emit_target_size(self, *, force: bool = False):
         """DEVICE or IMG+flash: push the picked card's size so partitions can auto-size"""
@@ -310,6 +317,13 @@ class OutputTab(QWidget):
         self.disk_combo.blockSignals(False)
         self._pending_device = None
         # setChecked does not emit buttonClicked
+        self._on_mode_changed()
+
+    def select_disk(self, device: str) -> None:
+        """rescan and pick this disk if it is listed; a plain image becomes image + flash"""
+        if self.mode_img.isChecked():
+            self.mode_img_flash.setChecked(True)
+        self._pending_device = device
         self._on_mode_changed()
 
     def needs_disk_target(self) -> bool:

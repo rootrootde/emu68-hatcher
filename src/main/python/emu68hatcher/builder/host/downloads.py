@@ -14,6 +14,22 @@ from emu68hatcher.utils.hashing import calculate_hash, calculate_sha256
 from emu68hatcher.utils.logging import get_logger
 from emu68hatcher.utils.paths import get_cache_dir, get_downloads_dir
 
+# exact copies of pinned package archives, for when upstream replaces or drops a file
+ARCHIVE_MIRROR_REPO = "rootrootde/emu68-hatcher-archives"
+ARCHIVE_MIRROR_TAG = "archives"
+
+
+def archive_asset_name(md5: str, filename: str) -> str:
+    """asset name of a pinned archive in the mirror release"""
+    return f"{md5.lower()}-{filename}"
+
+
+def archive_mirror_url(md5: str, filename: str) -> str:
+    return (
+        f"https://github.com/{ARCHIVE_MIRROR_REPO}/releases/download/"
+        f"{ARCHIVE_MIRROR_TAG}/{archive_asset_name(md5, filename)}"
+    )
+
 
 @dataclass
 class DownloadItem:
@@ -44,6 +60,8 @@ class DownloadResult:
     path: Path | None = None
     extracted_path: Path | None = None
     error: str | None = None
+    # file that failed its md5 pin, kept so the user can still choose to install it
+    unverified_path: Path | None = None
 
 
 DownloadProgressCallback = Callable[[str, int, int], None]  # (name, current, total)
@@ -239,11 +257,11 @@ class DownloadManager:
             if mismatch:
                 hash_error = mismatch
                 self.logger.warning(f"{mismatch} from {mirror} for {name}; trying next mirror")
-                self._discard_cache_entry(dest)
                 continue
             return True
         self._last_error = hash_error or last_error
-        return False
+        # a mismatched copy stays at dest for download() to verify and set aside
+        return bool(hash_error) and dest.exists()
 
     def download(
         self,
@@ -301,17 +319,20 @@ class DownloadManager:
                         success = True
                         break
 
-            if not success:
+            # got-hash + size tell 'mirror returned an html error page' from 'upstream changed'
+            failure = None if success else self._last_error or "download failed"
+            mismatch = self._verify(cached, item) if success else None
+            if (failure or mismatch) and self._download_archived(item, cached, file_progress):
+                failure = mismatch = None
+
+            if failure:
                 self._origin_path(cached).unlink(missing_ok=True)
-                # log exact error if possible
-                detail = self._last_error or "download failed"
-                result.error = f"{detail} ({item.url})"
+                result.error = f"{failure} ({item.url})"
                 return result
 
-            # got-hash + size tell 'mirror returned an html error page' from 'upstream changed'
-            mismatch = self._verify(cached, item)
             if mismatch:
                 result.error = mismatch
+                result.unverified_path = self._set_aside(cached, item)
                 self._discard_cache_entry(cached)
                 return result
 
@@ -327,33 +348,66 @@ class DownloadManager:
 
         result.success = True
         result.path = cached
-
-        # extract if needed (always extract, even for cached files)
-        if item.extract and cached.suffix.lower() in ARCHIVE_EXTENSIONS:
-            extract_dir = self.work_dir / "extracted" / item.name
-            if extract_dir.exists():
-                shutil.rmtree(extract_dir)
-
-            extract_result = extract_archive(cached, extract_dir)
-            if extract_result.success:
-                result.extracted_path = extract_dir
-
-                # locate requested file case-insensitively, with symlink-escape check
-                if item.extract_file:
-                    target = item.extract_file.lower()
-                    extract_root = extract_dir.resolve()
-                    for f in extract_dir.rglob("*"):
-                        if not (f.is_file() and f.name.lower() == target):
-                            continue
-                        if not f.resolve().is_relative_to(extract_root):
-                            continue
-                        result.extracted_path = f
-                        break
-            else:
-                result.error = f"Extraction failed: {extract_result.error}"
-                result.success = False
-
+        self.extract(item, result)
         return result
+
+    def _download_archived(
+        self,
+        item: DownloadItem,
+        cached: Path,
+        file_progress: Callable[[str, int, int], None] | None,
+    ) -> bool:
+        """fetch the pinned copy from the archive mirror; False when it has none"""
+        if not item.expected_hash or self._cancelled():
+            return False
+        upstream_error = self._last_error
+        url = archive_mirror_url(item.expected_hash, item.filename)
+        self.logger.info(f"Trying archived copy for {item.name}: {url}")
+        if self._download_file(url, cached, file_progress=file_progress, name=item.name):
+            if self._verify(cached, item) is None:
+                self.logger.info(f"Using archived copy of {item.name}")
+                return True
+            self._discard_cache_entry(cached)
+        self._last_error = upstream_error
+        return False
+
+    def _set_aside(self, cached: Path, item: DownloadItem) -> Path | None:
+        """move a file that failed its pin out of the cache, into the build's work dir"""
+        dest = self.work_dir / "unverified" / item.name / item.filename
+        try:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(cached, dest)
+        except OSError:
+            return None
+        return dest
+
+    def extract(self, item: DownloadItem, result: DownloadResult) -> None:
+        """extract result.path into the work dir; clears result.success on failure"""
+        source = result.path
+        if not (item.extract and source and source.suffix.lower() in ARCHIVE_EXTENSIONS):
+            return
+        extract_dir = self.work_dir / "extracted" / item.name
+        if extract_dir.exists():
+            shutil.rmtree(extract_dir)
+
+        extract_result = extract_archive(source, extract_dir)
+        if not extract_result.success:
+            result.error = f"Extraction failed: {extract_result.error}"
+            result.success = False
+            return
+        result.extracted_path = extract_dir
+
+        # locate requested file case-insensitively, with symlink-escape check
+        if item.extract_file:
+            target = item.extract_file.lower()
+            extract_root = extract_dir.resolve()
+            for f in extract_dir.rglob("*"):
+                if not (f.is_file() and f.name.lower() == target):
+                    continue
+                if not f.resolve().is_relative_to(extract_root):
+                    continue
+                result.extracted_path = f
+                break
 
     def download_all(
         self,
