@@ -399,7 +399,5 @@ class NetworkTab(QWidget):
         return WifiConfig(ssid=ssid, password=password)
 
     def set_wifi_config(self, wifi: WifiConfig | None):
-        """None keeps the typed fields: saved configs never carry wifi credentials"""
-        if wifi is not None:
-            self.wifi_ssid.setText(wifi.ssid)
-            self.wifi_password.setText(wifi.password)
+        self.wifi_ssid.setText(wifi.ssid if wifi else "")
+        self.wifi_password.setText(wifi.password if wifi else "")

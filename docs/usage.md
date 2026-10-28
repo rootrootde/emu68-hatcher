@@ -4,7 +4,8 @@
 
 The sidebar has six areas; visit them in any order. **Load Configuration…** and
 **Save Configuration…** are in the File menu. Settings are not saved
-automatically, and WiFi passwords are never written to configuration files.
+automatically. A saved configuration holds the WiFi name and password in plain
+text.
 
 ### Overview
 

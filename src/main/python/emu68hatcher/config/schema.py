@@ -263,8 +263,8 @@ class BuildConfig(_ConfigModel):
     # optional folder containing MIAMI.KEY1, MIAMI.KEY2, and MIAMIDX.KEY
     miamidx_key_directory: Path | None = None
 
-    # wifi creds - never serialized, never in repr
-    wifi: WifiConfig | None = Field(default=None, exclude=True, repr=False)
+    # wifi creds - saved in plain text, kept out of repr
+    wifi: WifiConfig | None = Field(default=None, repr=False)
 
     # per-interface IP mode + global gateway/DNS (creds live in `wifi` above)
     network: NetworkSettings = Field(default_factory=NetworkSettings)
