@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
 from emu68hatcher.config.schema import NetworkStack
-from emu68hatcher.data.package_loader import get_local_packages_dir, get_package_by_name
+from emu68hatcher.data.package_loader import get_local_packages_dir
 
 if TYPE_CHECKING:
     from emu68hatcher.builder.workflow import BuildWorkflow
@@ -39,7 +39,6 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
         _configure_miamidx(workflow, boot_staging)
         return
     network = workflow.config.network
-    amitcp = workflow.config.network_stack == NetworkStack.AMITCP_NG
     lwip = workflow.config.network_stack == NetworkStack.LWIP_AMIGA
     for name, settings in (("genet", network.ethernet), ("wifipi", network.wifi)):
         path = resolve_source_path(boot_staging, f"Devs/NetInterfaces/{name}")
@@ -51,8 +50,7 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
             settings.mode.value,
             settings.address,
             settings.netmask,
-            gateway=network.gateway if amitcp or lwip else None,
-            dns_servers=network.dns_servers if amitcp else None,
+            gateway=network.gateway if lwip else None,
         )
 
     if lwip:
@@ -79,13 +77,7 @@ def configure_network(workflow: BuildWorkflow, boot_staging: Path) -> None:
                 network.dns_servers,
             )
 
-    if amitcp:
-        package = get_package_by_name("amitcp_ng")
-        marker = "$VER: AmiTCP_NG"
-        if package and package.download and package.download.tag:
-            marker += f" {package.download.tag.removeprefix('v')}"
-        _write_lines(resolve_staging_path(boot_staging, "Libs/AmiTCP_NG.version"), [marker])
-    label = workflow.config.network_stack.value if amitcp or lwip else "network"
+    label = workflow.config.network_stack.value if lwip else "network"
     workflow.logger.info(
         f"Configured {label}: ethernet={network.ethernet.mode.value} "
         f"wifi={network.wifi.mode.value} gateway={network.gateway or '-'} "
@@ -164,7 +156,6 @@ def _write_netinterface(
     netmask: str | None,
     *,
     gateway: str | None = None,
-    dns_servers: list[str] | None = None,
 ) -> None:
     kept: list[str] = []
     if path.exists():
@@ -178,7 +169,6 @@ def _write_netinterface(
         kept += [f"address={address}", f"netmask={netmask}"]
         if gateway:
             kept.append(f"gateway={gateway}")
-        kept.extend(f"nameserver={server}" for server in dns_servers or [])
     else:
         kept.append("configure=dhcp")
     _write_lines(path, kept)

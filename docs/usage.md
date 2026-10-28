@@ -33,7 +33,7 @@ the CD **.iso** and a Kickstart 3.1 ROM. Do not mount the ISO.
 
 [![AmigaOS & files](assets/screenshots/system-amiga.png)](assets/screenshots/system-amiga.png){ target="_blank" }
 
-**Network:** choose Roadshow, MiamiDX, AmiTCP_NG, lwip-amiga or None. The full
+**Network:** choose Roadshow, MiamiDX, lwip-amiga or None. The full
 Roadshow archive and the MiamiDX registration keys go here, as do DHCP or
 static addresses, routing, DNS and WiFi. lwip-amiga is the fast stack from the
 Emu68 driver stack: it needs AmigaOS 3.2 and Emu68 1.1, uses the netdev genet

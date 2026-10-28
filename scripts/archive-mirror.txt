@@ -12,7 +12,6 @@ amelinium
 amigaamp
 amispeedtest
 amissl
-amitcp_ng
 asyncio_library
 boingbag_os39_bb1
 boingbag_os39_bb2

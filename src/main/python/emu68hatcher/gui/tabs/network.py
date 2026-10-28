@@ -80,7 +80,6 @@ class NetworkTab(QWidget):
         self.radio_none = QRadioButton("None")
         self.radio_roadshow = QRadioButton("Roadshow")
         self.radio_miamidx = QRadioButton("MiamiDX")
-        self.radio_amitcp_ng = QRadioButton("AmiTCP_NG")
         self.radio_lwip_amiga = QRadioButton("lwip-amiga")
         self.radio_roadshow.setChecked(True)
         self.radio_none.setToolTip("No network stack - no online connectivity")
@@ -105,13 +104,6 @@ class NetworkTab(QWidget):
         miamidx_row.addWidget(self.radio_miamidx)
         miamidx_row.addStretch()
         net_layout.addLayout(miamidx_row)
-
-        amitcp_ng_row = QHBoxLayout()
-        amitcp_ng_row.setContentsMargins(0, 0, 0, 0)
-        amitcp_ng_row.setSpacing(6)
-        amitcp_ng_row.addWidget(self.radio_amitcp_ng)
-        amitcp_ng_row.addStretch()
-        net_layout.addLayout(amitcp_ng_row)
 
         lwip_row = QHBoxLayout()
         lwip_row.setContentsMargins(0, 0, 0, 0)
@@ -182,7 +174,6 @@ class NetworkTab(QWidget):
 
         self.radio_none.toggled.connect(self._update_net_visibility)
         self.radio_roadshow.toggled.connect(self._update_net_visibility)
-        self.radio_amitcp_ng.toggled.connect(self._update_net_visibility)
         self.radio_lwip_amiga.toggled.connect(self._update_net_visibility)
         self.radio_miamidx.toggled.connect(self._update_net_visibility)
         self._update_net_visibility()
@@ -261,12 +252,8 @@ class NetworkTab(QWidget):
         self._update_static_visible()
 
     def _has_address_fields(self) -> bool:
-        """stacks whose interface files Hatcher writes: roadshow, amitcp_ng, lwip_amiga"""
-        return (
-            self.radio_roadshow.isChecked()
-            or self.radio_amitcp_ng.isChecked()
-            or self.radio_lwip_amiga.isChecked()
-        )
+        """stacks whose interface files Hatcher writes: roadshow, lwip_amiga"""
+        return self.radio_roadshow.isChecked() or self.radio_lwip_amiga.isChecked()
 
     def _update_static_visible(self):
         eth_on = self.eth_static.isChecked()
@@ -284,8 +271,6 @@ class NetworkTab(QWidget):
             return None
         if self.radio_miamidx.isChecked():
             return NetworkStack.MIAMIDX
-        if self.radio_amitcp_ng.isChecked():
-            return NetworkStack.AMITCP_NG
         if self.radio_lwip_amiga.isChecked():
             return NetworkStack.LWIP_AMIGA
         return NetworkStack.ROADSHOW
@@ -293,8 +278,6 @@ class NetworkTab(QWidget):
     def set_network_stack(self, stack: NetworkStack | None):
         if stack is None:
             self.radio_none.setChecked(True)
-        elif stack == NetworkStack.AMITCP_NG:
-            self.radio_amitcp_ng.setChecked(True)
         elif stack == NetworkStack.LWIP_AMIGA:
             self.radio_lwip_amiga.setChecked(True)
         elif stack == NetworkStack.MIAMIDX:

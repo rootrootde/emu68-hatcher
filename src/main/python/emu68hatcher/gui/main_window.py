@@ -195,7 +195,6 @@ class MainWindow(QMainWindow):
         for radio in (
             self.network_tab.radio_none,
             self.network_tab.radio_roadshow,
-            self.network_tab.radio_amitcp_ng,
             self.network_tab.radio_lwip_amiga,
             self.network_tab.radio_miamidx,
         ):
