@@ -4,7 +4,6 @@
 ; we rename the matching one to the canonical HDToolbox.info and
 ; delete the rest so the user sees a single working HDToolBox icon.
 IF $RpiType EQ "RPi4"
-	C:Echo "Raspberry 4 (or CM4) detected - brcm-emmc.device"
 	C:Copy >NIL: Sys:Storage/DOSDrivers/SD0pi4 Sys:Devs/DOSDrivers/SD0
 	C:Delete >NIL: Sys:Storage/DOSDrivers/SD0pi3 QUIET
 	C:Delete >NIL: Sys:Storage/DOSDrivers/SD0pi4 QUIET
@@ -19,7 +18,6 @@ IF $RpiType EQ "RPi4"
 	ENDIF
 ENDIF
 IF $RpiType EQ "RPi3"
-	C:Echo "Raspberry 3 (or Zero 2) detected - brcm-sdhc.device"
 	C:Copy >NIL: Sys:Storage/DOSDrivers/SD0pi3 Sys:Devs/DOSDrivers/SD0
 	C:Delete >NIL: Sys:Storage/DOSDrivers/SD0pi3 QUIET
 	C:Delete >NIL: Sys:Storage/DOSDrivers/SD0pi4 QUIET

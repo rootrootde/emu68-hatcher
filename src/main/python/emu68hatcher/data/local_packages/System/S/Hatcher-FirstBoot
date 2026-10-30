@@ -4,14 +4,12 @@ FailAt 21
 
 IF $FIRSTTIMEBOOT EQ "TRUE"
    C:Echo ""
-   C:Echo "============================================"
-   C:Echo "   Emu68 Hatcher - First Boot Setup"
-   C:Echo "============================================"
-   C:Echo ""
+   C:Echo "Emu68 Hatcher - First Boot Setup"
+   C:Echo "--------------------------------"
    IF $System EQ "PiStorm"
-      C:Echo "Detected: PiStorm on $RpiType"
+      C:Echo "PiStorm on $RpiType"
    ELSE
-      C:Echo "Detected: UAE emulator"
+      C:Echo "UAE emulator"
    ENDIF
    C:Echo ""
 ENDIF
@@ -19,15 +17,15 @@ ENDIF
 ; first-time hardware bootstrap - runs S:FirstBoot/* one-shot scripts
 IF NOT EXISTS S:FirstBoot.done
    IF $FIRSTTIMEBOOT EQ "TRUE"
-      C:Echo "Step 1/4: Configuring hardware..."
+      C:Echo "Configuring hardware... " NOLINE
    ENDIF
    C:CE >NIL: S:FirstBoot
    IF WARN
       C:Echo >T:RunTimeScript "FailAt 21"
       IF $SYSTEM EQ "UAE"
-         C:List >>T:RunTimeScript S:FirstBoot PAT=~(#?.info|#?_pistorm) LFORMAT="C:Echo *"  - %n*"*nC:Execute *"%p%n*"*nC:Delete *"%p%n*"*n" ALL FILES
+         C:List >>T:RunTimeScript S:FirstBoot PAT=~(#?.info|#?_pistorm) LFORMAT="C:Execute *"%p%n*"*nC:Delete *"%p%n*" QUIET*n" ALL FILES
       ELSE
-         C:List >>T:RunTimeScript S:FirstBoot PAT=~(#?.info|) LFORMAT="C:Echo *"  - %n*"*nC:Execute *"%p%n*"*nC:Delete *"%p%n*"*n" ALL FILES
+         C:List >>T:RunTimeScript S:FirstBoot PAT=~(#?.info|) LFORMAT="C:Execute *"%p%n*"*nC:Delete *"%p%n*" QUIET*n" ALL FILES
       ENDIF
       C:Execute T:RunTimeScript
       FailAt 21
@@ -35,13 +33,8 @@ IF NOT EXISTS S:FirstBoot.done
    ENDIF
    C:Echo >S:FirstBoot.done "TRUE"
    IF $FIRSTTIMEBOOT EQ "TRUE"
-      C:Echo ""
+      C:Echo "done"
    ENDIF
-ENDIF
-
-IF $FIRSTTIMEBOOT EQ "TRUE"
-   C:Echo "Step 2/4: Setting up display driver..."
-   C:Echo ""
 ENDIF
 
 ; clear FIRSTTIMEBOOT early so a partial wizard run does not repeat
@@ -53,25 +46,20 @@ Set HatcherFontsPending "FALSE"
 IF NOT EXISTS S:Hatcher-Fonts.done
    IF EXISTS C:ttfinstall
       IF EXISTS FONTS:TrueType
-         C:Echo "Registering TrueType fonts..."
-         C:ttfinstall "FONTS:TrueType/#?.ttf" FONTS:
+         C:Echo "Registering TrueType fonts... " NOLINE
+         C:ttfinstall >NIL: "FONTS:TrueType/#?.ttf" FONTS:
          IF WARN
             Set HatcherFontsPending "TRUE"
-            C:Echo "Font registration failed. It will be retried on the next boot."
+            C:Echo "failed, retrying on the next boot"
          ELSE
             C:Echo >S:Hatcher-Fonts.done "TRUE"
+            C:Echo "done"
          ENDIF
       ENDIF
    ENDIF
 ENDIF
 
 IF $HATCHERFIRSTBOOT EQ "TRUE"
-   C:Echo "Step 3/4: Mounting boot partition..."
-   C:Echo ""
-
-   C:Echo "Step 4/4: Regional settings"
-   C:Echo ""
-
    ; remove one-time boot diagnostics (PiStorm only)
    IF NOT $SYSTEM EQ "UAE"
       C:Assign >NIL: EXISTS EMU68BOOT:
@@ -88,9 +76,9 @@ IF $HATCHERFIRSTBOOT EQ "TRUE"
    ENDIF
 
    ; Locale + Input preferences
-   C:Echo "The Locale and Input preferences will open next."
-   C:Echo "Pick your regional and keymap/mouse settings, then Save each."
    C:Echo ""
+   C:Echo "Locale and Input preferences open next."
+   C:Echo "Pick country, language and keymap, then Save each."
    C:Ask "Press RETURN to continue..."
    IF $KickstartVersion EQ 3.9
       C:AddDataTypes REFRESH QUIET
@@ -116,13 +104,11 @@ ENDIF
 
 IF $HATCHERFIRSTBOOT EQ "TRUE"
    C:Echo ""
-   C:Echo "Setup will now reboot to apply changes."
    IF EXISTS SYS:WBStartup/FirstBootWB
-      C:Echo "One more brief setup step after reboot (display settings)."
+      C:Echo "Rebooting to apply. Display settings follow after the reboot."
    ELSE
-      C:Echo "The selected Workbench screen mode will be applied after reboot."
+      C:Echo "Rebooting to apply the settings and screen mode."
    ENDIF
-   C:Echo ""
    C:Ask "Press RETURN to reboot..."
    C:DiskChange SDH0:
    IF $System EQ "UAE"
