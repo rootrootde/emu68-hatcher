@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "E41E29E9E923BE6B049D19807BB0DBBF",
+              "hash": "B59D8BB63E5E73AD33D830B7AF14DAEE",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4907,7 +4907,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "CLICon.lha",
-              "hash": "99ED66A6D2CA952EA3D564341B267DD3",
+              "hash": "9661043B1251B9632587AE3FCE2A1E80",
               "path": "util/wb/CLICon.lha",
               "repo": null,
               "source": "aminet",
@@ -12325,8 +12325,8 @@
             ]
           }
         },
-        "revision": 2,
-        "source_commit": "de7553ae98cd5d087d6ca57f3490f75619dde699"
+        "revision": 3,
+        "source_commit": "3d31d1477d1fba236ae63988032a652662730375"
       }
     ],
     "hatcher": {
@@ -12371,12 +12371,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.3.3",
       "version": "1.3.3"
     },
-    "revision": 1792977146,
+    "revision": 1793404160,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "Gtf9r8XzT05DNH2fnD6pYXvqJIJetFN6rTYzLHcMej7X8VT/JNhz8b4kLWntJlkm86RwCFqzKHufFGdn2UlRAg=="
+    "value": "Yv73w0prKS1g9AWi6JDmSIYgKoBbdchz3G1wUJJOZ4cZ7wUsqpIBzhCx9V4MoFSL/rlzRvzMt6Tzevcih4iSDQ=="
   }
 }
