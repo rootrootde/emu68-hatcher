@@ -3467,10 +3467,10 @@
             "id": "whdload"
           }
         },
-        "catalog_schema_version": 1003003,
-        "id": "hatcher-1-3-3",
+        "catalog_schema_version": 1004000,
+        "id": "hatcher-1-4-0",
         "max_hatcher_version_exclusive": null,
-        "min_hatcher_version": "1.3.3",
+        "min_hatcher_version": "1.4.0",
         "packages": {
           "additem": {
             "archive_package": null,
@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "B59D8BB63E5E73AD33D830B7AF14DAEE",
+              "hash": "E41E29E9E923BE6B049D19807BB0DBBF",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4445,175 +4445,6 @@
               "3.9"
             ]
           },
-          "amitcp_ng": {
-            "archive_package": null,
-            "bundle": null,
-            "conflicts": [
-              "tcpip_stack"
-            ],
-            "default": false,
-            "description": "open TCP/IP stack with Roadshow-compatible commands",
-            "download": {
-              "check_latest_release": true,
-              "filename": "AmiTCP_NG-v4.1.8.lha",
-              "hash": "02C3C528BA699B984894C292CD043E62",
-              "path": null,
-              "repo": "MW0MWZ/AmiTCP_NG",
-              "source": "github",
-              "tag": "v4.1.8",
-              "url": null
-            },
-            "emu68_versions": null,
-            "friendly_name": "AmiTCP_NG",
-            "group": "Network",
-            "install": [
-              {
-                "from": "AmiTCP_NG/data/Libs/bsdsocket.library",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Libs/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/Libs/usergroup.library",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Libs/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/C/*",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "C/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/Devs/Internet/*",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Devs/Internet/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/Storage/NetInterfaces/genet",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Devs/NetInterfaces/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/Storage/NetInterfaces/wifipi",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Devs/NetInterfaces/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/S/Network-Startup",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "S/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/data/db/*",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/AmiTCP/db/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/COPYING",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/AmiTCP/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/COPYRIGHTS",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/AmiTCP/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/ReadMe",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/AmiTCP/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG/ReadMe.info",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/AmiTCP/",
-                "xor": null
-              },
-              {
-                "from": "AmiTCP_NG.info",
-                "patch": [],
-                "recursive": false,
-                "rename": "AmiTCP.info",
-                "stack": null,
-                "to": "Programs/",
-                "xor": null
-              }
-            ],
-            "mandatory": false,
-            "menu_entries": [],
-            "menu_entry": null,
-            "name": "amitcp_ng",
-            "provides": [
-              "tcpip_stack"
-            ],
-            "purchase_url": null,
-            "relocate": [],
-            "requires": [
-              "network_config"
-            ],
-            "scripts": [
-              {
-                "content": "Assign >NIL: AmiTCP: SYS:Programs/AmiTCP\nIf EXISTS C:GetNetStatus\n  Run >NIL: <NIL: C:GetNetStatus >NIL:\nEndIf\n",
-                "name": "AmiTCP_NG",
-                "target": "S/User-Startup",
-                "when_user_archive": null
-              }
-            ],
-            "upstream_version": "4.1.8",
-            "versions": [
-              "3.1",
-              "3.2",
-              "3.2.2.1",
-              "3.2.3",
-              "3.9"
-            ]
-          },
           "asyncio_library": {
             "archive_package": null,
             "bundle": null,
@@ -4907,7 +4738,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "CLICon.lha",
-              "hash": "9661043B1251B9632587AE3FCE2A1E80",
+              "hash": "99ED66A6D2CA952EA3D564341B267DD3",
               "path": "util/wb/CLICon.lha",
               "repo": null,
               "source": "aminet",
@@ -7529,6 +7360,250 @@
               "3.2.2.1",
               "3.2.3",
               "3.9"
+            ]
+          },
+          "lwip_amiga": {
+            "archive_package": "emu68_driver_stack",
+            "bundle": null,
+            "conflicts": [
+              "tcpip_stack"
+            ],
+            "default": false,
+            "description": "fast open TCP/IP stack from the Emu68 driver stack (netdev genet, Roadshow-compatible commands)",
+            "download": null,
+            "emu68_versions": [
+              "1.1.0-alpha.1",
+              "1.1.0-beta.1"
+            ],
+            "friendly_name": "lwip-amiga",
+            "group": "Network",
+            "install": [
+              {
+                "from": "LIBS/bsdsocket.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "DEVS/Networks/genet.device",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/Networks/",
+                "xor": null
+              },
+              {
+                "from": "C/AddNetInterface",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/RemoveNetInterface",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/NetShutdown",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/GetNetStatus",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/ShowNetStatus",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/arp",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/ping",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/traceroute",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/netinfo",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/netdev-stats",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/mdns",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/NetLogViewer",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/NetLogViewer.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/NetSpeed",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "C/NetSpeed.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "ENVARC/netstack.prefs.default",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              },
+              {
+                "from": "ENVARC/netstack.prefs.default",
+                "patch": [],
+                "recursive": false,
+                "rename": "netstack.prefs",
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              },
+              {
+                "from": "Documentation/lwip-amiga/README.md",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/lwip-amiga/",
+                "xor": null
+              },
+              {
+                "from": "Documentation/lwip-amiga/RELEASE-NOTES.md",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/lwip-amiga/",
+                "xor": null
+              },
+              {
+                "from": "Documentation/lwip-amiga/LICENSE",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/lwip-amiga/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "lwip_amiga",
+            "provides": [
+              "tcpip_stack"
+            ],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "genet_config",
+              "network_config",
+              "wifipi_config"
+            ],
+            "scripts": [
+              {
+                "content": ";BEGIN lwip-amiga\nIf NOT EXISTS S:Network-disabled\n  If EXISTS C:Hatcher-Prefs\n    Run >NIL: C:Hatcher-Prefs BOOT\n  EndIf\nEndIf\n;END lwip-amiga\n",
+                "name": "lwip-amiga TCP/IP",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.6",
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3"
             ]
           },
           "lzx": {
@@ -10465,6 +10540,54 @@
               "3.9"
             ]
           },
+          "screennotify": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "notifies programs when the Workbench or a public screen closes or opens",
+            "download": {
+              "check_latest_release": true,
+              "filename": "ScreenNotify10.lha",
+              "hash": "9D4730DD16FA92DD02F041792DCDAC40",
+              "path": "util/libs/ScreenNotify10.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "screennotify.library",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "ScreenNotify/libs/screennotify.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "screennotify",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "screenprefs": {
             "archive_package": null,
             "bundle": null,
@@ -12325,58 +12448,58 @@
             ]
           }
         },
-        "revision": 3,
-        "source_commit": "3d31d1477d1fba236ae63988032a652662730375"
+        "revision": 1,
+        "source_commit": "a814413a15791759450275e278d80d6a98a5c5d9"
       }
     ],
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.3.3-linux-arm64.deb",
-          "sha256": "556b2e74bd0c22f7b2f839db3180feb099b2d226ad366161ce3802c406a51985",
-          "size": 69805992,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-linux-arm64.deb"
+          "filename": "emu68hatcher-1.4.0-linux-arm64.deb",
+          "sha256": "690582c1b08aa42863bf802a84da933871f0c696a162c24a8093d7649c1b3b16",
+          "size": 69862772,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.3.3-linux-x64.deb",
-          "sha256": "cdcebb17ff30021654e2153930d60590a6bfae45a599b651b3ccd006b286f6f3",
-          "size": 73708684,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-linux-x64.deb"
+          "filename": "emu68hatcher-1.4.0-linux-x64.deb",
+          "sha256": "16949c41fdbb2f8bbb1ab821c97f9abc9d3a9b996104c7beed55c276879568e1",
+          "size": 73846216,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.3.3-macos-arm64.dmg",
-          "sha256": "cb8bfef880780f37ac5c3709d5364365d38e3b9315111013b8140aedb4f0e7ab",
-          "size": 35092455,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.4.0-macos-arm64.dmg",
+          "sha256": "ba7439a3cd8128bbcbe1bc96dba2cf80ac49296d6ce4c43a4590eedfab28990d",
+          "size": 35188586,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.3.3-macos-x64.dmg",
-          "sha256": "518d0dd01bad08669bc2a6596866ad60ca3f7697661cdc3c1b059be5cbfd804f",
-          "size": 37141198,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-macos-x64.dmg"
+          "filename": "emu68hatcher-1.4.0-macos-x64.dmg",
+          "sha256": "009c9cb6607c20e74ebd8a9d14eb937bf0ebe536e8a62ea17806c6ca36f25f7e",
+          "size": 37187996,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.3.3-windows-arm64.exe",
-          "sha256": "be33a3ed56f421c51bfe44160d53cedde396d7aa0456775c71ba928c5778b238",
-          "size": 39257053,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-windows-arm64.exe"
+          "filename": "emu68hatcher-1.4.0-windows-arm64.exe",
+          "sha256": "6701768c22561aaa329f9f372b3e933e606be169d8caa0ace4310816de9cc8e8",
+          "size": 39326927,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.3.3-windows-x64.exe",
-          "sha256": "93f4ca1f5d6b4ade36316b96c16f19805d634478cc78d1f2b2569dc46542dc3e",
-          "size": 50039959,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.3.3/emu68hatcher-1.3.3-windows-x64.exe"
+          "filename": "emu68hatcher-1.4.0-windows-x64.exe",
+          "sha256": "21e077d0aaf8f594d721bb58608f39608bc6893c1f03edb0923fae9bae5d0b11",
+          "size": 50167516,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.3.3",
-      "version": "1.3.3"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
+      "version": "1.4.0"
     },
-    "revision": 1793404160,
+    "revision": 1793404478,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "Yv73w0prKS1g9AWi6JDmSIYgKoBbdchz3G1wUJJOZ4cZ7wUsqpIBzhCx9V4MoFSL/rlzRvzMt6Tzevcih4iSDQ=="
+    "value": "766Uy/5hkprSxvlSsjeEM/lHVmNKId1FDfKu7CSxLlwKbyrmAAuSd9R0Q4Da/QoMg6kgTUMQqbmBa4DfM7WuDg=="
   }
 }
