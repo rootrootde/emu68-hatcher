@@ -12,7 +12,7 @@ mandatory: false
 download:
   source: aminet
   path: util/wb/CLICon.lha
-  hash: 99ED66A6D2CA952EA3D564341B267DD3
+  hash: 9661043B1251B9632587AE3FCE2A1E80
   filename: CLICon.lha
 install:
 - from: CLICon/CLICon
