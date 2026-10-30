@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildError
+from emu68hatcher.builder.staging.files import resolve_staging_path
 
 DB_NAME = "_UAEFSDB.___"
 _RECORD_SIZE = 600
@@ -142,3 +143,33 @@ def drop_superseded_records(root: Path) -> None:
         kept = [record for record in records if record[0] != 1 or id(record) in current]
         if len(kept) != len(records):
             _write_records(database.parent, kept)
+
+
+def import_records(database: Path, target_parent: Path) -> None:
+    """Merge a foreign UaeFsDb into the staging records of target_parent, present files only."""
+    data = database.read_bytes()
+    if len(data) % _RECORD_SIZE:
+        raise BuildError(f"Amiga file metadata is damaged: {database}")
+    imported: dict[str, bytearray] = {}
+    for offset in range(0, len(data), _RECORD_SIZE):
+        raw = bytearray(data[offset : offset + _RECORD_SIZE])
+        if raw[0] == 0:
+            continue
+        if raw[0] != 1 or int.from_bytes(raw[1:5], "big") > 255:
+            raise BuildError(f"Amiga file metadata has an invalid record: {database}")
+        _field_name(raw, _AMIGA_NAME, database.parent)
+        target = resolve_staging_path(target_parent, _field_name(raw, _HOST_NAME, database.parent))
+        # stale records for deleted files are common in emulator folders
+        if not target.exists():
+            continue
+        raw[_HOST_NAME] = _name_bytes(target.name, host=True)
+        imported[target.name.casefold()] = raw
+    if not imported:
+        return
+    kept = [
+        record
+        for record in _read_records(target_parent)
+        if record[0] != 1
+        or _record_name(record, _HOST_NAME).decode("utf-8", "replace").casefold() not in imported
+    ]
+    _write_records(target_parent, kept + list(imported.values()))

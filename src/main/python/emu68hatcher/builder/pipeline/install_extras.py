@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,6 +14,7 @@ from emu68hatcher.builder.staging.tree_copy import (
     copy_contained_tree,
     measure_contained_tree,
 )
+from emu68hatcher.builder.staging.uaefsdb import DB_NAME, import_records
 from emu68hatcher.builder.state import BuildStage, CreatedImage
 from emu68hatcher.config.partition_helpers import usable_partition_content_size
 from emu68hatcher.config.partition_models import AmigaPartition
@@ -61,6 +63,14 @@ def _amiga_target_resolver(part: AmigaPartition, src: Path) -> TargetResolver:
     return resolve
 
 
+def _collect_database(found: list[tuple[Path, Path]], item: Path, target_dir: Path) -> bool:
+    # copied raw, a UaeFsDb from an emulator folder would replace the staging one
+    if item.name.casefold() != DB_NAME.casefold():
+        return False
+    found.append((item, target_dir))
+    return True
+
+
 def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     """copy each amiga partitions extra_content_directory contents into staging/<device>/"""
     workflow._update_state(BuildStage.INSTALL_EXTRAS, 0.0)
@@ -106,9 +116,19 @@ def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> Create
         # the receipts mark package files replaced here as locally modified
         log = workflow.write_log
         on_file = log.extra_wrote if log and part.device == workflow.config.boot_device else None
+        databases: list[tuple[Path, Path]] = []
         result = copy_contained_tree(
-            src, dest, on_file=on_file, resolve_target=_amiga_target_resolver(part, src)
+            src,
+            dest,
+            on_file=on_file,
+            resolve_target=_amiga_target_resolver(part, src),
+            skip_file=partial(_collect_database, databases),
         )
+        for database, target_dir in databases:
+            try:
+                import_records(database, target_dir)
+            except (BuildError, ValueError, OSError) as e:
+                workflow.logger.warning(f"Ignoring Amiga file metadata {database}: {e}")
         staged_usage = measure_contained_tree(dest)
         _check_partition_space(part, staged_usage, "the staged files")
         total_files += result.files_copied

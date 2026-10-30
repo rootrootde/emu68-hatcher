@@ -102,6 +102,7 @@ def copy_contained_tree(
     *,
     resolve_target: TargetResolver | None = None,
     on_file: FileCopied | None = None,
+    skip_file: Callable[[Path, Path], bool] | None = None,
 ) -> TreeCopyResult:
     """Merge a tree while containing links and repeated directory identities."""
     source_root = source.resolve(strict=True)
@@ -141,6 +142,8 @@ def copy_contained_tree(
             if item.is_dir():
                 result += walk(item, target)
             elif item.is_file():
+                if skip_file and skip_file(item, current_dest):
+                    continue
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(item, target)
                 if on_file:
