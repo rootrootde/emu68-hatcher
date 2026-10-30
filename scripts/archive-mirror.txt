@@ -68,6 +68,7 @@ rexxtricks
 rnoxfer
 rtb_file_7_cities_of_gold
 rtb_files_skick
+screennotify
 screentext
 setdst
 setpatch44_38
