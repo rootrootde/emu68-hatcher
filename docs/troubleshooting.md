@@ -34,7 +34,7 @@ open the Hatcher Prefs window (**C:Hatcher-Prefs**). Connect, disconnect and the
 settings are all in that window. The old ARexx scripts stay in **S:** for the Shell:
 
 ```
-rx S:NetworkConfig.rexx                    ; Roadshow / AmiTCP_NG settings
+rx S:NetworkConfig.rexx                    ; Roadshow settings
 rx S:NetworkConfig.rexx ONLINE WIFI        ; or ONLINE ETHERNET
 rx S:MiamiNetwork.rexx CONFIG              ; MiamiDX settings
 rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE

@@ -31,6 +31,15 @@ def _drop_retired_keys(data: dict[str, Any]) -> dict[str, Any]:
             node = node.get(name) if isinstance(node, dict) else None
         if isinstance(node, dict):
             node.pop(key, None)
+    # AmiTCP_NG was replaced by lwip-amiga
+    if data.get("network_stack") == "AmiTCP_NG":
+        data["network_stack"] = "lwip_amiga"
+    if isinstance(data.get("packages"), list):
+        data["packages"] = [
+            p
+            for p in data["packages"]
+            if not (isinstance(p, dict) and p.get("name") == "amitcp_ng")
+        ]
     return data
 
 

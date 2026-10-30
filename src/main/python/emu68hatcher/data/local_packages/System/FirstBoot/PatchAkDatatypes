@@ -1,7 +1,5 @@
 ; apply 68040 CPU-optimized patches to akDT image datatypes
 
-C:Echo "Patching akDatatypes for 68040..."
-
 ; akPNG
 IF EXISTS SYS:Classes/DataTypes/akPNG-040.pch
    IF EXISTS SYS:Classes/DataTypes/akPNG.datatype

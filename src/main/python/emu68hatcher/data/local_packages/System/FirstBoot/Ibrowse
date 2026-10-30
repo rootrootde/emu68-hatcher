@@ -1,11 +1,11 @@
 ; IBrowse first-boot setup - only runs if IBrowse and spatch are installed
 IF EXISTS C:spatch
   IF EXISTS SYS:Programs/Ibrowse
-    C:spatch -oSYS:Programs/Ibrowse/codecs/gif.codec -pSYS:Programs/Ibrowse/codecs040fpu/gif.codec.spatch SYS:Programs/Ibrowse/codecs/gif.codec
-    C:spatch -oSYS:Programs/Ibrowse/codecs/jpeg.codec -pSYS:Programs/Ibrowse/codecs040fpu/jpeg.codec.spatch SYS:Programs/Ibrowse/codecs/jpeg.codec
-    C:spatch -oSYS:Programs/Ibrowse/codecs/png.codec -pSYS:Programs/Ibrowse/codecs040fpu/png.codec.spatch SYS:Programs/Ibrowse/codecs/png.codec
-    C:spatch -oSYS:Programs/Ibrowse/codecs/xbm.codec -pSYS:Programs/Ibrowse/codecs040fpu/xbm.codec.spatch SYS:Programs/Ibrowse/codecs/xbm.codec
-    C:spatch -oSYS:Programs/Ibrowse/codecs/imagedecode.module -pSYS:Programs/Ibrowse/codecs040fpu/imagedecode.module.spatch SYS:Programs/Ibrowse/codecs/imagedecode.module
+    C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/gif.codec -pSYS:Programs/Ibrowse/codecs040fpu/gif.codec.spatch SYS:Programs/Ibrowse/codecs/gif.codec
+    C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/jpeg.codec -pSYS:Programs/Ibrowse/codecs040fpu/jpeg.codec.spatch SYS:Programs/Ibrowse/codecs/jpeg.codec
+    C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/png.codec -pSYS:Programs/Ibrowse/codecs040fpu/png.codec.spatch SYS:Programs/Ibrowse/codecs/png.codec
+    C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/xbm.codec -pSYS:Programs/Ibrowse/codecs040fpu/xbm.codec.spatch SYS:Programs/Ibrowse/codecs/xbm.codec
+    C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/imagedecode.module -pSYS:Programs/Ibrowse/codecs040fpu/imagedecode.module.spatch SYS:Programs/Ibrowse/codecs/imagedecode.module
     C:Delete SYS:Programs/Ibrowse/codecs040fpu/#? SYS:Programs/Ibrowse/codecs040fpu ALL FORCE QUIET
     C:MakeDir SYS:Programs/Ibrowse/cache
   ENDIF

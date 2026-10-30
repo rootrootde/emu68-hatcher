@@ -80,11 +80,14 @@ class NetworkTab(QWidget):
         self.radio_none = QRadioButton("None")
         self.radio_roadshow = QRadioButton("Roadshow")
         self.radio_miamidx = QRadioButton("MiamiDX")
-        self.radio_amitcp_ng = QRadioButton("AmiTCP_NG")
+        self.radio_lwip_amiga = QRadioButton("lwip-amiga")
         self.radio_roadshow.setChecked(True)
         self.radio_none.setToolTip("No network stack - no online connectivity")
         self.radio_roadshow.setToolTip("Roadshow demo - free TCP/IP stack with PiStorm support")
         self.radio_miamidx.setToolTip("Miami Deluxe 1.0c with GENET and WifiPi profiles")
+        self.radio_lwip_amiga.setToolTip(
+            "Fast open stack from the Emu68 driver stack - AmigaOS 3.2 and Emu68 1.1 only"
+        )
         net_layout.addWidget(self.radio_none)
 
         self.radio_roadshow.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect, True)
@@ -102,12 +105,12 @@ class NetworkTab(QWidget):
         miamidx_row.addStretch()
         net_layout.addLayout(miamidx_row)
 
-        amitcp_ng_row = QHBoxLayout()
-        amitcp_ng_row.setContentsMargins(0, 0, 0, 0)
-        amitcp_ng_row.setSpacing(6)
-        amitcp_ng_row.addWidget(self.radio_amitcp_ng)
-        amitcp_ng_row.addStretch()
-        net_layout.addLayout(amitcp_ng_row)
+        lwip_row = QHBoxLayout()
+        lwip_row.setContentsMargins(0, 0, 0, 0)
+        lwip_row.setSpacing(6)
+        lwip_row.addWidget(self.radio_lwip_amiga)
+        lwip_row.addStretch()
+        net_layout.addLayout(lwip_row)
 
         # full-version archive picker: empty -> bundled demo
         self._roadshow_full_box = QWidget()
@@ -171,7 +174,7 @@ class NetworkTab(QWidget):
 
         self.radio_none.toggled.connect(self._update_net_visibility)
         self.radio_roadshow.toggled.connect(self._update_net_visibility)
-        self.radio_amitcp_ng.toggled.connect(self._update_net_visibility)
+        self.radio_lwip_amiga.toggled.connect(self._update_net_visibility)
         self.radio_miamidx.toggled.connect(self._update_net_visibility)
         self._update_net_visibility()
         self._update_static_visible()  # hide the IP rows - both interfaces default to DHCP
@@ -238,21 +241,25 @@ class NetworkTab(QWidget):
 
     def _update_net_visibility(self):
         roadshow = self.radio_roadshow.isChecked()
-        amitcp_ng = self.radio_amitcp_ng.isChecked()
         miamidx = self.radio_miamidx.isChecked()
+        addressed = self._has_address_fields()
         self._roadshow_full_box.setVisible(roadshow)
         self._miamidx_keys_box.setVisible(miamidx)
         self._miamidx_note.setVisible(miamidx)
-        self._ethernet_group.setVisible(roadshow or amitcp_ng)
-        self._wifi_group.setVisible(roadshow or amitcp_ng or miamidx)
-        self._routing_group.setVisible(roadshow or amitcp_ng)
+        self._ethernet_group.setVisible(addressed)
+        self._wifi_group.setVisible(addressed or miamidx)
+        self._routing_group.setVisible(addressed)
         self._update_static_visible()
+
+    def _has_address_fields(self) -> bool:
+        """stacks whose interface files Hatcher writes: roadshow, lwip_amiga"""
+        return self.radio_roadshow.isChecked() or self.radio_lwip_amiga.isChecked()
 
     def _update_static_visible(self):
         eth_on = self.eth_static.isChecked()
         self._eth_form.setRowVisible(self.eth_addr, eth_on)
         self._eth_form.setRowVisible(self.eth_mask, eth_on)
-        wifi_address_on = self.radio_roadshow.isChecked() or self.radio_amitcp_ng.isChecked()
+        wifi_address_on = self._has_address_fields()
         self._wifi_form.setRowVisible(self._wifi_mode_row, wifi_address_on)
         wifi_on = wifi_address_on and self.wifi_static.isChecked()
         self._wifi_form.setRowVisible(self.wifi_addr, wifi_on)
@@ -264,15 +271,15 @@ class NetworkTab(QWidget):
             return None
         if self.radio_miamidx.isChecked():
             return NetworkStack.MIAMIDX
-        if self.radio_amitcp_ng.isChecked():
-            return NetworkStack.AMITCP_NG
+        if self.radio_lwip_amiga.isChecked():
+            return NetworkStack.LWIP_AMIGA
         return NetworkStack.ROADSHOW
 
     def set_network_stack(self, stack: NetworkStack | None):
         if stack is None:
             self.radio_none.setChecked(True)
-        elif stack == NetworkStack.AMITCP_NG:
-            self.radio_amitcp_ng.setChecked(True)
+        elif stack == NetworkStack.LWIP_AMIGA:
+            self.radio_lwip_amiga.setChecked(True)
         elif stack == NetworkStack.MIAMIDX:
             self.radio_miamidx.setChecked(True)
         else:
@@ -290,8 +297,8 @@ class NetworkTab(QWidget):
     def get_network_settings(self) -> NetworkSettings:
         # only read the IP fields in static mode, so a stale/half-typed value left in a
         # dhcp-mode field never reaches (and fails) schema validation
-        # address rows are shown only for roadshow and amitcp_ng; hidden rows read as dhcp
-        static_visible = self.radio_roadshow.isChecked() or self.radio_amitcp_ng.isChecked()
+        # address rows are shown only for stacks with address fields; hidden rows read as dhcp
+        static_visible = self._has_address_fields()
 
         def _iface(static: QRadioButton, addr: QLineEdit, mask: QLineEdit) -> InterfaceIp:
             if not static_visible or not static.isChecked():
@@ -392,7 +399,5 @@ class NetworkTab(QWidget):
         return WifiConfig(ssid=ssid, password=password)
 
     def set_wifi_config(self, wifi: WifiConfig | None):
-        """None keeps the typed fields: saved configs never carry wifi credentials"""
-        if wifi is not None:
-            self.wifi_ssid.setText(wifi.ssid)
-            self.wifi_password.setText(wifi.password)
+        self.wifi_ssid.setText(wifi.ssid if wifi else "")
+        self.wifi_password.setText(wifi.password if wifi else "")

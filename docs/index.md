@@ -11,7 +11,7 @@ Runs on macOS, Linux and Windows.
 - AmigaOS 3.9 install from CD **.iso** and Kickstart 3.1, including BoingBag 1+2
 - Customizable [package set](packages.md): MUI, WHDLoad+WHDLoadWrapper, IBrowse, HippoPlayer, ViNCEd, ...
 - RTG via Picasso96, with optional full **Picasso96.lha**
-- Roadshow, MiamiDX or AmiTCP_NG networking, with wifi and ethernet drivers
+- Roadshow, MiamiDX or lwip-amiga networking, with wifi and ethernet drivers
 - Partition layout editor (PFS3 + FFS), optional per-partition "extra content" directory to pre-load Work / Data volumes (WHDLoad games, backups, ...)
 - Build configs as JSON (save / load)
 - Build to **.img** file (sparse by default), flash to SD card after build, or write straight to SD card
