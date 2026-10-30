@@ -6,12 +6,13 @@ import logging
 import os
 import re
 import tempfile
+import unicodedata
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
 from emu68hatcher.builder.errors import BuildCancelledError, BuildError
-from emu68hatcher.builder.staging.uaefsdb import DB_NAME, records_by_host
+from emu68hatcher.builder.staging.uaefsdb import DB_NAME, amiga_name_for_host, records_by_host
 from emu68hatcher.builder.staging.uaefsdb_merge import (
     coalesce_staged_directories,
     iter_staged_entries,
@@ -22,8 +23,6 @@ _SPECIAL = frozenset('\\/:*?"<>|#%')
 
 
 def _encoded_name(name: str) -> str:
-    if any(ord(char) > 255 for char in name):
-        raise BuildError(f"Filename cannot be represented in the Amiga character set: {name}")
     encoded = "".join(
         f"%{ord(char):02x}"
         if char in _SPECIAL
@@ -84,6 +83,7 @@ def prepare_workbench_metadata(
     for entry in iter_staged_entries(root, cancel_check, allow_stale_metadata=allow_stale_metadata):
         _encoded_name(entry.path.rsplit("/", 1)[-1])
     obsolete: list[str] = []
+    changed: list[tuple[str, str]] = []
     stack = [root]
     while stack:
         if cancel_check and cancel_check():
@@ -103,7 +103,7 @@ def prepare_workbench_metadata(
             (
                 records[entry.name.casefold()].amiga_name
                 if entry.name.casefold() in records
-                else entry.name
+                else amiga_name_for_host(entry.name)
             ).casefold()
             for entry in entries
         }
@@ -111,7 +111,9 @@ def prepare_workbench_metadata(
             if index % 256 == 0 and cancel_check and cancel_check():
                 raise BuildCancelledError("Build was cancelled by user")
             record = records.get(entry.name.casefold())
-            amiga_name = record.amiga_name if record else entry.name
+            amiga_name = record.amiga_name if record else amiga_name_for_host(entry.name)
+            if record is None and unicodedata.normalize("NFC", entry.name) != amiga_name:
+                changed.append((entry.name, amiga_name))
             name = _transport_name(amiga_name, amiga_names)
             if name.casefold() in names or (name + ".uaem").casefold() in names:
                 raise BuildError(
@@ -152,6 +154,17 @@ def prepare_workbench_metadata(
         database = parent / DB_NAME
         if database.exists():
             database.unlink()
+    if changed:
+        shown = "; ".join(
+            f"{host} -> {amiga}".encode("utf-8", "backslashreplace").decode("utf-8")
+            for host, amiga in changed[:3]
+        )
+        logging.getLogger(__name__).warning(
+            "%d file names under %s had characters the Amiga cannot hold and were changed, e.g. %s",
+            len(changed),
+            root.name,
+            shown,
+        )
     if obsolete:
         logging.getLogger(__name__).debug(
             "Ignoring %d obsolete Workbench metadata records under %s, first: %s",

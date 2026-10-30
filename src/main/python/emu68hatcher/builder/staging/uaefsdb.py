@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import stat
 import tempfile
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -30,6 +31,48 @@ def _check_name(name: str, directory: Path) -> str:
     if not name or name in (".", "..") or "/" in name or "\0" in name:
         raise BuildError(f"Amiga file metadata has an unsafe name in {directory}: {name!r}")
     return name
+
+
+_REPLACEMENTS = str.maketrans(
+    {
+        "‘": "'",
+        "’": "'",
+        "‚": "'",
+        "‛": "'",
+        "“": '"',
+        "”": '"',
+        "„": '"',
+        "‐": "-",
+        "‑": "-",
+        "‒": "-",
+        "–": "-",
+        "—": "-",
+        "−": "-",
+        "€": "EUR",
+    }
+)
+
+
+def _plain_letter(char: str) -> str:
+    # accents the Amiga character set lacks are dropped, ligatures split
+    kept = "".join(
+        c
+        for c in unicodedata.normalize("NFKD", char)
+        if ord(c) <= 255 and c not in "/:\0" and unicodedata.category(c) != "Mn"
+    )
+    return kept or "_"
+
+
+def amiga_name_for_host(name: str) -> str:
+    """Amiga name for a staged entry that has no UaeFsDb record."""
+    if any("\udc80" <= c <= "\udcff" for c in name):
+        # undecodable bytes: Amiga archives write Latin-1 names
+        name = os.fsencode(name).decode("iso-8859-1")
+    name = unicodedata.normalize("NFC", name)
+    if all(ord(c) <= 255 for c in name):
+        return name
+    name = name.translate(_REPLACEMENTS)
+    return "".join(c if ord(c) <= 255 else _plain_letter(c) for c in name)
 
 
 def _field_name(record: bytes, field: slice, directory: Path) -> str:

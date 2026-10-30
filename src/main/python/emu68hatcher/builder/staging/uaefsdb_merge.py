@@ -19,6 +19,7 @@ from emu68hatcher.builder.staging.uaefsdb import (
     _Record,
     _record_name,
     _write_records,
+    amiga_name_for_host,
     records_by_host,
 )
 
@@ -46,7 +47,8 @@ def iter_staged_entries(
         parent, prefix = stack.pop()
         records = records_by_host(parent)
         seen_host: set[str] = set()
-        seen_amiga: set[str] = set()
+        # amiga key -> host name the mapping changed, or empty
+        seen_amiga: dict[str, str] = {}
         directories = []
         try:
             with os.scandir(parent) as children:
@@ -68,11 +70,18 @@ def iter_staged_entries(
                         raise BuildError(
                             f"Amiga file metadata host name differs in case: {child.path}"
                         )
-                    amiga_name = record.amiga_name if record else host_name
+                    amiga_name = record.amiga_name if record else amiga_name_for_host(host_name)
                     amiga_key = amiga_name.casefold()
+                    renamed = host_name if record is None and amiga_name != host_name else ""
                     if amiga_key in seen_amiga:
-                        raise BuildError(f"Staging has colliding Amiga names: {child.path}")
-                    seen_amiga.add(amiga_key)
+                        note = ""
+                        if changed := renamed or seen_amiga[amiga_key]:
+                            # surrogates from undecodable bytes must not reach the log
+                            shown = f"{changed} became {amiga_name_for_host(changed)}"
+                            shown = shown.encode("utf-8", "backslashreplace").decode("utf-8")
+                            note = f" (host name {shown} for the Amiga)"
+                        raise BuildError(f"Staging has colliding Amiga names: {child.path}{note}")
+                    seen_amiga[amiga_key] = renamed
                     info = child.stat(follow_symlinks=False)
                     is_dir = stat.S_ISDIR(info.st_mode)
                     if not is_dir and not stat.S_ISREG(info.st_mode):
@@ -137,7 +146,10 @@ def _staged_children(
             record = records.get(key)
             result.append(
                 _StagedChild(
-                    Path(child.path), record.amiga_name if record else name, is_dir, record
+                    Path(child.path),
+                    record.amiga_name if record else amiga_name_for_host(name),
+                    is_dir,
+                    record,
                 )
             )
     return tuple(result)
