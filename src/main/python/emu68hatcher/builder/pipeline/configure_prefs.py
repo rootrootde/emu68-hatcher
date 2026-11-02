@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,7 +15,11 @@ from emu68hatcher.builder.pipeline.configure_network import (
     configure_network,
     generate_wireless_prefs,
 )
-from emu68hatcher.builder.staging.files import resolve_source_path, resolve_staging_path
+from emu68hatcher.builder.staging.files import (
+    resolve_source_path,
+    resolve_staging_path,
+    write_info_default_tool,
+)
 from emu68hatcher.builder.state import CreatedImage
 from emu68hatcher.config.display_models import (
     WORKBENCH_RTG_MODE_BY_NAME,
@@ -98,6 +103,9 @@ def configure_preferences(
 
         configure_rgb2rtg(workflow, image, boot_staging)
 
+    if "avalanche" in get_resolution(workflow).selected:
+        _set_archive_default_tool(workflow, env_archive)
+
     workflow._check_cancelled()
     workflow._update_state(progress=90.0)
     workflow._milestone("Generating drawer icons")
@@ -111,3 +119,24 @@ def configure_preferences(
     arranged = arrange_icons(boot_staging)
     if arranged:
         workflow.logger.info(f"Arranged {arranged} icons into alphabetical drawer grids")
+
+
+def _set_archive_default_tool(workflow: BuildWorkflow, env_archive: Path) -> None:
+    # icon.library reads only ENV:Sys/def_<type>.info; the Standard set keeps def_archive in Sys/DefIcons/
+    sys_dir = resolve_staging_path(env_archive, "Sys")
+    icon = resolve_source_path(sys_dir, "def_archive.info")
+    try:
+        if icon is None:
+            pool = resolve_source_path(sys_dir, "DefIcons/def_archive.info")
+            if pool is None:
+                workflow.logger.warning(
+                    "No def_archive.info found, archives keep their default tool"
+                )
+                return
+            icon = resolve_staging_path(sys_dir, "def_archive.info")
+            shutil.copy2(pool, icon)
+        write_info_default_tool(icon, "SYS:Programs/Avalanche/Avalanche")
+    except (OSError, ValueError) as exc:
+        workflow.logger.warning(f"Could not set Avalanche as default tool for archives: {exc}")
+    else:
+        workflow.logger.info("Set Avalanche as default tool for archives")

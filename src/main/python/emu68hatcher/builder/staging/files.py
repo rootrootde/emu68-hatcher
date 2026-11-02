@@ -45,8 +45,21 @@ def write_info_tooltypes(info_path: Path, tooltypes: list[str]) -> None:
     logger.info(f"Wrote {len(tooltypes)} tooltypes to {info_path.name}")
 
 
-def _parse_info_to_tooltypes(data: bytes) -> tuple[int, list[str], int]:
-    """parse an Amiga .info file to find the tooltypes section"""
+def write_info_default_tool(info_path: Path, tool: str) -> None:
+    """set the default tool of an Amiga project .info file"""
+    data = info_path.read_bytes()
+    dt_start, dt_end = _default_tool_span(data)
+    if data[48] != 4:
+        raise ValueError(f"{info_path.name} is not a project icon (do_Type={data[48]})")
+    header = bytearray(data[:78])
+    struct.pack_into(">I", header, 50, 1)
+    tool_bytes = tool.encode("iso-8859-1") + b"\x00"
+    new_dt = struct.pack(">I", len(tool_bytes)) + tool_bytes
+    info_path.write_bytes(bytes(header) + data[78:dt_start] + new_dt + data[dt_end:])
+
+
+def _default_tool_span(data: bytes) -> tuple[int, int]:
+    """start and end offset of the DefaultTool string (equal when there is none)"""
     size = len(data)
     if size < 78:
         raise ValueError(f"File too small for .info header ({size} bytes)")
@@ -60,8 +73,6 @@ def _parse_info_to_tooltypes(data: bytes) -> tuple[int, list[str], int]:
 
     has_first_image = be_long(22) != 0
     has_second_image = be_long(26) != 0
-    has_default_tool = be_long(50) != 0
-    has_tooltypes = be_long(54) != 0
     has_drawer_data = be_long(66) != 0
 
     offset = 78  # after DiskObject header
@@ -78,10 +89,17 @@ def _parse_info_to_tooltypes(data: bytes) -> tuple[int, list[str], int]:
     if has_second_image:
         offset = _skip_image(data, offset)
 
-    # skip DefaultTool string
-    if has_default_tool and offset + 4 <= size:
-        dt_len = struct.unpack(">I", data[offset : offset + 4])[0]
-        offset += 4 + dt_len
+    start = offset
+    if be_long(50) != 0 and offset + 4 <= size:
+        offset += 4 + be_long(offset)
+    return start, offset
+
+
+def _parse_info_to_tooltypes(data: bytes) -> tuple[int, list[str], int]:
+    """parse an Amiga .info file to find the tooltypes section"""
+    size = len(data)
+    has_tooltypes = struct.unpack(">I", data[54:58])[0] != 0
+    _, offset = _default_tool_span(data)
 
     # tooltypes section: DWORD ptr_array_size = (n+1)*4, then n x (DWORD len + null-terminated bytes)
     tt_start = offset
