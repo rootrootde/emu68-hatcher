@@ -49,8 +49,9 @@ name is set here, else Ethernet).
 
 Choose the HDMI output mode and the Workbench screen mode. **Force HDMI output
 without EDID**, on by default, keeps the HDMI output on when no monitor is
-detected at boot. Native-video capture (C790)
-needs Emu68 1.1 or later and a VideoCore Workbench mode. Use **Browse…** to
+detected at boot. Native Amiga mode leaves the Workbench screen mode to the
+ScreenMode window on first boot. Native-video capture (Framethrower or C790)
+needs a VideoCore Workbench mode; C790 also needs Emu68 1.1 or later. Use **Browse…** to
 supply your full **Picasso96.lha** instead of the free Aminet version.
 
 Available icon sets follow the selected OS version and detected media. GlowIcons

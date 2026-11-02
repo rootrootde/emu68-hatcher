@@ -2,10 +2,10 @@
 
 ## Requirements
 
-- **macOS 12+** (Apple Silicon or Intel) - the **.app** bundle includes Python, no separate install needed
+- **macOS 13+** (Apple Silicon or Intel) - the **.app** bundle includes Python, no separate install needed
 - **Windows 10/11** (x64 or arm64) - the **.exe** installer includes Python, no separate install needed
-- **Linux** (recent Ubuntu/Debian, Fedora, Arch, …) - **.deb** installer for Debian/Ubuntu (x64 / arm64), manual Python install everywhere else
-- **a SD card**, 4 GB minimum, 32+ GB recommended
+- **Linux** - **.deb** installer (x64 / arm64) for Ubuntu 22.04, Debian 12 or newer; on Fedora, Arch and other distros install from source with Python 3.10+
+- **an SD card**, 4 GB minimum, 32+ GB recommended
 - **a Kickstart ROM** + **Workbench ADF floppy images** (3.1 / 3.2 / 3.2.2.1 / 3.2.3 - pick one), or the **AmigaOS 3.9 CD image** (**.iso**) with a Kickstart 3.1 ROM:
 
 | Workbench | ROM used by automatic selection |
@@ -17,7 +17,7 @@
 | 3.9 (CD **.iso**) | A1200 40.068 (the BoingBag soft ROM update loads at boot) |
 
 !!! note "Why is an A1200 ROM selected?"
-    Automatic selection follows Emu68 Imager and prefers an A1200 ROM when available. It also works on an A600 with PiStorm/Emu68. Manual selection is not available yet.
+    Automatic selection follows Emu68 Imager and prefers an A1200 ROM when available. It also works on an A600 with PiStorm/Emu68.
 
 ## Pick your OS
 
