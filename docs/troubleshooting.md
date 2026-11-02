@@ -27,9 +27,9 @@ for Debian-based systems.
 An optional package whose download no longer matches its checksum is listed in
 a **Changed downloads** dialog. Usually the author published a new version under
 the same file name. **Skip them** builds without those packages; **Install anyway**
-uses the new files, although the install rules were not checked against them. Required packages are
-never installed from a changed download; that build stops with an error until the
-package list is updated.
+uses the new files, although the install rules were not checked against them.
+Required packages are never installed from a changed download; that build stops
+with an error until the package list is updated.
 
 ### Required ADF or icon set is missing
 

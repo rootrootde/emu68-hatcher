@@ -6,21 +6,18 @@ Runs on macOS, Linux and Windows.
 
 <a href="assets/screenshots/overview.png" target="_blank"><img src="assets/screenshots/overview.png" alt="Emu68 Hatcher configuration overview (offscreen Qt)" width="900"></a>
 
-- Bootable Emu68 install for pistorm32-lite, pistorm and pistorm16
-- Workbench install from stock ADFs (3.1 / 3.2 / 3.2.2.1 / 3.2.3), identified by hash
-- AmigaOS 3.9 install from CD **.iso** and Kickstart 3.1, including BoingBag 1+2
-- Customizable [package set](packages.md): MUI, WHDLoad+WHDLoadWrapper, IBrowse, HippoPlayer, ViNCEd, ...
-- RTG via Picasso96, with optional full **Picasso96.lha**
-- Roadshow, MiamiDX or lwip-amiga networking, with wifi and ethernet drivers
-- Partition layout editor (PFS3 + FFS), optional per-partition "extra content" directory to pre-load Work / Data volumes (WHDLoad games, backups, ...)
+- Bootable Emu68 install for PiStorm32-lite, PiStorm and PiStorm16
+- Workbench 3.1, 3.2, 3.2.2.1 and 3.2.3 from stock ADFs, or AmigaOS 3.9 from the CD **.iso** including BoingBag 1+2; ROMs and disks are recognised by content, not by file name
+- Workbench languages, Standard or GlowIcons icon set, HDMI output mode, Workbench screen mode and Framethrower / C790 native-video capture
+- [AGS import](ags.md): copies the games, Work and Media partitions of an AGS image onto the card and starts AGS from Hatcher's own Workbench
+- Customizable [package set](packages.md), filtered for the chosen OS and Emu68 version: MUI, WHDLoad+WHDLoadWrapper, IBrowse, HippoPlayer, ViNCEd, font packs, ... plus your own package files
+- RTG via Picasso96, with optional full **Picasso96.lha**; experimental [RGB2RTG](usage.md#rgb2rtg) for the A1200 with PiStorm32-lite
+- Roadshow, MiamiDX or lwip-amiga networking with WiFi and Ethernet drivers, plus a Network Settings window on the Amiga; full Roadshow archive supported
+- USB (Poseidon), NVMe and I2C real-time clock support
+- Partition layout editor (PFS3 + FFS), optional per-partition "extra content" folder to pre-load Work / Data volumes (WHDLoad games, backups, ...)
+- Build to an **.img** file (sparse by default), write it to an SD card after the build with optional verify, or write straight to the card
 - Build configs as JSON (save / load)
-- Build to **.img** file (sparse by default), flash to SD card after build, or write straight to SD card
-- Update checks for the app and its package list
-
-## Known issues / limitations
-
-- **mostly tested on 3.2(.3)** - expect more potential issues with 3.1
-- Automatic ROM selection prefers A1200 ROMs; this also works on A600. No manual selection yet.
+- Update checks for the app and its signed package list
 
 ## Support + Feedback
 
@@ -51,5 +48,6 @@ Bundled / downloaded at build time:
 - [Roadshow Demo](https://www.amigashop.org/product_info.php?cPath=2_34&products_id=200&language=de) bundled with permission from A. Magerl (APC&TCP)
 - [MiamiDX 1.0c](https://aminet.net/package/comm/tcp/MiamiDx10cmain) downloaded from Aminet when selected
 - [7-Zip](https://github.com/ip7z/7zip) (GNU LGPL) - downloaded at install time, License.txt copied alongside the binary
+- [emu68-driver-stack](https://github.com/rondoval/emu68-driver-stack) by rondoval - lwip-amiga, genet, USB and NVMe drivers, downloaded at build time
 - [Poseidon USB stack](https://wiki.icomp.de/wiki/RapidRoad) by Chris Hodges - downloaded from the iComp wiki when USB support is selected
 - Aminet packages (MUI, HippoPlayer, IBrowse, akDatatypes, Picasso96, ...) - downloaded from [aminet.net](https://aminet.net) at build time; each ships its own readme with license
