@@ -22,6 +22,15 @@ The app keeps working with the last package list it has. Try **Check now** again
 If an app update will not open, use **Open Downloads Folder**. Linux installation is only offered
 for Debian-based systems.
 
+### Build asks about changed downloads
+
+An optional package whose download no longer matches its checksum is listed in
+a **Changed downloads** dialog. Usually the author published a new version under
+the same file name. **Skip them** builds without those packages; **Install anyway**
+uses the new files, although the install rules were not checked against them. Required packages are
+never installed from a changed download; that build stops with an error until the
+package list is updated.
+
 ### Required ADF or icon set is missing
 
 Disks are matched by content, not filename. **Show details...** lists missing media; GlowIcons
