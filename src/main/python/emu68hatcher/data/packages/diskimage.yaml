@@ -1,0 +1,45 @@
+name: diskimage
+friendly_name: DiskImage
+group: Utilities
+description: 'mounts CD and disk images (iso, cue/bin, nrg, mds, adf, hdf, ...)'
+upstream_version: '52.35'
+# no 3.1: no L:CDFileSystem and no ReAction for DiskImageGUI
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: true
+requires:
+- expat_library
+- screennotify
+- titlebar_image
+download:
+  source: aminet
+  path: disk/misc/diskimage.m68k-aos.tar.bz2
+  hash: 931929548f5515be1d321c9b23c76db9
+  # the extract stage keys on the last suffix only, .bz2 would be copied raw
+  filename: diskimage.m68k-aos.tbz2
+install:
+- from: diskimage_device/Devs/diskimage.device
+  to: Devs/
+- from: diskimage_device/Devs/DiskImage
+  to: Devs/
+- from: diskimage_device/Devs/DOSDrivers/*
+  to: Devs/DOSDrivers/
+- from: diskimage_device/C/*
+  to: C/
+- from: diskimage_device/Libs/*
+  to: Libs/
+- from: diskimage_device/Classes/Images/png.image
+  to: Classes/Images/
+- from: diskimage_device/ENVARC/DiskImage
+  to: Prefs/Env-Archive/
+- from: diskimage_device/DiskImageGUI*
+  to: Programs/DiskImage/
+- from: diskimage_device/diskimage.guide*
+  to: Programs/DiskImage/
+menu_entry:
+  title: DiskImage
+  path: Programs/DiskImage/DiskImageGUI
+  menu: Tools

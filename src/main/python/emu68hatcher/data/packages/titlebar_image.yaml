@@ -1,0 +1,18 @@
+name: titlebar_image
+friendly_name: titlebar.image
+group: Libraries
+description: 'titlebar gadget images for ReAction programs'
+# 3.9 ships 40.11 from the same author, this is 40.18
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+download:
+  source: aminet
+  path: dev/gui/titlebar_ic.lha
+  hash: 96740aa12efb02678486d3676aca2450
+  filename: titlebar_ic.lha
+install:
+- from: titlebar_ic/Classes/Images/titlebar.image
+  to: Classes/Images/

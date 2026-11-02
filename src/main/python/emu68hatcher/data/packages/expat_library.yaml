@@ -1,0 +1,17 @@
+name: expat_library
+friendly_name: expat.library
+group: Libraries
+description: 'XML parser library'
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+download:
+  source: aminet
+  path: util/libs/expat.lha
+  hash: 9d572a0168ddd308a424bb094f861b68
+  filename: expat.lha
+install:
+- from: expat/Libs/expat.library
+  to: Libs/
