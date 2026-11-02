@@ -9,6 +9,8 @@ versions:
 - 3.2.3
 - '3.9'
 mandatory: false
+requires:
+- xadmaster_key
 download:
   source: aminet
   path: util/arc/xadmaster020.lha

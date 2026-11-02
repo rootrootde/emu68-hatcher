@@ -1,0 +1,19 @@
+name: xadmaster_key
+friendly_name: XADMaster Keyfile
+group: System
+description: 'free xadmaster keyfile, stops the shareware requester'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: aminet
+  path: util/arc/xadmaster-key.lha
+  hash: dcf85245d75dc1b1f17c4e5ae9163403
+  filename: xadmaster-key.lha
+install:
+- from: xadmaster.key
+  to: S/
