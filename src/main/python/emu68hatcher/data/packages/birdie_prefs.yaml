@@ -12,12 +12,14 @@ download:
   path: util/misc/bprefs.lha
   hash: 73a83ba5ac9cbfdad9a4b081ca49e81d
   filename: bprefs.lha
-# "Birdie Prefs" in the archive is a one-line script calling bprefs; the binary
-# is installed under the icon's name instead
+# the icon is an IconX project: "Birdie Prefs" is a one-line script that runs
+# bprefs from its own directory, so all three stay together under Prefs/
 install:
-- from: bprefs
+- from: Birdie Prefs
   to: Prefs/
   rename: BirdiePrefs
 - from: Birdie Prefs.info
   to: Prefs/
   rename: BirdiePrefs.info
+- from: bprefs
+  to: Prefs/
