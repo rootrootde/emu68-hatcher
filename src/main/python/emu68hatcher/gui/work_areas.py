@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -45,17 +44,16 @@ def build_rail():
     rail_layout = QVBoxLayout(rail)
     rail_layout.setContentsMargins(0, 12, 0, 0)
     rail_layout.setSpacing(24)
-    brand = QHBoxLayout()
-    brand.setContentsMargins(12, 0, 0, 0)
+    brand = QVBoxLayout()
+    brand.setSpacing(8)
     icon_path = find_app_icon()
     if icon_path:
         logo = QLabel()
-        logo.setPixmap(render_icon(icon_path, 28))
-        brand.addWidget(logo)
+        logo.setPixmap(render_icon(icon_path, 96))
+        brand.addWidget(logo, 0, Qt.AlignmentFlag.AlignHCenter)
     brand_label = QLabel("Emu68 Hatcher")
     brand_label.setProperty("heading", "brand")
-    brand.addWidget(brand_label)
-    brand.addStretch()
+    brand.addWidget(brand_label, 0, Qt.AlignmentFlag.AlignHCenter)
     rail_layout.addLayout(brand)
     sidebar = QListWidget()
     sidebar.setObjectName("navigation")
