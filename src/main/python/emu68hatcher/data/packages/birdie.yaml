@@ -7,6 +7,7 @@ default: false
 # the sample patterns are jpegs; 3.1 has no jpeg datatype of its own
 requires:
 - akdatatypes_jfif
+- birdie_config
 download:
   source: aminet
   path: util/wb/birdie2000.lha
@@ -17,7 +18,8 @@ install:
   to: C/
 - from: Patterns/*
   to: Prefs/Presets/Birdie/
+# arguments come from ENV:Birdie.prefs (seeded by birdie_config, edited by Birdie Prefs)
 scripts:
 - name: Birdie
   content: |
-    Run <>NIL: C:Birdie SYS:Prefs/Presets/Birdie/001.jpg
+    Run >NIL: C:Birdie ? <ENV:Birdie.prefs

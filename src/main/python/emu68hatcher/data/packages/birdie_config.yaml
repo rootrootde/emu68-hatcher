@@ -1,0 +1,10 @@
+name: birdie_config
+friendly_name: Birdie Config
+group: System
+description: 'default Birdie.prefs: the first sample pattern'
+download:
+  source: local
+# one line of Birdie arguments, read at boot via "Birdie ? <ENV:Birdie.prefs"
+install:
+- from: System/Prefs/Env-Archive/Birdie.prefs
+  to: Prefs/Env-Archive/

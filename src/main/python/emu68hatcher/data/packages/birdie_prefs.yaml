@@ -1,0 +1,23 @@
+name: birdie_prefs
+friendly_name: Birdie Prefs
+group: Appearance
+description: 'MUI editor for the Birdie settings (editor: Prefs/BirdiePrefs)'
+upstream_version: '1.31'
+default: false
+requires:
+- birdie
+- mui
+download:
+  source: aminet
+  path: util/misc/bprefs.lha
+  hash: 73a83ba5ac9cbfdad9a4b081ca49e81d
+  filename: bprefs.lha
+# "Birdie Prefs" in the archive is a one-line script calling bprefs; the binary
+# is installed under the icon's name instead
+install:
+- from: bprefs
+  to: Prefs/
+  rename: BirdiePrefs
+- from: Birdie Prefs.info
+  to: Prefs/
+  rename: BirdiePrefs.info
