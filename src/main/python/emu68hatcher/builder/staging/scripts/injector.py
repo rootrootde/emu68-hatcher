@@ -356,7 +356,7 @@ def apply_package_scripts(
     package_names: list[str],
     user_archives: set[str],
 ) -> int:
-    """append installed packages' schema 'scripts:' blocks to their target scripts"""
+    """apply installed packages' schema 'scripts:' blocks to their target scripts"""
     from emu68hatcher.data.package_loader import get_package_by_name
 
     count = 0
@@ -369,10 +369,17 @@ def apply_package_scripts(
                 pkg_name in user_archives
             ):
                 continue
+            if mod.before:
+                action = InjectionAction.INJECT_BEFORE
+            elif mod.after:
+                action = InjectionAction.INJECT_AFTER
+            else:
+                action = InjectionAction.ADD
             injection = ScriptInjection(
                 target_script=mod.target,
-                action=InjectionAction.ADD,
+                action=action,
                 content=mod.content,
+                start_pattern=mod.before or mod.after,
                 name=mod.name,
             )
             result = inject_script(resolve_staging_path(staging_dir, mod.target), injection)

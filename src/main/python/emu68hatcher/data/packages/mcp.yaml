@@ -1,0 +1,44 @@
+name: mcp
+friendly_name: MCP
+group: Appearance
+description: 'Master Control Program: pointer, window and system patches, most off by default (editor: Prefs/MCPPrefs)'
+# 1.48 (2010) is the last release for real hardware; 1.49c only changes
+# emulator mouse handling. predates OS 3.2, several patches duplicate 3.2 features
+upstream_version: '1.48'
+default: false
+requires:
+- reqtools
+download:
+  source: web
+  url: http://mcp.a1k.org/files/mcp1_48.lha
+  hash: 1767681723fec8070977b7bc495789c6
+  filename: mcp1_48.lha
+install:
+- from: MCP1.48/mcp020
+  to: C/
+  rename: MCP
+- from: MCP1.48/MCPPrefs
+  to: Prefs/
+- from: MCP1.48/MCPPrefs.info
+  to: Prefs/
+- from: MCP1.48/Libs/mcpgfx.library
+  to: Libs/
+- from: MCP1.48/Libs/mcpsupport2.library
+  to: Libs/
+- from: MCP1.48/EnvArc/MCP2
+  to: Prefs/Env-Archive/
+- from: MCP1.48/S/*
+  to: S/
+# MCPPrefs looks for a file named MCP.guide
+- from: MCP1.48/Guides/MCP_eng.guide
+  to: S/
+  rename: MCP.guide
+- from: MCP1.48/Locale/deutsch/*
+  to: Locale/Catalogs/deutsch/
+# MCP's own installer inserts the call after the ENV: assign
+scripts:
+- name: MCP
+  target: S/Startup-Sequence
+  after: '^(?:C:)?Assign\s+(?:>NIL:\s+)?ENV:\s'
+  content: |
+    C:MCP

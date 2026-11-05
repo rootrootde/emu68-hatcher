@@ -1,0 +1,22 @@
+name: visualprefs_themepack
+friendly_name: VisualPrefs theme pack
+group: Appearance
+description: 'Endor, Crait_dark, Mustafar and Old_OS_Concept gadget sets (Prefs/Presets/VisualPrefs)'
+upstream_version: '1.1'
+default: false
+requires:
+- visualprefs
+download:
+  source: aminet
+  path: pix/theme/Themepack.lha
+  hash: 7d4b1e18b38b0302d8fb9c001f8653e5
+  filename: Themepack.lha
+install:
+- from: Endor
+  to: Prefs/Presets/VisualPrefs/
+- from: Crait_dark
+  to: Prefs/Presets/VisualPrefs/
+- from: Mustafar
+  to: Prefs/Presets/VisualPrefs/
+- from: old_OS_concept
+  to: Prefs/Presets/VisualPrefs/

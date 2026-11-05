@@ -1,0 +1,26 @@
+name: titleshadow
+friendly_name: TitleShadow
+group: Appearance
+description: 'shadowed or outlined window titles (editor: Prefs/TitleShadowPrefs)'
+upstream_version: '1.0B'
+default: false
+download:
+  source: aminet
+  path: util/boot/titleshadow.lha
+  hash: c59cf13a5a9df89b2060ff274b244484
+  filename: titleshadow.lha
+install:
+- from: TitleShadow/TitleShadow
+  to: C/
+- from: TitleShadow/TitleShadowPrefs
+  to: Prefs/
+- from: TitleShadow/Icons/Uros Lepota/TitleShadowPrefs.info
+  to: Prefs/
+# must start before VisualPrefs: anchor on its block when it is already there,
+# else on IPrefs (a VisualPrefs block applied later lands between this and IPrefs)
+scripts:
+- name: TitleShadow
+  target: S/Startup-Sequence
+  before: '^;VisualPrefs - Added by Emu68 Hatcher - BEGIN|^(?:C:)?IPrefs(?:\s|$)'
+  content: |
+    Run <>NIL: C:TitleShadow

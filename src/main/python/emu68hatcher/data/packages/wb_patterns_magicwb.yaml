@@ -1,0 +1,14 @@
+name: wb_patterns_magicwb
+friendly_name: MagicWB patterns
+group: Appearance
+description: 'the MagicWB 2.1 backdrop patterns (Prefs/Presets/Patterns/MagicWB)'
+upstream_version: '2.1p'
+default: false
+download:
+  source: aminet
+  path: util/wb/MagicWB21p.lha
+  hash: e425201fbbad65df41b5c683d539d2c1
+  filename: MagicWB21p.lha
+install:
+- from: MagicWB2.1p/Patterns/*
+  to: Prefs/Presets/Patterns/MagicWB/

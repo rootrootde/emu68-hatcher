@@ -1,0 +1,21 @@
+name: visualprefs_files
+friendly_name: VisualPrefs support files
+group: System
+description: 'prefs icon, select.gadget and sample preset for VisualPrefs'
+upstream_version: '1.5k'
+download:
+  source: aminet
+  path: util/wb/VisualPrefs.lha
+  hash: dcc4f6949c6465114301c9eab907d872
+  filename: VisualPrefs.lha
+# the binaries in this archive are 68000 builds plus SPatch deltas; the
+# visualprefs package takes the prebuilt 040 ones from the quick fix instead
+install:
+- from: VisualPrefs/GlowIcons/GUI.info
+  to: Prefs/
+- from: VisualPrefs/InstallFiles/select.gadget
+  to: Classes/Gadgets/
+- from: VisualPrefs/Prefs/Presets/GUISample.pre
+  to: Prefs/Presets/
+- from: VisualPrefs/Prefs/Bitmaps/Sample-8c
+  to: Prefs/Presets/VisualPrefs/

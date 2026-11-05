@@ -103,8 +103,17 @@ class ScriptModification(CatalogModel):
     target: str = "S/User-Startup"  # script path relative to SYS:
     name: str  # marker label on the injected block
     content: str  # lines to append
+    # regex of the line to insert the block before/after; neither = append at the end
+    before: str | None = None
+    after: str | None = None
     # None = always; True/False = only when the package's user-supplied archive is (not) configured
     when_user_archive: bool | None = None
+
+    @model_validator(mode="after")
+    def validate_anchor(self):
+        if self.before and self.after:
+            raise ValueError(f"script {self.name}: before and after are exclusive")
+        return self
 
 
 class Package(CatalogModel):
@@ -201,6 +210,7 @@ PACKAGE_GROUPS = [
     "Drivers",
     "RTG",
     "Commodities",
+    "Appearance",
     "Applications",
     "Utilities",
     "Fonts",

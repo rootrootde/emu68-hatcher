@@ -20,6 +20,7 @@ _GROUP_ORDER = [
     "Network",
     "Internet",
     "Commodities",
+    "Appearance",
     "Applications",
     "Utilities",
     "Fonts",

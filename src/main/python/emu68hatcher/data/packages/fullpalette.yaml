@@ -1,0 +1,25 @@
+name: fullpalette
+friendly_name: FullPalette
+group: Appearance
+description: 'edit and lock all 256 Workbench colours (editor: Prefs/FullPalette)'
+upstream_version: '40.22'
+default: false
+download:
+  source: aminet
+  path: util/wb/FullPalette22.lha
+  hash: 9fc101d57e7dbad91ec480da951b342e
+  filename: FullPalette22.lha
+install:
+- from: FullPalette/FPPrefs
+  to: C/
+- from: FullPalette/FullPalette
+  to: Prefs/
+- from: FullPalette/FullPalette.info
+  to: Prefs/
+# FPPrefs detaches itself; the guide wants it right after IPrefs
+scripts:
+- name: FullPalette
+  target: S/Startup-Sequence
+  after: '^(?:C:)?IPrefs(?:\s|$)'
+  content: |
+    FPPrefs

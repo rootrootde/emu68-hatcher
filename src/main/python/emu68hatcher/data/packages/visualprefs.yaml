@@ -1,0 +1,29 @@
+name: visualprefs
+friendly_name: VisualPrefs
+group: Appearance
+description: 'configurable look of window borders, gadgets and frames (editor: Prefs/GUI)'
+# 1.5n is the 2021 quick fix for 1.5k: prebuilt binaries per cpu, keyfile
+# requirement dropped, OS 3.2 intuition changes handled
+upstream_version: '1.5n'
+default: false
+requires:
+- visualprefs_files
+download:
+  source: aminet
+  path: util/wb/VP-QuickFix.lha
+  hash: 273962f80fc49a8667dbd61c14c5bd30
+  filename: VP-QuickFix.lha
+install:
+- from: VP-QuickFix/VisualPrefs_040
+  to: C/
+  rename: VisualPrefs
+- from: VP-QuickFix/GUI_040
+  to: Prefs/
+  rename: GUI
+# the guide wants VisualPrefs immediately before IPrefs; User-Startup is too late
+scripts:
+- name: VisualPrefs
+  target: S/Startup-Sequence
+  before: '^(?:C:)?IPrefs(?:\s|$)'
+  content: |
+    Run >NIL: C:VisualPrefs

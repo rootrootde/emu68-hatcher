@@ -1,0 +1,16 @@
+name: visualprefs_theme_mwb
+friendly_name: VisualPrefs OS4-style theme
+group: Appearance
+description: 'OS4-style window gadgets in MagicWB colours (Prefs/Presets/VisualPrefs/OS32-MWB)'
+upstream_version: '1.0'
+default: false
+requires:
+- visualprefs
+download:
+  source: aminet
+  path: pix/theme/MWB-VisualPrefs-Theme.lha
+  hash: 23fc79ac181eb94ec4dff97a58fc1bd7
+  filename: MWB-VisualPrefs-Theme.lha
+install:
+- from: OS32-MWB
+  to: Prefs/Presets/VisualPrefs/

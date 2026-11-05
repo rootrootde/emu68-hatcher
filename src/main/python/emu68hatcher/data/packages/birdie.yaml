@@ -1,0 +1,23 @@
+name: birdie
+friendly_name: Birdie
+group: Appearance
+description: 'patterned window title bars; with VisualPrefs turn off its border optimisation'
+upstream_version: '2000'
+default: false
+# the sample patterns are jpegs; 3.1 has no jpeg datatype of its own
+requires:
+- akdatatypes_jfif
+download:
+  source: aminet
+  path: util/wb/birdie2000.lha
+  hash: 55f7e8359ab86b6b5060175ead02141d
+  filename: birdie2000.lha
+install:
+- from: Birdie
+  to: C/
+- from: Patterns/*
+  to: Prefs/Presets/Birdie/
+scripts:
+- name: Birdie
+  content: |
+    Run <>NIL: C:Birdie SYS:Prefs/Presets/Birdie/001.jpg
