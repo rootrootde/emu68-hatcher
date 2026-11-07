@@ -149,15 +149,16 @@ def package_download_item(pkg, logger, filename: str | None = None) -> _QueueRes
 
 def get_package_downloads(
     package_names: list[str],
-) -> tuple[list[DownloadItem], dict[str, str]]:
-    """DownloadItems from package YAML defs, plus name -> reason for downloadable ones not queued"""
+) -> tuple[list[DownloadItem], dict[str, str], dict[str, str]]:
+    """DownloadItems, name -> reason for ones not queued, name -> package whose identical download it reuses"""
     import logging
 
     logger = logging.getLogger("emu68hatcher")
 
     items = []
     unqueued: dict[str, str] = {}
-    seen_filenames: set[str] = set()  # avoid duplicate downloads
+    queued: dict[tuple[str, str], str] = {}  # (filename, md5) -> package that owns the download
+    shared: dict[str, str] = {}
 
     for pkg_name in package_names:
         pkg = get_package_by_name(pkg_name)
@@ -175,10 +176,12 @@ def get_package_downloads(
             continue
 
         filename = download_filename(pkg)
-        if filename.lower() in seen_filenames:
-            logger.debug(f"Skipping duplicate download: {filename}")
+        key = (filename.lower(), (pkg.download.hash or "").lower())
+        if key in queued:
+            shared[pkg_name] = queued[key]
+            logger.debug(f"{pkg_name} reuses the {filename} download of {queued[key]}")
             continue
-        seen_filenames.add(filename.lower())
+        queued[key] = pkg_name
 
         item, reason = package_download_item(pkg, logger, filename)
         if item:
@@ -188,7 +191,7 @@ def get_package_downloads(
             logger.warning(f"Cannot queue {pkg_name}: {reason}")
 
     logger.info(f"Total packages queued for download: {len(items)}")
-    return items, unqueued
+    return items, unqueued, shared
 
 
 @cache

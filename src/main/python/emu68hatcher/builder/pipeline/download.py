@@ -209,7 +209,7 @@ def _download_packages(
     workflow.logger.info(f"Total packages to process: {len(package_names)}")
     if not package_names:
         return
-    items, unqueued = get_package_downloads(download_names)
+    items, unqueued, shared = get_package_downloads(download_names)
 
     def progress_callback(name: str, current: int, total: int) -> None:
         workflow._check_cancelled()
@@ -230,6 +230,11 @@ def _download_packages(
         workflow.logger.info(f"Downloading {len(items)} packages...")
         results = manager.download_all(items, progress_callback, file_progress=file_progress)
     _offer_unverified(workflow, manager, items, results, required)
+    for name, owner in shared.items():
+        if owner in results:
+            results[name] = results[owner]
+        elif owner in unqueued:
+            unqueued[name] = unqueued[owner]
     _record_package_results(workflow, artifacts, results, required, unqueued)
     handled = {name.lower() for name in (*results, *unqueued)}
     for package_name in package_names:
