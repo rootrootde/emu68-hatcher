@@ -5,9 +5,9 @@ description: 'Apparent, XEN, XHelvetica, XCourier and HatchMono (Terminus) in ev
 download:
   source: github
   repo: rootrootde/emu68-hatcher-fonts
-  tag: v1
-  hash: 9438c8586818d3d76d2e9d01f82ee9e9
-  filename: hatcher-fonts-1.zip
+  tag: v2
+  hash: d54ccf4b090be87fd79c33f426cdfa6c
+  filename: hatcher-fonts-2.zip
 install:
 - from: Fonts/*
   to: Fonts/
