@@ -1,0 +1,9 @@
+name: aatext_config
+friendly_name: AAText Config
+group: System
+description: 'default AAText.prefs: real character widths'
+download:
+  source: local
+install:
+- from: System/Prefs/Env-Archive/AAText.prefs
+  to: Prefs/Env-Archive/

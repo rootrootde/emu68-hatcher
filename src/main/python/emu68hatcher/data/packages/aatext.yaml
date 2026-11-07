@@ -1,0 +1,39 @@
+name: aatext
+friendly_name: AAText
+group: Appearance
+description: 'antialiased TrueType text on RTG screens (editor: Prefs/AATextPrefs)'
+upstream_version: '0.45'
+default: false
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+# FirstBoot registers FONTS:TrueType with AATextManager when it exists; ttfinstall's
+# character cells are too big for AAText
+requires:
+- aatext_config
+- fonts_dejavu
+download:
+  source: aminet
+  path: util/wb/AAText.lha
+  hash: 8ab0b532cf605d0d2025f65d9fe599bc
+  filename: AAText.lha
+# AATextManager goes to C/ for the Shell install only; the button in AATextPrefs wants SYS:System/
+install:
+- from: AAText/AAText
+  to: C/
+- from: AAText/AATextManager
+  to: C/
+- from: AAText/Libs/aatext.library
+  to: Libs/
+- from: AAText/AATextPrefs
+  to: Prefs/
+- from: AAText/AATextPrefs.info
+  to: Prefs/
+# must run before LoadWB opens any window, so not WBStartup; the installer puts it after IPrefs
+scripts:
+- name: AAText
+  target: S/Startup-Sequence
+  after: '^(?:C:)?IPrefs(?:\s|$)'
+  content: |
+    Run >NIL: C:AAText

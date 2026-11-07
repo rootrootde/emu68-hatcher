@@ -1,5 +1,6 @@
 # packages whose pinned download archive may be copied to the archive mirror
 # (scripts/mirror-package-archives.py); remove a name to keep it off the mirror
+aatext
 additem
 ahi
 akdatatypes_gif

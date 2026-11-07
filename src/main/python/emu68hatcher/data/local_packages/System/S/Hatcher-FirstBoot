@@ -47,7 +47,12 @@ IF NOT EXISTS S:Hatcher-Fonts.done
    IF EXISTS C:ttfinstall
       IF EXISTS FONTS:TrueType
          C:Echo "Registering TrueType fonts... " NOLINE
-         C:ttfinstall >NIL: "FONTS:TrueType/#?.ttf" FONTS:
+         IF EXISTS C:AATextManager
+            C:List >T:Hatcher-Fonts "FONTS:TrueType/#?.ttf" FILES LFORMAT "C:AATextManager *"%p%n*" CHARSET=latin1 OVERWRITE >NIL:"
+            C:Execute T:Hatcher-Fonts
+         ELSE
+            C:ttfinstall >NIL: "FONTS:TrueType/#?.ttf" FONTS:
+         ENDIF
          IF WARN
             Set HatcherFontsPending "TRUE"
             C:Echo "failed, retrying on the next boot"
