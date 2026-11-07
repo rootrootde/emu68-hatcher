@@ -195,6 +195,8 @@ exec "$amiberry" \
     -s fpu_model=68040 \
     -s cpu_speed=max \
     -s cpu_compatible=false \
+    -s cycle_exact=false \
+    -s cachesize=16384 \
     -s cpu_24bit_addressing=false \
     -s "bsdsocket_emu=$bsdsocket" \
     -s z3mem_size=256 \
