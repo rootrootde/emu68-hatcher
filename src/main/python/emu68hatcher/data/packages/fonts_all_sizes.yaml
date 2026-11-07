@@ -1,0 +1,17 @@
+name: fonts_all_sizes
+friendly_name: Bitmap fonts in all sizes
+group: Fonts
+description: 'Apparent, XEN, XHelvetica, XCourier and HatchMono (Terminus) in every size from 7 to 32'
+download:
+  source: github
+  repo: rootrootde/emu68-hatcher-fonts
+  tag: v1
+  hash: 9438c8586818d3d76d2e9d01f82ee9e9
+  filename: hatcher-fonts-1.zip
+install:
+- from: Fonts/*
+  to: Fonts/
+# the .font index files here list every size; installing after the originals keeps them
+requires:
+- fonts_apparent
+- fonts_magicwb

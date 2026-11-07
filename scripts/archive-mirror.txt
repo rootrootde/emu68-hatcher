@@ -26,6 +26,7 @@ emu68_driver_stack
 emu68_tools
 fat95
 filesysbox
+fonts_all_sizes
 fonts_amiga_retro
 fonts_apparent
 fonts_dejavu
