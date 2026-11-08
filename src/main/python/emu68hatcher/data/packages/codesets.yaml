@@ -9,10 +9,14 @@ versions:
 - 3.2.3
 - '3.9'
 download:
-  source: aminet
-  path: util/libs/codesets-68000.lha
-  hash: 6B120E1B89FF2F80F5136E050A0A0DA0
-  filename: codesets-68000.lha
+  source: github
+  repo: jens-maus/libcodesets
+  tag: '6.22'
+  hash: 1AF0E390B57BED21D79A2ADE93022DCE
+  filename: codesets-6.22.lha
 install:
-- from: codesets.library
+- from: codesets/Libs/AmigaOS3/codesets.library
+  to: Libs/
+# external charset tables, read from LIBS:Charsets
+- from: codesets/Charsets
   to: Libs/

@@ -1,0 +1,30 @@
+name: mcc_thebar
+friendly_name: MCC TheBar
+group: Libraries
+description: 'MUI TheBar toolbar classes'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+requires:
+- mui
+download:
+  source: github
+  repo: amiga-mui/thebar
+  tag: '26.22'
+  hash: 3999B3CADC59721522BC341772984918
+  filename: MCC_TheBar-26.22.lha
+# the archive's Toolbar.mcc is a TheBar-based replacement; the original stays with mcc_toolbar
+install:
+- from: MCC_TheBar/Libs/MUI/AmigaOS3/TheBar.mcc
+  to: Programs/MUI/Libs/mui/
+- from: MCC_TheBar/Libs/MUI/AmigaOS3/TheBar.mcp
+  to: Programs/MUI/Libs/mui/
+- from: MCC_TheBar/Libs/MUI/AmigaOS3/TheBarVirt.mcc
+  to: Programs/MUI/Libs/mui/
+- from: MCC_TheBar/Libs/MUI/AmigaOS3/TheButton.mcc
+  to: Programs/MUI/Libs/mui/
+default: true

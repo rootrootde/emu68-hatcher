@@ -12,13 +12,12 @@ mandatory: false
 requires:
 - mui
 download:
-  source: aminet
-  path: dev/mui/MCC_TextEditor_68k.lha
-  hash: 68C0FA74C26491E7344548357E6143D6
-  filename: MCC_TextEditor_68k.lha
+  source: github
+  repo: amiga-mui/texteditor
+  tag: '15.56'
+  hash: 799BCA79939D4BF7AFF49B3A6EC928CB
+  filename: MCC_TextEditor-15.56.lha
 install:
-- from: TextEditor.mcc
-  to: Programs/MUI/Libs/mui/
-- from: TextEditor.mcp
+- from: MCC_TextEditor/Libs/MUI/AmigaOS3/*
   to: Programs/MUI/Libs/mui/
 default: true

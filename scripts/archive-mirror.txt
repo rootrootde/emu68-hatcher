@@ -1,6 +1,5 @@
 # packages whose pinned download archive may be copied to the archive mirror
 # (scripts/mirror-package-archives.py); remove a name to keep it off the mirror
-aatext
 additem
 ahi
 akdatatypes_gif
@@ -14,8 +13,6 @@ amigaamp
 amispeedtest
 amissl
 asyncio_library
-birdie
-birdie_prefs
 boingbag_os39_bb1
 boingbag_os39_bb2
 ce
@@ -37,7 +34,6 @@ fonts_roboto
 fonts_terminus
 fonts_topazpro
 fonts_vera
-fullpalette
 genet_device_legacy
 guigfx
 hid2ami
@@ -55,8 +51,8 @@ mcc_betterstring
 mcc_nlist
 mcc_popph
 mcc_texteditor
+mcc_thebar
 mcc_toolbar
-mcp
 miamidx
 miamidx_mui
 mpega_library
@@ -73,6 +69,7 @@ rexxtricks
 rnoxfer
 rtb_file_7_cities_of_gold
 rtb_files_skick
+screennotify
 screentext
 setdst
 setpatch44_38
@@ -81,18 +78,11 @@ snoopdos
 sntp
 stackattack
 sysinfo
-titleshadow
 toolsdaemon
 toolsdaemon_patch
 ttflib
 unzip
 vinced
-visualprefs
-visualprefs_files
-visualprefs_theme_mwb
-visualprefs_themepack
-wallpapers_amigang
-wb_patterns_magicwb
 wbrun
 whdload
 whdloadwrapper
