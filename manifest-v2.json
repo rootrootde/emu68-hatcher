@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "B59D8BB63E5E73AD33D830B7AF14DAEE",
+              "hash": "87C1CAAB1C344803C90E8A4988F7CE83",
               "path": null,
               "repo": null,
               "source": "web",
@@ -11403,7 +11403,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Vinced.lha",
-              "hash": "CD5C624A0E5C10E211E9E189175F9D31",
+              "hash": "143C4626167BD94367A78BB96B044CB0",
               "path": "util/shell/ViNCEd.lha",
               "repo": null,
               "source": "aminet",
@@ -11451,7 +11451,7 @@
                 "xor": null
               },
               {
-                "from": "ViNCEd/S/*",
+                "from": "ViNCEd/S/[!_]*",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -12448,8 +12448,8 @@
             ]
           }
         },
-        "revision": 2,
-        "source_commit": "dfedf058362b65de8a923ae2b86ef72383d4882e"
+        "revision": 3,
+        "source_commit": "193e9e2ebd1b39a45127290384a37a758522aaab"
       }
     ],
     "hatcher": {
@@ -12494,12 +12494,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
       "version": "1.4.0"
     },
-    "revision": 1793404524,
+    "revision": 1794248539,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "I1C59hfdQOlOgD4cfcmxQgxmeltkhkVUDzI/h7VKOgbhvtIVxiiXdojLnBu1gx/npHtKR+V4kYWavp1dqx0FAA=="
+    "value": "V/6vcWMO64YtK5pCLl/uZ8xuTh1Z9IONjj1UCttQ1yBEgWw1cKuKSYgDl3P2SZVqyQJ8Fc4oE3iZ7cz/zx2ODA=="
   }
 }
