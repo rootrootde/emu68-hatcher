@@ -23,6 +23,8 @@ install:
   to: Programs/Amelinium/
 - from: jsdemo.html
   to: Programs/Amelinium/
+- from: Catalogs
+  to: Programs/Amelinium/
 menu_entries:
 - title: Amelinium
   path: Programs/Amelinium/Amelinium_040
