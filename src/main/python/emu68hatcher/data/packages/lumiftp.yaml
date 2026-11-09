@@ -1,0 +1,44 @@
+name: lumiftp
+friendly_name: LumiFTP
+group: Internet
+description: 'FTP client'
+upstream_version: '1.3'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: true
+# MUI app; mcc_nlist also ships NListtree
+requires:
+- mui
+- mcc_nlist
+- mcc_betterstring
+- amissl
+- codesets
+download:
+  source: aminet
+  path: comm/tcp/LumiFTP.lha
+  hash: 2b215c8541ed06b1d7b164dc2578638f
+  filename: LumiFTP.lha
+install:
+- from: LumiFTP/LumiFTP
+  to: Programs/LumiFTP/
+- from: LumiFTP/LumiFTP.info
+  to: Programs/LumiFTP/
+- from: LumiFTP/Readme
+  to: Programs/LumiFTP/
+- from: LumiFTP/Readme.info
+  to: Programs/LumiFTP/
+- from: LumiFTP/Help/*
+  to: Programs/LumiFTP/Help/
+- from: LumiFTP/Catalogs/Deutsch/LumiFTP.catalog
+  to: Locale/Catalogs/Deutsch/
+- from: LumiFTP/Catalogs/English/LumiFTP.catalog
+  to: Locale/Catalogs/English/
+menu_entry:
+  title: LumiFTP
+  path: Programs/LumiFTP/LumiFTP
+  menu: Network
+  wb_launch: true

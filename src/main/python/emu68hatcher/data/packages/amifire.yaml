@@ -1,0 +1,28 @@
+name: amifire
+friendly_name: AmiFire
+group: Internet
+description: 'web browser'
+upstream_version: '0.9.198'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: true
+requires:
+- amissl
+download:
+  source: aminet
+  path: comm/www/AmiFire.lha
+  hash: 87380bd7f47383b2ad61908848588f2e
+  filename: AmiFire.lha
+install:
+# checks for updates at start; can be turned off in the program
+- from: AmiFire/*
+  to: Programs/AmiFire/
+menu_entry:
+  title: AmiFire
+  path: Programs/AmiFire/AmiFire
+  menu: Network
+  wb_launch: true

@@ -1,0 +1,34 @@
+name: pistorm3d
+friendly_name: PiStorm3D
+group: Libraries
+description: 'hardware MiniGL on the Pi 4/CM4 GPU (needs BGRA32 as the only 32-bit modes)'
+upstream_version: '30.0'
+default: false
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+requires:
+- picasso96
+download:
+  source: aminet
+  path: util/libs/PiStorm3D.lha
+  hash: 870d04e8033f0b84fb63597bc35a7d2c
+  filename: PiStorm3D.lha
+install:
+- from: PiStorm3D/bin/minigl.library
+  to: Libs/
+- from: PiStorm3D.info
+  to: Programs/
+- from: PiStorm3D/demos
+  to: Programs/PiStorm3D/
+- from: PiStorm3D/tools
+  to: Programs/PiStorm3D/
+- from: PiStorm3D/Readme.md
+  to: Programs/PiStorm3D/
+- from: PiStorm3D/FAQ
+  to: Programs/PiStorm3D/
+- from: PiStorm3D/licences
+  to: Programs/PiStorm3D/

@@ -1,0 +1,36 @@
+name: agraph
+friendly_name: a-graph
+group: Applications
+description: 'image editor'
+upstream_version: '0.7.6'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+download:
+  source: aminet
+  path: gfx/edit/a-graph.lha
+  hash: fd5695d6787fad259d5e608c5d39014b
+  filename: a-graph.lha
+install:
+# a-graph.060 is skipped: the 020 build is the safe one on Emu68
+- from: a-graph/a-graph
+  to: Programs/a-graph/
+- from: a-graph/a-graph.info
+  to: Programs/a-graph/
+- from: a-graph/a-graph.guide
+  to: Programs/a-graph/
+- from: a-graph/a-graph.guide.info
+  to: Programs/a-graph/
+- from: a-graph/a-graph.readme
+  to: Programs/a-graph/
+- from: a-graph/a-graph.readme.info
+  to: Programs/a-graph/
+menu_entry:
+  title: a-graph
+  path: Programs/a-graph/a-graph
+  menu: Apps
+  wb_launch: true

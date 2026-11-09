@@ -1,0 +1,43 @@
+name: amimail
+friendly_name: AmiMAIL
+group: Internet
+description: 'email client'
+upstream_version: '2.3.1'
+# ReAction app; the readme names OS 3.2+, 3.9 is not supported
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+default: true
+requires:
+- amissl
+download:
+  source: aminet
+  path: comm/mail/AmiMAIL.lha
+  hash: 1660c97dd01f3f4ee080af18a29ef5d9
+  filename: AmiMAIL.lha
+install:
+- from: 'AmiMAIL Free/Setup/AmiMAIL'
+  to: Programs/AmiMAIL/
+# the installer's default icon choice
+- from: 'AmiMAIL Free/Setup/AmiMAIL_Mason.info'
+  to: Programs/AmiMAIL/
+  rename: AmiMAIL.info
+- from: 'AmiMAIL Free/AmiMAIL_EN.guide'
+  to: Programs/AmiMAIL/
+- from: 'AmiMAIL Free/AmiMAIL_EN.guide.info'
+  to: Programs/AmiMAIL/
+- from: 'AmiMAIL Free/AmiMAIL_DE.guide'
+  to: Programs/AmiMAIL/
+- from: 'AmiMAIL Free/AmiMAIL_DE.guide.info'
+  to: Programs/AmiMAIL/
+- from: 'AmiMAIL Free/Setup/Locale/Catalogs/deutsch/AmiMAIL.catalog'
+  to: Locale/Catalogs/deutsch/
+# same place the upstream installer puts the sounds
+- from: 'AmiMAIL Free/Setup/Notifications/*'
+  to: Prefs/Presets/Notifications/
+menu_entry:
+  title: AmiMAIL
+  path: Programs/AmiMAIL/AmiMAIL
+  menu: Network
+  wb_launch: true

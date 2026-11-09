@@ -1,0 +1,20 @@
+name: telser_keyfile
+friendly_name: Telser Keyfile
+group: System
+description: 'free registration key for telser.device'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+download:
+  source: aminet
+  path: comm/tcp/Telser_Keyfile.lha
+  hash: eb2c4507c9e5fae6cdcb21456cb513fd
+  filename: Telser_Keyfile.lha
+# telser reads S:telser.key, the free key lifts the one-unit demo limit
+install:
+- from: telser.key
+  to: S/

@@ -1,0 +1,84 @@
+name: term
+friendly_name: Term
+group: Internet
+description: 'terminal program with the aBSiNTHE BBS preset (telser.device)'
+upstream_version: '4.8'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+requires:
+- telser
+download:
+  source: web
+  url: https://github.com/rootrootde/emu68-hatcher-archives/releases/download/archives/b5eb75b49bdb8b49efa9ecbfedaed758-absintheterm.lha
+  hash: b5eb75b49bdb8b49efa9ecbfedaed758
+  filename: absintheterm.lha
+install:
+# term only loads gtlayout.library from its own drawer
+- from: Term_4.8/term
+  to: Programs/Term/
+- from: Term_4.8/gtlayout.library
+  to: Programs/Term/
+- from: Term_4.8/term.info
+  to: Programs/Term/
+- from: Term_4.8/term.doc
+  to: Programs/Term/
+- from: Term_4.8/termRexx.doc
+  to: Programs/Term/
+- from: Term_4.8/term-4.8.txt
+  to: Programs/Term/
+- from: Term_4.8/term-4.8.txt.info
+  to: Programs/Term/
+- from: aBSiNTHE_TERM_INSTRUCTIONS.txt
+  to: Programs/Term/
+- from: Term_4.8/Config/*
+  to: Programs/Term/Config/
+- from: Term_4.8/Catalogs/*
+  to: Programs/Term/Catalogs/
+- from: Term_4.8/Documentation/AmigaGuide/term.guide
+  to: Programs/Term/
+- from: Term_4.8/Documentation/AmigaGuide/term.guide.info
+  to: Programs/Term/
+- from: Term_4.8/Documentation/AmigaGuide/termRexx.guide
+  to: Programs/Term/
+- from: Term_4.8/Documentation/AmigaGuide/termRexx.guide.info
+  to: Programs/Term/
+- from: Term_4.8/Libs/*.library
+  to: Libs/
+# one rule per font, Fonts.txt must stay out of FONTS:
+- from: Term_4.8/Fonts/GFX
+  to: Fonts/
+- from: Term_4.8/Fonts/GFX.font
+  to: Fonts/
+- from: Term_4.8/Fonts/IBM
+  to: Fonts/
+- from: Term_4.8/Fonts/IBM.font
+  to: Fonts/
+- from: Term_4.8/Fonts/TBM
+  to: Fonts/
+- from: Term_4.8/Fonts/TBM.font
+  to: Fonts/
+- from: Term_4.8/Fonts/Topaz+1200
+  to: Fonts/
+- from: Term_4.8/Fonts/Topaz+1200.font
+  to: Fonts/
+- from: Term_4.8/Extras/Rexx
+  to: Programs/Term/Extras/
+- from: Term_4.8/Extras/Sound
+  to: Programs/Term/Extras/
+- from: Term_4.8/Extras/Translation
+  to: Programs/Term/Extras/
+# the preset config lives at the default TERM:config
+scripts:
+- name: term
+  content: |
+    Assign TERM: SYS:Programs/Term
+menu_entry:
+  title: Term
+  path: Programs/Term/term
+  menu: Network
+  wb_launch: true

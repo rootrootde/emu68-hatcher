@@ -76,6 +76,12 @@ _PREFS_ENTRIES: tuple[dict, ...] = (
         "wb_launch": True,
     },
     {"title": "ScreenMode", "exe": "Prefs/ScreenMode"},
+    {
+        "title": "Trasfondo",
+        "exe": "Prefs/TrasfondoPrefs",
+        "requires": ("trasfondo",),
+        "wb_launch": True,
+    },
     {"title": "Trident", "exe": "Prefs/Trident", "requires": ("poseidon",), "wb_launch": True},
     {"title": "WBPattern", "exe": "Prefs/WBPattern"},
     {"title": "Workbench", "exe": "Prefs/Workbench"},

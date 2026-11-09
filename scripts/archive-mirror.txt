@@ -1,6 +1,7 @@
 # packages whose pinned download archive may be copied to the archive mirror
 # (scripts/mirror-package-archives.py); remove a name to keep it off the mirror
 additem
+agraph
 ahi
 akdatatypes_gif
 akdatatypes_jfif
@@ -9,7 +10,9 @@ akdatatypes_tiff
 akdatatypes_wizard_lib
 akeys
 amelinium
+amifire
 amigaamp
+amimail
 amispeedtest
 amissl
 asyncio_library
@@ -19,6 +22,7 @@ ce
 cfd
 clicon
 codesets
+dctelnet
 dopus418
 emu68_driver_stack
 emu68_tools
@@ -45,6 +49,7 @@ identify
 installer
 janoeditor
 lha
+lumiftp
 lzx
 magicmenu
 mcc_betterstring
@@ -58,8 +63,11 @@ miamidx_mui
 mpega_library
 mui38
 mui5
+newmeter
+ogles2
 pfs_additional_tools
 picasso96
+pistorm3d
 poseidon
 reboot
 render
@@ -78,8 +86,12 @@ snoopdos
 sntp
 stackattack
 sysinfo
+telser
+telser_keyfile
+term
 toolsdaemon
 toolsdaemon_patch
+trasfondo
 ttflib
 unzip
 vinced

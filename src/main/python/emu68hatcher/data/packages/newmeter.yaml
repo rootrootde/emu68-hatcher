@@ -1,0 +1,34 @@
+name: newmeter
+friendly_name: NewMeter
+group: Utilities
+description: 'system monitor window, configured by its icon tooltypes'
+upstream_version: '1.466'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+# unversioned url: the pin breaks on the author's next upload and the archive mirror copy takes over
+download:
+  source: web
+  url: https://thomas-rapp.hier-im-netz.de/downloads/newmeter.lha
+  hash: F033C963ABAAD36FB825FE05839C72B1
+  filename: newmeter.lha
+install:
+- from: NewMeter/NewMeter
+  to: Programs/NewMeter/
+- from: NewMeter/NewMeter.info
+  to: Programs/NewMeter/
+- from: NewMeter/Tooltypes
+  to: Programs/NewMeter/
+- from: NewMeter/Tooltypes.info
+  to: Programs/NewMeter/
+- from: NewMeter/catalogs/*
+  to: Locale/Catalogs/
+menu_entry:
+  title: NewMeter
+  path: Programs/NewMeter/NewMeter
+  menu: System
+  wb_launch: true

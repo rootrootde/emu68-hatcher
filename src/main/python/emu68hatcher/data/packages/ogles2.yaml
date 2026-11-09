@@ -1,0 +1,44 @@
+name: ogles2
+friendly_name: ogles2.library
+group: Libraries
+description: 'OpenGL ES 2.0 on the Pi 4/CM4 GPU (Emu68, 32-bit RTG screen)'
+upstream_version: '1.3.3'
+default: false
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+requires:
+- picasso96
+download:
+  source: github
+  repo: ladislawv/ogles2
+  tag: v1.3.3
+  hash: 2a3767be400654bb155d52c9f3e46b9e
+  filename: ogles2-1.3.3.lha
+install:
+- from: ogles2/Libs/ogles2.library
+  to: Libs/
+# shader compiler, needed by programs that build shaders at run time (gl4es)
+- from: ogles2/Libs/v3dglslc
+  to: Libs/
+- from: ogles2/C/OGLES2Log
+  to: C/
+- from: ogles2/Examples
+  to: Programs/OGLES2/
+- from: ogles2/ReadMe
+  to: Programs/OGLES2/
+- from: ogles2/LICENSE
+  to: Programs/OGLES2/
+- from: ogles2/licences
+  to: Programs/OGLES2/
+# same as the upstream Install-ogles2: keeps compiled shaders across reboots instead of T:
+scripts:
+- name: ogles2
+  content: |
+    If NOT EXISTS SYS:OGLES2Cache
+      MakeDir SYS:OGLES2Cache
+    EndIf
+    Assign OGLES2Cache: SYS:OGLES2Cache

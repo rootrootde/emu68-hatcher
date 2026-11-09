@@ -1,0 +1,70 @@
+name: trasfondo
+friendly_name: Trasfondo
+group: Utilities
+description: 'resource monitor drawn on the Workbench backdrop'
+upstream_version: '2.8.7'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+download:
+  source: github
+  repo: FreeMEM/trasfondo
+  tag: v2.8.7
+  hash: 1685844DD2117ED0344A089C1C35A7FA
+  filename: trasfondo-2.8.7.lha
+  # releases several times a day and updates itself, the latest-release check would never settle
+  check_latest_release: false
+install:
+- from: Trasfondo/Trasfondo
+  to: Programs/Trasfondo/
+- from: Trasfondo/Trasfondo.info
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoBarra
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoBarra.info
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoPanel
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoAviso
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoRapido
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoDock
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoDock.info
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoVentanas
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoVentanas.info
+  to: Programs/Trasfondo/
+- from: Trasfondo/LEEME
+  to: Programs/Trasfondo/
+- from: Trasfondo/LEEME.info
+  to: Programs/Trasfondo/
+- from: Trasfondo/LICENSE
+  to: Programs/Trasfondo/
+# the program reads its own Catalogs drawer, which also avoids the español/spanish LOCALE split
+- from: Trasfondo/Catalogs
+  to: Programs/Trasfondo/
+- from: Trasfondo/TrasfondoPrefs
+  to: Prefs/
+- from: Trasfondo/TrasfondoPrefs.info
+  to: Prefs/
+- from: Trasfondo/Avisa
+  to: C/
+# TrasfondoPrefs copies these icons into WBStartup only when autostart is turned on
+- from: Trasfondo/Arranque
+  to: Programs/Trasfondo/
+# TrasfondoPrefs finds the installed pieces through this variable, the upstream installer writes it
+scripts:
+- name: trasfondo
+  content: |
+    Echo >ENV:Trasfondo.cajon "SYS:Programs/Trasfondo"
+menu_entry:
+  title: Trasfondo
+  path: Programs/Trasfondo/Trasfondo
+  menu: System
