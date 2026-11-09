@@ -51,3 +51,5 @@ Bundled / downloaded at build time:
 - [emu68-driver-stack](https://github.com/rondoval/emu68-driver-stack) by rondoval - lwip-amiga, genet, USB and NVMe drivers, downloaded at build time
 - [Poseidon USB stack](https://wiki.icomp.de/wiki/RapidRoad) by Chris Hodges - downloaded from the iComp wiki when USB support is selected
 - Aminet packages (MUI, HippoPlayer, IBrowse, akDatatypes, Picasso96, ...) - downloaded from [aminet.net](https://aminet.net) at build time; each ships its own readme with license
+
+[Code signing policy](https://github.com/rootrootde/emu68-hatcher#code-signing-policy)
