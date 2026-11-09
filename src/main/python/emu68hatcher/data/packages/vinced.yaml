@@ -12,7 +12,7 @@ default: true
 download:
   source: aminet
   path: util/shell/ViNCEd.lha
-  hash: CD5C624A0E5C10E211E9E189175F9D31
+  hash: 143C4626167BD94367A78BB96B044CB0
   filename: Vinced.lha
 install:
 - from: ViNCEd/LIBS/vnc.library
@@ -26,7 +26,8 @@ install:
 - from: ViNCEd/Shell_VNC.info
   to: System/
   rename: Shell.info
-- from: ViNCEd/S/*
+# [!_]* skips the _UAEFSDB.___ that 3.110 ships, it would replace the staged S: metadata
+- from: ViNCEd/S/[!_]*
   to: S/
 - from: ViNCEd/Prefs/SetVNC.info
   to: Prefs/
