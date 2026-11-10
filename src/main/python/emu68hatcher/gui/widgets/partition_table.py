@@ -53,6 +53,8 @@ class PartitionTable(QTableWidget):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.cellChanged.connect(self._cell_changed)
+        # rows grow after render once the cell widgets are laid out
+        self.verticalHeader().sectionResized.connect(lambda *_: self._update_minimum_height())
 
     def render(
         self,
@@ -106,23 +108,18 @@ class PartitionTable(QTableWidget):
         self.setItem(row, COL_EXTRA, item)
 
     def _update_minimum_height(self) -> None:
-        row_heights = [self.rowHeight(row) for row in range(min(self.rowCount(), MIN_VISIBLE_ROWS))]
-        row_heights.extend(
-            [self.verticalHeader().defaultSectionSize()] * (MIN_VISIBLE_ROWS - len(row_heights))
-        )
+        # real row heights: cell widgets make rows taller than the default section size on macOS
+        default = self.verticalHeader().defaultSectionSize()
+        row_heights = [self.rowHeight(row) or default for row in range(self.rowCount())]
+        row_heights.extend([default] * (MIN_VISIBLE_ROWS - len(row_heights)))
         header_height = self.horizontalHeader().sizeHint().height()
-        content_height = header_height + sum(row_heights) + 2 * self.frameWidth()
-        minimum = max(content_height, self.minimumSizeHint().height())
-        self.setMinimumHeight(minimum)
+        frame = 2 * self.frameWidth()
         visible_rows = max(MIN_VISIBLE_ROWS, min(6, self.rowCount()))
-        self.setMaximumHeight(
-            max(
-                minimum,
-                header_height
-                + visible_rows * self.verticalHeader().defaultSectionSize()
-                + 2 * self.frameWidth(),
-            )
-        )
+        content_height = header_height + sum(row_heights[:visible_rows]) + frame
+        # fixed at its content: a short window squeezed the table to one row otherwise
+        height = max(content_height, self.minimumSizeHint().height())
+        self.setMinimumHeight(height)
+        self.setMaximumHeight(height)
 
     def selected_row(self) -> int:
         rows = self.selectionModel().selectedRows() if self.selectionModel() else []
