@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -209,6 +209,10 @@ class PackagesTab(QWidget):
             self._requests[name] = enabled
         if enabled and key in {"mui38", "mui5"}:
             self._requests["mui5" if key == "mui38" else "mui38"] = False
+        # tree.clear() inside itemChanged frees the item Qt's setData is still using
+        QTimer.singleShot(0, self._apply_requests)
+
+    def _apply_requests(self):
         self.refresh_packages()
         self.selection_changed.emit()
 
