@@ -18,12 +18,14 @@ download:
   path: util/wb/AAText.lha
   hash: 8ab0b532cf605d0d2025f65d9fe599bc
   filename: AAText.lha
-# AATextManager goes to C/ for the Shell install only; the button in AATextPrefs wants SYS:System/
 install:
 - from: AAText/AAText
   to: C/
+# the Fonts button in AATextPrefs starts SYS:System/AATextManager
 - from: AAText/AATextManager
-  to: C/
+  to: System/
+- from: AAText/AATextManager.info
+  to: System/
 - from: AAText/Libs/aatext.library
   to: Libs/
 - from: AAText/AATextPrefs
