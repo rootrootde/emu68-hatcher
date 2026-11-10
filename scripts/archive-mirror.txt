@@ -81,6 +81,7 @@ screennotify
 screentext
 setdst
 setpatch44_38
+simpledock
 smbfs
 snoopdos
 sntp

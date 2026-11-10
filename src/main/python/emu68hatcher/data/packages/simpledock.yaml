@@ -1,0 +1,26 @@
+name: simpledock
+friendly_name: SimpleDock
+group: Utilities
+description: 'macOS-style Workbench dock'
+upstream_version: '1.2'
+# needs 3.1.4 or later, the plain 3.1 install is too old
+versions:
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+download:
+  source: aminet
+  path: util/wb/SimpleDock.lha
+  hash: 88d1b1cec91216c45d4b474d39ec5591
+  filename: SimpleDock.lha
+install:
+- from: SimpleDock/*
+  to: Programs/SimpleDock/
+# no WBStartup copy: started from the menu like the other monitors
+menu_entry:
+  title: SimpleDock
+  path: Programs/SimpleDock/SimpleDock
+  menu: System
+  wb_launch: true
