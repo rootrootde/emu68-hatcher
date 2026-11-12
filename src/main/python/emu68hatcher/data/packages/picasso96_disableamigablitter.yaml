@@ -1,5 +1,5 @@
 name: picasso96_disableamigablitter
-friendly_name: Picasso96
+friendly_name: Picasso96 Disable Amiga Blitter
 group: RTG
 description: 'disable amiga blitter under P96'
 versions:
