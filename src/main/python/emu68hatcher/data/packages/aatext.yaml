@@ -2,7 +2,7 @@ name: aatext
 friendly_name: AAText
 group: Appearance
 description: 'antialiased TrueType text on RTG screens (editor: Prefs/AATextPrefs)'
-upstream_version: '0.45'
+upstream_version: '0.46'
 default: false
 versions:
 - '3.2'
@@ -13,10 +13,12 @@ versions:
 requires:
 - aatext_config
 - fonts_dejavu
+# aminet lags behind the github releases
 download:
-  source: aminet
-  path: util/wb/AAText.lha
-  hash: 8ab0b532cf605d0d2025f65d9fe599bc
+  source: github
+  repo: Sdursun/AAText
+  tag: v0.46
+  hash: 140ABE387801647C21C8CA953C927755
   filename: AAText.lha
 install:
 - from: AAText/AAText
@@ -26,7 +28,7 @@ install:
   to: System/
 - from: AAText/AATextManager.info
   to: System/
-- from: AAText/Libs/aatext.library
+- from: AAText/Libs/freetype2.library
   to: Libs/
 - from: AAText/AATextPrefs
   to: Prefs/
