@@ -139,8 +139,6 @@ class PackagesTab(QWidget):
                 description += f" (Required by {', '.join(sorted(forced))})"
             elif auto:
                 description += " (Selected automatically)"
-            if auto and key not in {"mui38", "mui5"}:
-                category = "Required packages"
             item = QTreeWidgetItem(group(category), [label, description])
             item.setToolTip(1, description)
             item.setData(0, Qt.ItemDataRole.UserRole, key)
