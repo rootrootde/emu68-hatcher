@@ -16,25 +16,26 @@ from emu68hatcher.builder.staging.files import (
 
 _CHECKSUMS = {
     "Amiga/RGB2RTG.info": "dd03d5812540909b825397b16ee4a912",
-    "Amiga/RGB2RTG/Commands.txt": "964abab642ef4f43110a973eb0b3a0fb",
+    "Amiga/RGB2RTG/Commands.txt": "4cc512fbefa48e35109c4ad8adc937e8",
     "Amiga/RGB2RTG/Commands.txt.info": "bd32146bda117699539a7bba2a102c5e",
     "Amiga/RGB2RTG/Files/AHI/RGB2RTG-HDMI": "afcd7e3eb05b145ab1eee0560b9d9129",
     "Amiga/RGB2RTG/Files/AHI/rgb2rtg-hdmi.audio": "b8ffe3bf065f773099a1e1e1de572e77",
-    "Amiga/RGB2RTG/Files/C/rgb2rtg": "90a72abb09442a09bbeffd7edbe5e795",
-    "Amiga/RGB2RTG/Files/Kernel/Pi3/Emu68-rgb2rtg.gz": "c06cfedd5b46af79a31493d4b21935a7",
-    "Amiga/RGB2RTG/Files/Kernel/Pi4/Emu68-rgb2rtg.gz": "027c98bf2ac3f1b093088de1090783d3",
-    "Amiga/RGB2RTG/Files/Libs/Picasso96/VideoCore.card": "543da2bb0249913280173ef1fba39a15",
+    "Amiga/RGB2RTG/Files/C/WHDNet": "0f86ba45458503a5bfe9cdda4821fb9a",
+    "Amiga/RGB2RTG/Files/C/rgb2rtg": "2dc3358c3c842fda900fddd1f18f37eb",
+    "Amiga/RGB2RTG/Files/Kernel/Pi3/Emu68-rgb2rtg.gz": "57daa5ba0138d2eb8be891bbb71e96a9",
+    "Amiga/RGB2RTG/Files/Kernel/Pi4/Emu68-rgb2rtg.gz": "4a2d771c964844b6fe7d1d6108ac5a3b",
+    "Amiga/RGB2RTG/Files/Libs/Picasso96/VideoCore.card": "a6dae4d7356af553906cd12cb9674098",
     "Amiga/RGB2RTG/Files/Overlays/sdhc.dtbo": "6b8d01c1c19a169a3678d6a00c84cfa0",
     "Amiga/RGB2RTG/Files/Overlays/unicam.dtbo": "8178d6f103b3f45ec0d8d0a9f14da91c",
-    "Amiga/RGB2RTG/Files/Utilities/RGB2RTG-Native": "f0b7ec043177b5e7e144c79ad78ab3c8",
-    "Amiga/RGB2RTG/Files/Utilities/RGB2RTG-SoundMonitor": "2abbe713a5a9471f3628fd3f9a4aef77",
-    "Amiga/RGB2RTG/Install": "0aabbe7e81eb1a4dd48f7e35abe8dc11",
+    "Amiga/RGB2RTG/Files/Utilities/RGB2RTG-Native": "7cb69a53b81f981c4cdb1a7b184fcb11",
+    "Amiga/RGB2RTG/Files/Utilities/RGB2RTG-SoundMonitor": "afbc26db0edc462d02962d8af8014b86",
+    "Amiga/RGB2RTG/Install": "5b2df2bb84944e4066db81f77757dbef",
     "Amiga/RGB2RTG/Install.info": "d42f930ad9bdd6f7a71feddee01f093a",
-    "Amiga/RGB2RTG/ReadMe.txt": "e2d00f1dd920e9a17d963eeff8c10887",
+    "Amiga/RGB2RTG/ReadMe.txt": "332a0dce1ae0752da5d0c28700c13a5a",
     "Amiga/RGB2RTG/ReadMe.txt.info": "bd32146bda117699539a7bba2a102c5e",
-    "Amiga/RGB2RTG/Uninstall": "d67520166edb85a6a9de408e4311c7c3",
+    "Amiga/RGB2RTG/Uninstall": "e0524d29877ec10041c13e71b34da745",
     "Amiga/RGB2RTG/Uninstall.info": "3e4973afb5f551ea3cc69238020acd86",
-    "Commands.txt": "fe10b1c702a493c19e1e7475fbd7ede1",
+    "Commands.txt": "801e18ef6bab937acc5c0aa8e2e08ef0",
     "Licenses/Capstone-LICENSE.txt": "46aad282a6e300251bde9300e4855bc0",
     "Licenses/Capstone-LICENSE_LLVM.txt": "d240dcec849d48db9ab3d08bf4f08642",
     "Licenses/Emu68-third-party-notices.txt": "b054c6e9efbe49677bb3961bfd7fe0f3",
@@ -43,9 +44,9 @@ _CHECKSUMS = {
     "Licenses/UAE-WinUAE-notice.txt": "1519498075de67f4dd91027e865a1aae",
     "Licenses/libdeflate-COPYING.txt": "d6cb6968598d941138672496e0afb212",
     "PC/SD-Setup.ps1": "cbc9551228ed9bbdca101c89d507c33d",
-    "README.txt": "d58217591e86914b53d0ed5cd44fd7b3",
+    "README.txt": "93823553bf2822cfd7c092ce1d21b81e",
     "SD-Setup.cmd": "143464c2b2f96a36dc0fc57523df4a45",
-    "Source/RGB2RTG-0.78-src.zip": "c3b5d0dbd18e2172ccf684614cff389a",
+    "Source/RGB2RTG-0.79-1-src.zip": "8922f0176a8aa05572936980998f1858",
 }
 
 
@@ -55,12 +56,12 @@ def extract_rgb2rtg(archive: Path, destination: Path) -> Path:
         raise BuildError(f"Cannot extract RGB2RTG: {result.error}")
     roots = list(destination.rglob("CHECKSUMS.txt"))
     if len(roots) != 1:
-        raise BuildError("RGB2RTG archive must contain the v0.78 release")
+        raise BuildError("RGB2RTG archive must contain the v0.79-1 release")
     root = roots[0].parent
     for relative, digest in _CHECKSUMS.items():
         source = root / relative
         if not source.is_file() or hashlib.md5(source.read_bytes()).hexdigest() != digest:
-            raise BuildError(f"RGB2RTG v0.78 file is missing or changed: {relative}")
+            raise BuildError(f"RGB2RTG v0.79-1 file is missing or changed: {relative}")
     return root
 
 
@@ -174,4 +175,4 @@ def configure_rgb2rtg(workflow, image, boot: Path) -> None:
     asset = Path(__file__).parent.parent / "data/rgb2rtg"
     for name in ("Recover", "RemoveMenus.rexx", "Hatcher.txt"):
         shutil.copy2(asset / name, recovery / name)
-    workflow.logger.info("Installed RGB2RTG v0.78 for A1200/PiStorm32-lite with Pi 4")
+    workflow.logger.info("Installed RGB2RTG v0.79-1 for A1200/PiStorm32-lite with Pi 4")
