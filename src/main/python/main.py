@@ -63,7 +63,7 @@ def _restore_subprocess_ld_library_path():
 
 
 def _is_elevated_worker_launch() -> bool:
-    """frozen exe re-launched by the elevated helper as `<exe> emu68hatcher-worker-*.py <ipc_dir>`"""
+    """frozen exe re-launched by the elevated helper as `<exe> <ipc_dir>/emu68hatcher-worker.py <ipc_dir> <pid>`"""
     return (
         getattr(sys, "frozen", False)
         and len(sys.argv) >= 3

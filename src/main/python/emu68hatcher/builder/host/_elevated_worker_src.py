@@ -183,9 +183,34 @@ def run_one(argv, timeout, ipc_dir, cancel_file, seq):
     return rc, out, err, cancelled
 
 
-def main(ipc_dir):
+def _parent_alive(pid):
+    if pid is None:
+        return True
+    if sys.platform == "win32":
+        import ctypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return ctypes.get_last_error() != 87  # ERROR_INVALID_PARAMETER: no such process
+        code = ctypes.c_ulong()
+        ok = kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+        kernel32.CloseHandle(handle)
+        return not ok or code.value == 259  # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except OSError:
+        pass
+    return True
+
+
+def main(ipc_dir, parent_pid=None):
     global _trace_fp
-    ipc_dir.mkdir(parents=True, exist_ok=True)
+    # the app already gave up on a worker whose dir is gone
+    if not ipc_dir.is_dir():
+        return 1
     try:
         _trace_fp = open(ipc_dir / "_trace.log", "w", encoding="utf-8")
         _grant_user_read(ipc_dir / "_trace.log")
@@ -196,6 +221,9 @@ def main(ipc_dir):
     _grant_user_read(ipc_dir / "ready")
     while True:
         if (ipc_dir / "quit").exists():
+            break
+        if not _parent_alive(parent_pid):
+            trace(f"parent pid {parent_pid} is gone")
             break
         for cmd_file in sorted(ipc_dir.glob("cmd-*.json")):
             if cmd_file.name.endswith(".tmp") or cmd_file.name.endswith(".result.json"):
@@ -225,9 +253,17 @@ def main(ipc_dir):
             trace(f"seq={seq} result file written")
         time.sleep(0.1)
     trace("worker exiting")
+    # the .NET extract dir belongs to the elevated user, so only the worker can delete it
+    import shutil
+
+    shutil.rmtree(ipc_dir / "dotnet", ignore_errors=True)
+    try:
+        (ipc_dir / "ready").unlink()
+    except OSError:
+        pass
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(Path(sys.argv[1])))
+    sys.exit(main(Path(sys.argv[1]), int(sys.argv[2]) if len(sys.argv) > 2 else None))
 '''

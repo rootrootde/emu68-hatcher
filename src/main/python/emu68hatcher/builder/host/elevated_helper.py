@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import subprocess
 import sys
@@ -52,14 +53,19 @@ class ElevatedHelper:
             return self._spawn_linux()
         return False
 
-    def _spawn_windows(self) -> bool:
+    def _write_worker(self) -> None:
         self.ipc_dir = Path(tempfile.mkdtemp(prefix="emu68hatcher-helper-"))
-        self.worker_script = Path(tempfile.mkstemp(prefix="emu68hatcher-worker-", suffix=".py")[1])
+        self.worker_script = self.ipc_dir / "emu68hatcher-worker.py"
         self.worker_script.write_text(WORKER_SCRIPT)
+
+    def _spawn_windows(self) -> bool:
+        self._write_worker()
 
         from emu68hatcher.builder.host._elevation_common import ps_quote
 
-        ps_args = ", ".join(ps_quote(str(p)) for p in (self.worker_script, self.ipc_dir))
+        ps_args = ", ".join(
+            ps_quote(str(p)) for p in (self.worker_script, self.ipc_dir, os.getpid())
+        )
         ps = (
             f"$p = Start-Process -FilePath {ps_quote(sys.executable)} "
             f"-ArgumentList @({ps_args}) -Verb RunAs -PassThru -WindowStyle Hidden; "
@@ -94,9 +100,7 @@ class ElevatedHelper:
     def _spawn_macos(self) -> bool:
         import shlex
 
-        self.ipc_dir = Path(tempfile.mkdtemp(prefix="emu68hatcher-helper-"))
-        self.worker_script = Path(tempfile.mkstemp(prefix="emu68hatcher-worker-", suffix=".py")[1])
-        self.worker_script.write_text(WORKER_SCRIPT)
+        self._write_worker()
 
         spawn_log = self.ipc_dir / "_spawn.log"
         # frozen builds re-launch their own exe as the worker (main.py dispatch)
@@ -106,7 +110,7 @@ class ElevatedHelper:
         # no nohup - it chokes without a controlling tty inside osascripts shell context
         inner = (
             f"{shlex.quote(py)} {shlex.quote(str(self.worker_script))} "
-            f"{shlex.quote(str(self.ipc_dir))} > {shlex.quote(str(spawn_log))} 2>&1 &"
+            f"{shlex.quote(str(self.ipc_dir))} {os.getpid()} > {shlex.quote(str(spawn_log))} 2>&1 &"
         )
         inner_esc = inner.replace("\\", "\\\\").replace('"', '\\"')
         osa = f'do shell script "{inner_esc}" with administrator privileges'
@@ -160,15 +164,13 @@ class ElevatedHelper:
             return False
         logger.info(f"elevated helper using python: {py}")
 
-        self.ipc_dir = Path(tempfile.mkdtemp(prefix="emu68hatcher-helper-"))
-        self.worker_script = Path(tempfile.mkstemp(prefix="emu68hatcher-worker-", suffix=".py")[1])
-        self.worker_script.write_text(WORKER_SCRIPT)
+        self._write_worker()
         spawn_log = self.ipc_dir / "_spawn.log"
         try:
             with open(spawn_log, "wb") as log:
                 # pkexec execs the worker in place, so this handle becomes the root worker
                 self._process = subprocess.Popen(
-                    [pkexec, py, str(self.worker_script), str(self.ipc_dir)],
+                    [pkexec, py, str(self.worker_script), str(self.ipc_dir), str(os.getpid())],
                     stdin=subprocess.DEVNULL,
                     stdout=log,
                     stderr=subprocess.STDOUT,
@@ -332,8 +334,8 @@ class ElevatedHelper:
                 except OSError as e:
                     logger.warning(f"could not write cancel sentinel: {e}")
                 cancel_signaled = True
-                # bump the wait so the worker has time to kill its child + write result
-                wait_until = max(wait_until, time.time() + 10)
+                # a live worker answers within seconds; a dead one must not hold cancel for hours
+                wait_until = min(wait_until, time.time() + 40)
 
             now = time.time()
             elapsed = now - start
@@ -395,10 +397,12 @@ class ElevatedHelper:
             return
         try:
             (self.ipc_dir / "quit").touch()
-            # let the worker notice and exit
-            time.sleep(0.5)
         except OSError:
             pass
+        # the worker removes ready as its last step
+        deadline = time.time() + 5
+        while (self.ipc_dir / "ready").exists() and time.time() < deadline:
+            time.sleep(self.POLL)
         self._stop_process()
         # the IPC dir and its _trace.log survive only when some command failed
         trace = self.ipc_dir / "_trace.log"
