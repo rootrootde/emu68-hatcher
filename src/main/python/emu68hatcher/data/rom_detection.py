@@ -173,7 +173,11 @@ def _detect_kickstart_from_header(data: bytes) -> dict | None:
     ]
 
     major, minor = None, None
-    for pattern in version_patterns:
+    # a Kickstart image starts 0x11xx + JMP and has its version and revision as words at 12 and 14
+    if data[0] == 0x11 and data[2:4] == b"\x4e\xf9":
+        major = int.from_bytes(data[12:14], "big")
+        minor = int.from_bytes(data[14:16], "big")
+    for pattern in () if major else version_patterns:
         match = re.search(pattern, data)
         if match:
             major = int(match.group(1))
@@ -203,6 +207,10 @@ def _detect_kickstart_from_header(data: bytes) -> dict | None:
 
     if major and major in version_map:
         version = version_map[major]
+        if major == 47 and minor >= 115:
+            version = "3.2.3"
+        elif major == 47 and minor >= 111:
+            version = "3.2.2.1"
         revision = f"{major}.{minor}" if minor else str(major)
 
         # only match prefixed strings (b"A1200") - bare digits collide with addresses/years
@@ -303,6 +311,8 @@ def scan_for_kickstart_roms(
                         "model": info.get("model", "Unknown"),
                         "size": info["size"],
                     }
+                    if info.get("sequence"):
+                        entry["sequence"] = info["sequence"]
                     if info.get("whdload_name"):
                         entry["whdload_name"] = info["whdload_name"]
                     if info.get("excluded"):
@@ -329,26 +339,15 @@ WHDLOAD_ROM_NAMES: tuple[str, ...] = tuple(
 )
 
 
-def find_whdload_kickstarts(directory: Path) -> dict[str, Path]:
-    """find ROMs matching known WHDLoad names -> {whdload_name: rom_path}, first dump wins on dupes"""
-    roms, _ = scan_for_kickstart_roms(directory)
-    matched: dict[str, Path] = {}
-    for rom in roms:
-        name = rom.get("whdload_name")
-        if not name or rom.get("excluded"):
-            continue
-        matched.setdefault(name, rom["path"])
-    return matched
-
-
 # 3.9 has no dedicated ROM - it runs on the 3.1 40.068 ROM plus a soft ROM update
 ROM_VERSION_ALIAS = {"3.9": "3.1"}
 
 
 def pick_boot_rom(found_roms: list[dict], version: str) -> Path | None:
-    """boot ROM for a version from scan results: usable match, A1200 first"""
+    """boot ROM for a version from scan results: usable match, A1200 first, then table sequence"""
     version = ROM_VERSION_ALIAS.get(version, version)
     matching = [r for r in found_roms if r["version"] == version and not r.get("excluded")]
     if not matching:
         return None
-    return next((r["path"] for r in matching if "1200" in r["model"]), matching[0]["path"])
+    best = min(matching, key=lambda r: ("1200" not in r["model"], r.get("sequence", 99)))
+    return best["path"]
