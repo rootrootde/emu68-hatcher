@@ -148,7 +148,6 @@ def resolve(
     kickstart_version: str,
     emu68_version: str | None = None,
     *,
-    order_hint: list[str] | None = None,
     packages: list[Package] | None = None,
 ) -> Resolution:
     """resolve a user selection into a complete, conflict-free, ordered install set."""
@@ -175,7 +174,7 @@ def resolve(
     else:
         logger.warning("dependency resolver hit its iteration bound; selection may be incomplete")
 
-    install_order = _topological_order(selected, context.by_name, requirers, order_hint)
+    install_order = _topological_order(selected, context.by_name, requirers)
 
     return Resolution(
         selected=selected,
@@ -191,9 +190,8 @@ def _topological_order(
     selected: set[str],
     by_name: dict[str, Package],
     requirers: dict[str, set[str]],
-    order_hint: list[str] | None = None,
 ) -> list[str]:
-    """kahn topo-sort on requires edges; ties by order_hint then (group, name)."""
+    """kahn topo-sort on requires edges; ties by (group, name)."""
     # edge dep -> dependent means dep installs first; in-degree counts requirers within selected
     deps: dict[str, set[str]] = {n: set() for n in selected}
     for prov, reqs in requirers.items():
@@ -203,11 +201,8 @@ def _topological_order(
             if r in selected:
                 deps[r].add(prov)  # r depends on prov -> prov first
 
-    hint_idx = {n: i for i, n in enumerate(order_hint or [])}
-    big = len(hint_idx)
-
-    def rank(n: str) -> tuple[int, int, str]:
-        return (hint_idx.get(n, big), _group_rank(by_name[n]), n)
+    def rank(n: str) -> tuple[int, str]:
+        return (_group_rank(by_name[n]), n)
 
     indeg = {n: len(deps[n]) for n in selected}
     ready = sorted((n for n in selected if indeg[n] == 0), key=rank)

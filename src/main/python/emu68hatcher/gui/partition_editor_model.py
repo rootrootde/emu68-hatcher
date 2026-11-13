@@ -150,7 +150,7 @@ class PartitionEditorModel:
     def add_partition(self) -> bool:
         if not self.can_add:
             return False
-        size = round_to_cylinder(self.free_space)
+        size = min(round_to_cylinder(self.free_space), round_to_cylinder(PFS3_MAX_PARTITION_SIZE))
         if size < MIN_AMIGA_PARTITION_SIZE:
             return False
         self.partition_ids.append(uuid4().hex)

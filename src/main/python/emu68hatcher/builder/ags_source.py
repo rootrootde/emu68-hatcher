@@ -16,7 +16,6 @@ from emu68hatcher.config.ags_models import AGSRole
 from emu68hatcher.utils.host_tools import find_hst_imager, get_hst_imager_env
 
 CancelCheck = Callable[[], bool] | None
-_MIB = 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
