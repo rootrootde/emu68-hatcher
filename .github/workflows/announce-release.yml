@@ -6,6 +6,8 @@ on:
     workflows: ["Publish update manifest"]
     types: [completed]
 
+permissions: {}
+
 jobs:
   announce:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'

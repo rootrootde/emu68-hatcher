@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # needed for the release-upload step on tag builds
+  contents: read
   actions: read  # signpath pulls the unsigned artifacts through the actions api
 
 jobs:
@@ -244,7 +244,7 @@ jobs:
       # waits for the manual approval on signpath.io
       - name: Sign app exe (Windows)
         if: steps.upload-unsigned-app.outcome == 'success'
-        uses: signpath/github-action-submit-signing-request@v3
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092  # v3
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
@@ -314,7 +314,7 @@ jobs:
 
       - name: Sign installer (Windows)
         if: steps.upload-unsigned-installer.outcome == 'success'
-        uses: signpath/github-action-submit-signing-request@v3
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092  # v3
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
@@ -406,14 +406,17 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # only this job uploads to the release
     steps:
-      - name: Download all artifacts
+      - name: Download release artifacts
         uses: actions/download-artifact@v8
         with:
           path: dist
+          pattern: emu68hatcher-*  # leaves out the unsigned-* inputs of the signing step
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3  # v3.0.4
         with:
           files: dist/**/*
           generate_release_notes: true
