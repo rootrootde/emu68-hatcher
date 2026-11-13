@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from emu68hatcher import __version__
+from emu68hatcher.builder.host.disk_info import normalise_device
 from emu68hatcher.builder.staging.scripts.generator import render_boot_partition_files
 from emu68hatcher.config.boot_models import Emu68BootSettings
 from emu68hatcher.config.display_models import CustomScreenMode
@@ -231,6 +232,8 @@ class MainWindow(QMainWindow):
         self.output_tab.mode_buttons.buttonClicked.connect(self._output_changed)
         self.output_tab.sparse_cb.toggled.connect(self._output_changed)
         self.output_tab.verify_after_flash_cb.toggled.connect(self._output_changed)
+        # a rescan re-selects the card with signals blocked
+        self.output_tab.disks_ready.connect(self._output_changed)
         self._output_changed()
         self.controller.changed.connect(self.refresh_review)
         style_sections(central)
@@ -356,7 +359,6 @@ class MainWindow(QMainWindow):
 
         def picked():
             self.output_tab.disks_ready.disconnect(picked)
-            self._output_changed()
             if self.output_tab.disk_combo.currentData() is None:
                 QMessageBox.warning(
                     self, "SD card", f"{target} is not in the list of removable disks."
@@ -377,7 +379,35 @@ class MainWindow(QMainWindow):
         self.navigate("review")
         self.build_image()
 
+    def _unsaved_settings(self) -> list[str]:
+        """settings the schema cannot hold yet, so Save would drop them"""
+        lost = []
+        if not self.output_tab.get_config().get("path"):
+            lost.append(
+                "No image file or SD card is selected, so the output settings are left out."
+            )
+        try:
+            wifi = self.network_tab.get_wifi_config()
+        except ValueError:
+            wifi = None
+        if self.network_tab.wifi_ssid.text().strip() and wifi is None:
+            lost.append(
+                "The WiFi password needs 8-63 characters, so the WiFi settings are left out."
+            )
+        return lost
+
     def save_config_file(self):
+        lost = self._unsaved_settings()
+        if lost:
+            reply = QMessageBox.question(
+                self,
+                "Save Configuration",
+                "\n".join(lost) + "\n\nSave the other settings anyway?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
         path, _ = QFileDialog.getSaveFileName(
             self, "Save Configuration", "emu68-config.json", "JSON Files (*.json);;All Files (*)"
         )
@@ -476,16 +506,21 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Build checks", "\n".join(issue.message for issue in issues))
             return
         output = snapshot.output
-        target = f"\nSD card: {output.flash_target}" if output.flash_target else ""
-        warning = (
-            "\nThe selected SD card will be erased."
-            if output.type == OutputType.DEVICE or output.flash_target
-            else ""
-        )
+        device = str(output.path) if output.type == OutputType.DEVICE else output.flash_target
+        disk = self.output_tab.selected_disk()
+        if device and (disk is None or normalise_device(disk.device) != normalise_device(device)):
+            QMessageBox.warning(
+                self, "SD card", "Refresh the disk list and pick the SD card again."
+            )
+            return
+        expected_disk = (disk.name, disk.size_bytes) if device else None
+        image = "" if output.type == OutputType.DEVICE else f"Output: {output.path}\n"
+        target = f"SD card: {disk.display_label}\n" if device else ""
+        warning = "\nThe selected SD card will be erased." if device else ""
         reply = QMessageBox.question(
             self,
             "Start build",
-            f"Output: {output.path}{target}\nCapacity: {snapshot.partitions.disk_size / 1024**3:.2f} GiB{warning}\n\nContinue?",
+            f"{image}{target}Capacity: {snapshot.partitions.disk_size / 1024**3:.2f} GiB{warning}\n\nContinue?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -495,7 +530,9 @@ class MainWindow(QMainWindow):
         self.build_btn.setEnabled(False)
         self.start_tab.set_catalog_build_active(True)
         try:
-            dialog = BuildProgressDialog(snapshot.model_copy(deep=True), self)
+            dialog = BuildProgressDialog(
+                snapshot.model_copy(deep=True), self, expected_disk=expected_disk
+            )
             dialog.start_build()
             dialog.exec()
             self.statusBar().showMessage(

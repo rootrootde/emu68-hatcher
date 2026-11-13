@@ -21,9 +21,12 @@ class BuildWorker(QThread):
     build_finished = Signal(bool, str, str)  # success, output_path, error
     unverified_question = Signal(list)  # "name: reason" per failed optional package
 
-    def __init__(self, config: BuildConfig, parent=None):
+    def __init__(
+        self, config: BuildConfig, parent=None, expected_disk: tuple[str, int] | None = None
+    ):
         super().__init__(parent)
         self.config = config
+        self.expected_disk = expected_disk
         self._lock = threading.Lock()
         self._cancelled = False
         self._workflow: BuildWorkflow | None = None
@@ -55,6 +58,7 @@ class BuildWorker(QThread):
             progress_callback=progress_callback,
             log_callback=log_callback,
             confirm_unverified=self._confirm_unverified,
+            expected_disk=self.expected_disk,
         )
 
         with self._lock:

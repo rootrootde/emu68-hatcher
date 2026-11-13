@@ -27,17 +27,11 @@ def stage_flash(workflow: BuildWorkflow, image: CreatedImage) -> CreatedImage:
     if not image_path.exists():
         raise BuildError("image not found - cannot flash")
 
-    from emu68hatcher.builder.host.disk_enum import find_disk
     from emu68hatcher.builder.host.disk_writer import flash_image_to_disk
+    from emu68hatcher.builder.pipeline.validate_output import _WRITE_PROTECTED, find_target
 
-    info = find_disk(output.flash_target)
-    if info is None:
-        raise BuildError(f"target {output.flash_target} is no longer present or not removable")
-    if info.is_system_disk:
-        raise BuildError(f"refusing to flash to system disk {output.flash_target}")
+    info = find_target(workflow, output.flash_target)
     if info.is_read_only:
-        from emu68hatcher.builder.pipeline.validate_output import _WRITE_PROTECTED
-
         raise BuildError(_WRITE_PROTECTED.format(device=output.flash_target))
 
     from emu68hatcher.builder.host.disk_enum import unmount_disk

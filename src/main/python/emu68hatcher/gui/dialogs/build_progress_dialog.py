@@ -44,9 +44,12 @@ class _EjectWorker(QThread):
 class BuildProgressDialog(QDialog):
     """live build progress dialog"""
 
-    def __init__(self, config: BuildConfig, parent=None):
+    def __init__(
+        self, config: BuildConfig, parent=None, expected_disk: tuple[str, int] | None = None
+    ):
         super().__init__(parent)
         self.config = config
+        self.expected_disk = expected_disk
         self.worker: BuildWorker | None = None
         self._success: bool = False
         self._cancel_requested: bool = False
@@ -182,7 +185,7 @@ class BuildProgressDialog(QDialog):
 
     def start_build(self):
         """kick off the build worker"""
-        self.worker = BuildWorker(self.config, self)
+        self.worker = BuildWorker(self.config, self, expected_disk=self.expected_disk)
         self.worker.progress_updated.connect(self.on_progress)
         self.worker.log_event.connect(self.on_log_event)
         self.worker.build_finished.connect(self.on_finished)

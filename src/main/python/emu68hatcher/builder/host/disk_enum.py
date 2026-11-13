@@ -49,12 +49,10 @@ def list_removable_disks(*, raise_on_error: bool = False) -> list[DiskInfo]:
         return []
 
 
-def find_disk(device: str) -> DiskInfo | None:
+def find_disk(device: str, *, raise_on_error: bool = False) -> DiskInfo | None:
     normalized = normalise_device(device)
-    return next(
-        (disk for disk in list_removable_disks() if normalise_device(disk.device) == normalized),
-        None,
-    )
+    disks = list_removable_disks(raise_on_error=raise_on_error)
+    return next((disk for disk in disks if normalise_device(disk.device) == normalized), None)
 
 
 def unmount_disk(

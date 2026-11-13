@@ -34,7 +34,9 @@ def list_disks() -> list[DiskInfo]:
         text=True,
         timeout=15,
     )
-    if result.returncode != 0 or not result.stdout.strip():
+    if result.returncode != 0:
+        raise OSError(f"Get-Disk failed: {result.stderr.strip() or result.returncode}")
+    if not result.stdout.strip():
         return []
     data = json.loads(result.stdout)
     if isinstance(data, dict):

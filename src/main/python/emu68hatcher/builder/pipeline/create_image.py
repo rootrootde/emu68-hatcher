@@ -149,16 +149,10 @@ def _prepare_sparse_image(workflow: BuildWorkflow, path: Path) -> None:
 
 def _prepare_device_target(workflow: BuildWorkflow, image_path: Path | str) -> None:
     """sanity-check + unmount the SD before hst-imager touches it"""
-    from emu68hatcher.builder.host.disk_enum import find_disk
+    from emu68hatcher.builder.pipeline.validate_output import find_target
 
     device = str(image_path)
-    info = find_disk(device)
-    if info is None:
-        raise BuildError(
-            f"Target device {device} is not present or not removable - was it ejected?"
-        )
-    if info.is_system_disk:
-        raise BuildError(f"refusing to write to system disk {device}")
+    info = find_target(workflow, device)
     required = workflow.config.partitions.disk_size
     if info.size_bytes < required:
         raise BuildError(

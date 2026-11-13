@@ -11,6 +11,7 @@ from emu68hatcher.builder.errors import BuildError
 from emu68hatcher.config.schema import OutputType
 
 if TYPE_CHECKING:
+    from emu68hatcher.builder.host.disk_info import DiskInfo
     from emu68hatcher.builder.workflow import BuildWorkflow
 
 _WRITE_PROTECTED = (
@@ -22,9 +23,34 @@ _WRITE_PROTECTED = (
 _FAT32_MAX_FILE = 2**32 - 1
 
 
-def validate_output_target(workflow: BuildWorkflow) -> None:
+def find_target(workflow: BuildWorkflow, device: str) -> DiskInfo:
+    """the target disk; refused when it is gone, a system disk, or not the disk picked first"""
     from emu68hatcher.builder.host.disk_enum import find_disk
 
+    try:
+        info = find_disk(device, raise_on_error=True)
+    except Exception as error:
+        raise BuildError(f"Could not list the disks to check {device}: {error}") from error
+    if info is None:
+        raise BuildError(
+            f"{device} is not among the removable disks. "
+            "Insert the SD card, refresh the disk list and pick it again."
+        )
+    if info.is_system_disk:
+        raise BuildError(f"Refusing to write to system disk {device}.")
+    identity = (info.name, info.size_bytes)
+    if workflow.expected_disk is None:
+        workflow.expected_disk = identity
+    elif identity != workflow.expected_disk:
+        name, size = workflow.expected_disk
+        raise BuildError(
+            f"{device} is now {info.display_label}, not the disk that was picked "
+            f"({name}, {size:,} bytes). Refresh the disk list and pick the SD card again."
+        )
+    return info
+
+
+def validate_output_target(workflow: BuildWorkflow) -> None:
     output = workflow.config.output
     partitions = workflow.config.partitions
     if output is None:
@@ -49,23 +75,13 @@ def validate_output_target(workflow: BuildWorkflow) -> None:
                 from emu68hatcher.builder.host.disk_writer import check_flash_verification_support
 
                 check_flash_verification_support()
-            info = find_disk(output.flash_target)
-            if info is None:
-                raise BuildError(
-                    f"Flash target {output.flash_target} not found among removable disks. "
-                    "Insert the SD card and refresh, or pick a different target."
-                )
+            info = find_target(workflow, output.flash_target)
             _validate_target_disk(info, required_size)
             _acquire_for_workflow(workflow)
             _claim_macos_disk(workflow, output.flash_target)
         return
 
-    info = find_disk(str(output.path))
-    if info is None:
-        raise BuildError(
-            f"Target device {output.path} not found among removable disks. "
-            "Insert the SD card and refresh, or pick a different device."
-        )
+    info = find_target(workflow, str(output.path))
     _validate_target_disk(info, required_size)
     _acquire_for_workflow(workflow)
     _claim_macos_disk(workflow, str(output.path))

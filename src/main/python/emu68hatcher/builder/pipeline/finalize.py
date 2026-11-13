@@ -66,11 +66,10 @@ def _ensure_device_unmounted(workflow: BuildWorkflow) -> None:
 
     if workflow.config.output is None or workflow.config.output.type != OutputType.DEVICE:
         return
-    from emu68hatcher.builder.host.disk_enum import find_disk, unmount_disk
+    from emu68hatcher.builder.host.disk_enum import unmount_disk
+    from emu68hatcher.builder.pipeline.validate_output import find_target
 
-    info = find_disk(str(workflow.config.output.path))
-    if info is None:
-        raise BuildError(f"target {workflow.config.output.path} is no longer present")
+    info = find_target(workflow, str(workflow.config.output.path))
     result = unmount_disk(info, workflow.logger, elevation=workflow.state.elevation)
     if not result.success:
         raise BuildError(f"cannot prepare target {workflow.config.output.path}: {result.error}")

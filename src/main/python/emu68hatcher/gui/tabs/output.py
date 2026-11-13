@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from emu68hatcher.builder.host.disk_info import normalise_device
+from emu68hatcher.builder.host.disk_info import DiskInfo, normalise_device
 from emu68hatcher.config.schema import OutputConfig, OutputType
 from emu68hatcher.gui.design import page_layout
 from emu68hatcher.gui.workers import DiskListWorker
@@ -256,13 +256,12 @@ class OutputTab(QWidget):
         """DEVICE or IMG+flash: push the picked card's size so partitions can auto-size"""
         if not (self.mode_device.isChecked() or self.mode_img_flash.isChecked()):
             return
-        device = self.disk_combo.currentData()
-        info = next((d for d in self._disks if d.device == device), None)
+        info = self.selected_disk()
         if info is None:
             self._last_emitted_device = None
             self.target_size_cleared.emit()
             return
-        identity = (device, info.size_bytes)
+        identity = (info.device, info.size_bytes)
         if not force and identity == self._last_emitted_device:
             return
         self._last_emitted_device = identity
@@ -325,6 +324,10 @@ class OutputTab(QWidget):
             self.mode_img_flash.setChecked(True)
         self._pending_device = device
         self._on_mode_changed()
+
+    def selected_disk(self) -> DiskInfo | None:
+        device = self.disk_combo.currentData()
+        return next((d for d in self._disks if d.device == device), None)
 
     def needs_disk_target(self) -> bool:
         return (self.mode_device.isChecked() or self.mode_img_flash.isChecked()) and not (

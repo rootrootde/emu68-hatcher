@@ -53,6 +53,7 @@ class BuildWorkflow:
         log_callback: BuildLogCallback | None = None,
         catalog: CatalogSnapshot | None = None,
         confirm_unverified: Callable[[list[str]], bool] | None = None,
+        expected_disk: tuple[str, int] | None = None,
     ):
         self.catalog = catalog or get_catalog_snapshot()
         self.config = config
@@ -60,6 +61,8 @@ class BuildWorkflow:
         self._log_callback = log_callback
         # asks whether to install optional packages that fail their checksum; None skips them
         self.confirm_unverified = confirm_unverified
+        # (name, size) of the target card; set from the GUI pick or at the first lookup
+        self.expected_disk = expected_disk
         self.state = BuildState()
         self._resolution: Resolution | None = None
         # package and extras file writes on the boot partition, for the build receipts
@@ -166,6 +169,7 @@ class BuildWorkflow:
     def _bring_target_disk_online(self) -> None:
         """windows: undo the Set-Disk -IsOffline applied at unmount"""
         from emu68hatcher.builder.host.disk_enum import find_disk, online_disk
+        from emu68hatcher.builder.host.disk_info import DiskInfo
         from emu68hatcher.config.schema import OutputType
         from emu68hatcher.utils.platform import OperatingSystem, get_platform_info
 
@@ -180,7 +184,11 @@ class BuildWorkflow:
         if self.config.output.flash_target:
             targets.append(str(self.config.output.flash_target))
         for device in targets:
-            info = find_disk(device)
+            try:
+                info = find_disk(device, raise_on_error=True)
+            except Exception:
+                # set-disk needs only the number, which still names the card taken offline
+                info = DiskInfo(device, "", 0, False)
             if info is None:
                 continue
             try:
