@@ -133,6 +133,9 @@ def _offer_unverified(
 ) -> None:
     """let the user install optional packages whose download no longer matches its checksum"""
     mandatory = {name.lower() for name in required}
+    # a failed required package ends the build anyway
+    if any(not r.success and name.lower() in mandatory for name, r in results.items()):
+        return
     pending = {
         name: result
         for name, result in results.items()
@@ -140,6 +143,7 @@ def _offer_unverified(
     }
     if not pending or workflow.confirm_unverified is None:
         return
+    workflow._check_cancelled()
     accepted = workflow.confirm_unverified([f"{name}: {r.error}" for name, r in pending.items()])
     workflow._check_cancelled()
     if not accepted:
@@ -228,7 +232,12 @@ def _download_packages(
     results = {}
     if items:
         workflow.logger.info(f"Downloading {len(items)} packages...")
-        results = manager.download_all(items, progress_callback, file_progress=file_progress)
+        results = manager.download_all(
+            items,
+            progress_callback,
+            file_progress=file_progress,
+            stop_on=frozenset(name.lower() for name in required),
+        )
     _offer_unverified(workflow, manager, items, results, required)
     for name, owner in shared.items():
         if owner in results:

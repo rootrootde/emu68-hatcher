@@ -36,12 +36,6 @@ def find_tool(name: str) -> Path | None:
         if _is_runnable(tool_path):
             return tool_path
 
-        if detect_os() == OperatingSystem.WINDOWS:
-            for ext in _WINDOWS_EXE_EXTS:
-                tool_path = platform_dir / f"{name}{ext}"
-                if tool_path.exists():
-                    return tool_path
-
     system_path = shutil.which(name)
     if system_path:
         return Path(system_path)

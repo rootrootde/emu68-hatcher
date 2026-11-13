@@ -193,6 +193,8 @@ def _extract_7z_installer(
     if not download_file(bootstrap["url"], sevenzr):
         logger.error("Failed to download 7zr.exe bootstrap")
         return None
+    if not _verify_hash(sevenzr, bootstrap.get("hash"), "7zr"):
+        return None
     try:
         subprocess.run(
             [str(sevenzr), "x", str(archive_path), f"-o{extract_dir}", "-y"],

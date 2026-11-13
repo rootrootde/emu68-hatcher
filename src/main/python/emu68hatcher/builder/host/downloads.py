@@ -5,7 +5,7 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from emu68hatcher import __version__
@@ -43,7 +43,6 @@ class DownloadItem:
     expected_size: int | None = None
     extract: bool = True
     extract_file: str | None = None  # specific file to extract
-    mirrors: list[str] = field(default_factory=list)
 
     @property
     def pinned(self) -> bool:
@@ -285,11 +284,10 @@ class DownloadManager:
             parsed = urlparse(item.url)
             host = parsed.hostname or ""
             if host == "aminet.net" or host.endswith(".aminet.net"):
-                mirrors = item.mirrors if item.mirrors else self.AMINET_MIRRORS
                 success = self._try_mirrors(
                     parsed.path,
                     cached,
-                    mirrors,
+                    self.AMINET_MIRRORS,
                     item,
                     file_progress=file_progress,
                 )
@@ -300,24 +298,6 @@ class DownloadManager:
                     file_progress=file_progress,
                     name=item.name,
                 )
-                # declared backup_url(s) are independent full URLs (possibly another host);
-                # try each in turn when the primary fails
-                if not success and item.mirrors:
-                    for mirror in item.mirrors:
-                        if self._cancelled():
-                            break
-                        self.logger.info(f"Trying backup URL for {item.name}: {mirror}")
-                        if not self._download_file(
-                            mirror, cached, file_progress=file_progress, name=item.name
-                        ):
-                            continue
-                        mismatch = self._verify(cached, item)
-                        if mismatch:
-                            self.logger.warning(f"{mismatch} from backup {mirror} for {item.name}")
-                            self._discard_cache_entry(cached)
-                            continue
-                        success = True
-                        break
 
             # got-hash + size tell 'mirror returned an html error page' from 'upstream changed'
             failure = None if success else self._last_error or "download failed"
@@ -414,8 +394,9 @@ class DownloadManager:
         items: list[DownloadItem],
         progress_callback: DownloadProgressCallback | None = None,
         file_progress: Callable[[str, int, int], None] | None = None,
+        stop_on: frozenset[str] = frozenset(),
     ) -> dict[str, DownloadResult]:
-        """download all items (cancel between items)"""
+        """download all items (cancel between items); stops after a failed item named in stop_on"""
         results: dict[str, DownloadResult] = {}
         total = len(items)
         for i, item in enumerate(items):
@@ -424,6 +405,8 @@ class DownloadManager:
             if progress_callback:
                 progress_callback(item.name, i, total)
             results[item.name] = self.download(item, file_progress=file_progress)
+            if not results[item.name].success and item.name.lower() in stop_on:
+                break
 
         if progress_callback:
             progress_callback("Done", total, total)

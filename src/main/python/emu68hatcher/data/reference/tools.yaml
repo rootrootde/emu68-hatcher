@@ -40,7 +40,7 @@
   type: platform-url
   platforms:
     windows:
-      url: "https://www.7-zip.org/a/7zr.exe"
+      url: "https://github.com/ip7z/7zip/releases/download/26.00/7zr.exe"
       hash: "63cdadb8047e200ef81d63dbcfac7bbb"
       extract_method: none
 

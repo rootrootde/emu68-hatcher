@@ -278,11 +278,10 @@ class UpdatePanel(QObject):
             self.refresh_update_status()
             return
         if not selection.error:
-            from emu68hatcher.data.catalog import get_catalog_snapshot
-            from emu68hatcher.data.manifest_state import activate_manifest
+            from emu68hatcher.data.manifest_state import activate_manifest, get_active_selection
 
             try:
-                previous = get_catalog_snapshot()
+                previous = get_active_selection().catalog
                 selection = activate_manifest(selection)
                 if selection.catalog != previous:
                     self.catalog_changed.emit()
