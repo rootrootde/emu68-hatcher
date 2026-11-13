@@ -98,8 +98,8 @@ def _default_tool_span(data: bytes) -> tuple[int, int]:
 def _parse_info_to_tooltypes(data: bytes) -> tuple[int, list[str], int]:
     """parse an Amiga .info file to find the tooltypes section"""
     size = len(data)
-    has_tooltypes = struct.unpack(">I", data[54:58])[0] != 0
     _, offset = _default_tool_span(data)
+    has_tooltypes = struct.unpack(">I", data[54:58])[0] != 0
 
     # tooltypes section: DWORD ptr_array_size = (n+1)*4, then n x (DWORD len + null-terminated bytes)
     tt_start = offset

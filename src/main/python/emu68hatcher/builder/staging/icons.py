@@ -31,6 +31,14 @@ def ensure_dirs_for_orphan_drawer_icons(boot_staging: Path) -> int:
         # disk.info is the volume icon; _drawer.info represents the parent dir itself
         if info_path.name in ("disk.info", "_drawer.info"):
             continue
+        # def_*.info are default-icon templates; icon collections ship drawer icons as samples
+        folder = info_path.parent.relative_to(boot_staging).as_posix().lower() + "/"
+        if (
+            info_path.name.lower().startswith("def_")
+            or any(folder.startswith(skip.lower() + "/") for skip in _ICON_SKIP)
+            or "icons" in folder
+        ):
+            continue
         try:
             data = info_path.read_bytes()
         except OSError:

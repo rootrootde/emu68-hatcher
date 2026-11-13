@@ -63,7 +63,13 @@ def _amiga_target_resolver(part: AmigaPartition, src: Path) -> TargetResolver:
     return resolve
 
 
-def _collect_database(found: list[tuple[Path, Path]], item: Path, target_dir: Path) -> bool:
+_HOST_JUNK = frozenset({".ds_store", "thumbs.db", "desktop.ini"})
+
+
+def _skip_file(found: list[tuple[Path, Path]], item: Path, target_dir: Path) -> bool:
+    # macOS and Windows folder metadata is no Amiga content
+    if item.name.casefold() in _HOST_JUNK or item.name.startswith("._"):
+        return True
     # copied raw, a UaeFsDb from an emulator folder would replace the staging one
     if item.name.casefold() != DB_NAME.casefold():
         return False
@@ -122,7 +128,7 @@ def stage_install_extras(workflow: BuildWorkflow, image: CreatedImage) -> Create
             dest,
             on_file=on_file,
             resolve_target=_amiga_target_resolver(part, src),
-            skip_file=partial(_collect_database, databases),
+            skip_file=partial(_skip_file, databases),
         )
         for database, target_dir in databases:
             try:

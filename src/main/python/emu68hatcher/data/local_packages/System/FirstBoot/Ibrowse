@@ -7,6 +7,8 @@ IF EXISTS C:spatch
     C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/xbm.codec -pSYS:Programs/Ibrowse/codecs040fpu/xbm.codec.spatch SYS:Programs/Ibrowse/codecs/xbm.codec
     C:spatch >NIL: -oSYS:Programs/Ibrowse/codecs/imagedecode.module -pSYS:Programs/Ibrowse/codecs040fpu/imagedecode.module.spatch SYS:Programs/Ibrowse/codecs/imagedecode.module
     C:Delete SYS:Programs/Ibrowse/codecs040fpu/#? SYS:Programs/Ibrowse/codecs040fpu ALL FORCE QUIET
-    C:MakeDir SYS:Programs/Ibrowse/cache
+    IF NOT EXISTS SYS:Programs/Ibrowse/cache
+      C:MakeDir SYS:Programs/Ibrowse/cache
+    ENDIF
   ENDIF
 ENDIF

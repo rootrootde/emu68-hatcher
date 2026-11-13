@@ -44,13 +44,13 @@ install:
   to: Programs/IBrowse/
   rename: javascript.library
 - from: IBrowse*-OS3/Plugins
-  to: Programs/IBrowse/Plugins/Plugins/
+  to: Programs/IBrowse/
 - from: IBrowse*-OS3/mui/*
   to: Programs/MUI/Libs/MUI/
 - from: IBrowse*-OS3/spatch
   to: C/
 - from: IBrowse*-OS3/Cache
-  to: Programs/IBrowse/Plugins/Cache/
+  to: Programs/IBrowse/
 - from: IBrowse*-OS3/history.txt
   to: Programs/IBrowse/
 - from: IBrowse*-OS3/IBrowse
