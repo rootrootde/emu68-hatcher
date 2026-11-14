@@ -11,8 +11,8 @@ versions:
 default: true
 download:
   source: web
-  url: http://www.ibrowse-dev.net/resources/IBrowse3.0a-OS3.lha
-  hash: E448F1B7E46034A5D2DBCB464C9A7268
+  url: http://www.ibrowse-dev.net/resources/IBrowse3.1-OS3.lha
+  hash: 5D5BB815A5C06F2CED01904871828F85
   filename: IBrowse-OS3.lha
 install:
 - from: IBrowse*.info
@@ -73,4 +73,4 @@ menu_entry:
   menu: Network
 requires:
 - mui
-- amissl
+- amissl6
