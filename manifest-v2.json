@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "7E747C81A6C8BC0401BDACFDE9CCA898",
+              "hash": "039C522283310D1C904DC853641891E8",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4446,6 +4446,74 @@
               }
             ],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "amissl6": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "TLS/SSL library, v6 on top of v5",
+            "download": {
+              "check_latest_release": true,
+              "filename": "AmiSSL-6.1-OS3.lha",
+              "hash": "C289503E7547D1A71966F13245C59AFC",
+              "path": null,
+              "repo": "jens-maus/amissl",
+              "source": "github",
+              "tag": "6.1",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AmiSSL v6",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "AmiSSL/Libs/AmigaOS3/amisslmaster.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiSSL/Libs/",
+                "xor": null
+              },
+              {
+                "from": "AmiSSL/Libs/AmigaOS3/AmiSSL/68020-40/amissl_v*.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiSSL/Libs/AmiSSL/",
+                "xor": null
+              },
+              {
+                "from": "AmiSSL/Certs/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiSSL/Certs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "amissl6",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "amissl"
+            ],
+            "scripts": [],
+            "upstream_version": "6.1",
             "versions": [
               "3.1",
               "3.2",
@@ -6850,12 +6918,12 @@
             "download": {
               "check_latest_release": true,
               "filename": "IBrowse-OS3.lha",
-              "hash": "E448F1B7E46034A5D2DBCB464C9A7268",
+              "hash": "5D5BB815A5C06F2CED01904871828F85",
               "path": null,
               "repo": null,
               "source": "web",
               "tag": null,
-              "url": "http://www.ibrowse-dev.net/resources/IBrowse3.0a-OS3.lha"
+              "url": "http://www.ibrowse-dev.net/resources/IBrowse3.1-OS3.lha"
             },
             "emu68_versions": null,
             "friendly_name": "IBrowse",
@@ -6975,7 +7043,7 @@
                 "recursive": false,
                 "rename": null,
                 "stack": null,
-                "to": "Programs/IBrowse/Plugins/Plugins/",
+                "to": "Programs/IBrowse/",
                 "xor": null
               },
               {
@@ -7002,7 +7070,7 @@
                 "recursive": false,
                 "rename": null,
                 "stack": null,
-                "to": "Programs/IBrowse/Plugins/Cache/",
+                "to": "Programs/IBrowse/",
                 "xor": null
               },
               {
@@ -7093,7 +7161,7 @@
             "relocate": [],
             "requires": [
               "mui",
-              "amissl"
+              "amissl6"
             ],
             "scripts": [],
             "upstream_version": null,
@@ -12457,8 +12525,8 @@
             ]
           }
         },
-        "revision": 5,
-        "source_commit": "5386641219ce2dc305a28eba58686ebb22f21d38"
+        "revision": 6,
+        "source_commit": "c66954b2d713bd322274ec175b5554567a08518b"
       }
     ],
     "hatcher": {
@@ -12503,12 +12571,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
       "version": "1.4.0"
     },
-    "revision": 1794502138,
+    "revision": 1794697866,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "QoLiRx1Q7rOvwZm5Ev7tJp9HSy5Q7ETLJCFblZzmh0ZuLalOyzas/25kkw13bYHiF46tikSNu1jbzS5Am7oEDA=="
+    "value": "2SPfspJNmD/7wVbKR/+5BWixnnIweKmU87ukFPCXoWmsJPQ2sZcImpb8vnAjajSHLBdS1mihoowQli4c7j7pAA=="
   }
 }
