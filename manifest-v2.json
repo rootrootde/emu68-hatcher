@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "039C522283310D1C904DC853641891E8",
+              "hash": "14A678CB3337931A1BE65A15E0C5AF73",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4694,12 +4694,12 @@
             "description": "compactflash PCMCIA driver",
             "download": {
               "check_latest_release": true,
-              "filename": "cfd.v20261007.lha",
-              "hash": "9F317F5658C49866D7458866ED5143E2",
+              "filename": "cfd.v20261115.lha",
+              "hash": "13F9480E0E6D8258D7A02BE2D405B439",
               "path": null,
               "repo": "pulchart/cfd",
               "source": "github",
-              "tag": "v20261007",
+              "tag": "v20261115",
               "url": null
             },
             "emu68_versions": null,
@@ -5883,12 +5883,12 @@
             "description": "FAT12/16/32 filesystem handler",
             "download": {
               "check_latest_release": true,
-              "filename": "fat95.v20261007.lha",
-              "hash": "657A8A4D516F7D9BF37D681169EB81D4",
+              "filename": "fat95.v20261115.lha",
+              "hash": "E60DB5171B1C0CFFFA6766236CCE63E4",
               "path": null,
               "repo": "pulchart/fat95",
               "source": "github",
-              "tag": "v20261007",
+              "tag": "v20261115",
               "url": null
             },
             "emu68_versions": null,
@@ -12525,8 +12525,8 @@
             ]
           }
         },
-        "revision": 6,
-        "source_commit": "c66954b2d713bd322274ec175b5554567a08518b"
+        "revision": 7,
+        "source_commit": "9c7b231e42d87ffe48e6ba4c5e9272dc0e1bc067"
       }
     ],
     "hatcher": {
@@ -12571,12 +12571,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
       "version": "1.4.0"
     },
-    "revision": 1794697866,
+    "revision": 1794821768,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "2SPfspJNmD/7wVbKR/+5BWixnnIweKmU87ukFPCXoWmsJPQ2sZcImpb8vnAjajSHLBdS1mihoowQli4c7j7pAA=="
+    "value": "yjm2zOkbOpONOnsePQKyNlObpcqE6jFXPcCl/QfMKFoqvOz+ieO33dawJvLt+8i/xevJ2+N89zCbxygF/uMvAQ=="
   }
 }
