@@ -22,10 +22,9 @@ download:
   hash: C698B2E570254C6D6CB99A1A01FE5917
   filename: MiamiDx10cmain.lha
 install:
-- from: MiamiDx10_Install/main/Libs/plain.MiamiPanel
-  to: Programs/Miami/Libs/
-- from: MiamiDx10_Install/main/Libs/*.library
-  to: Libs/
+# MiamiDx opens its libraries as Miami:Libs/<name>, never from LIBS:
+- from: MiamiDx10_Install/main/Libs
+  to: Programs/Miami/
 - from: MiamiDx10_Install/main/Mi*
   to: Programs/Miami/
 - from: MiamiDx10_Install/main/Icons/NewIcons/MiamiDx.info
