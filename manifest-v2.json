@@ -7439,6 +7439,117 @@
               "3.9"
             ]
           },
+          "lupa": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "search bar for programs, games and files (Left Amiga + Space)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "Lupa.lha",
+              "hash": "07aaa1fac62382a78f8de25af22f4cc1",
+              "path": "util/cdity/Lupa.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Lupa",
+            "group": "Commodities",
+            "install": [
+              {
+                "from": "Lupa-1.1.9/Lupa",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "WBStartup/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Lupa.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "WBStartup/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/LupaMac.dic",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "WBStartup/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Lupa-Prefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Lupa-Prefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Lupa-Update",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Lupa-Update.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Lupa-1.1.9/Catalogs/deutsch/lupa.catalog",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/deutsch/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "lupa",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "1.1.9",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "lwip_amiga": {
             "archive_package": "emu68_driver_stack",
             "bundle": null,
@@ -12525,8 +12636,8 @@
             ]
           }
         },
-        "revision": 7,
-        "source_commit": "9c7b231e42d87ffe48e6ba4c5e9272dc0e1bc067"
+        "revision": 8,
+        "source_commit": "ea2f3e9623c12ab97f2cf5e8dc4aa692d7d411cc"
       }
     ],
     "hatcher": {
@@ -12571,12 +12682,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
       "version": "1.4.0"
     },
-    "revision": 1794821768,
+    "revision": 1795199848,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "yjm2zOkbOpONOnsePQKyNlObpcqE6jFXPcCl/QfMKFoqvOz+ieO33dawJvLt+8i/xevJ2+N89zCbxygF/uMvAQ=="
+    "value": "3aWfDrsgU42rGg/8Vk0MEx6HVa4/dl/R3BoP/IY8oUgse/viLufBBUZgyufNixLm93z5xwY53QMWovqCm697Dg=="
   }
 }
