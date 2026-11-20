@@ -114,12 +114,12 @@
         "url": null
       }
     },
-    "revision": 1795199848,
+    "revision": 1795202244,
     "schema_version": 1
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "ZPSMl/1Zwx/F2OooED6aYkVGDb2oRsC0+6nDPhb9jftCTsfQaIM5Kr2zCBRjWo+MzSANlxBZ4OWVqPtrhrwUCA=="
+    "value": "6gvMnSRQyKDMUNgvWTnWcyPBvnKDoL76nYU4aCW2SzlVOsduAmeK9XpEBhFttKj6m6wQDs5wcrcK/lNfHgvVAQ=="
   }
 }
