@@ -51,6 +51,7 @@ installer
 janoeditor
 lha
 lumiftp
+lupa
 lzx
 magicmenu
 mcc_betterstring
