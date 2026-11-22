@@ -13,7 +13,7 @@ mandatory: true
 download:
   source: aminet
   path: util/libs/IconLib_46.4.lha
-  hash: 1D356FCD290C4C2F288AB74573F19E4C
+  hash: 2ACAF33DA7AC8949D149A408EFCDFD69
   filename: Iconlib.lha
 install:
 - from: IconLib_*/ThirdParty/RemLib/RemLib

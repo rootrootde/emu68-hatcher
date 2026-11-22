@@ -2,7 +2,7 @@ name: lupa
 friendly_name: Lupa
 group: Commodities
 description: 'search bar for programs, games and files (Left Amiga + Space)'
-upstream_version: '1.1.9'
+upstream_version: '1.1.10'
 versions:
 - '3.1'
 - '3.2'
@@ -13,26 +13,26 @@ default: false
 download:
   source: aminet
   path: util/cdity/Lupa.lha
-  hash: 07aaa1fac62382a78f8de25af22f4cc1
+  hash: 98C83929DDBBC66447432E4B058458B1
   filename: Lupa.lha
 # same layout as the upstream installer's defaults: the 68020 binary (Lupa.000 is the
 # 68000 one) with LupaMac.dic in WBStartup, the shipped .info carries DONOTWAIT and
 # CX_POPUP=NO; Lupa-Prefs and Lupa-Update go to Prefs
 install:
-- from: Lupa-1.1.9/Lupa
+- from: Lupa-1.1.10/Lupa
   to: WBStartup/
-- from: Lupa-1.1.9/Lupa.info
+- from: Lupa-1.1.10/Lupa.info
   to: WBStartup/
-- from: Lupa-1.1.9/LupaMac.dic
+- from: Lupa-1.1.10/LupaMac.dic
   to: WBStartup/
-- from: Lupa-1.1.9/Lupa-Prefs
+- from: Lupa-1.1.10/Lupa-Prefs
   to: Prefs/
-- from: Lupa-1.1.9/Lupa-Prefs.info
+- from: Lupa-1.1.10/Lupa-Prefs.info
   to: Prefs/
-- from: Lupa-1.1.9/Lupa-Update
+- from: Lupa-1.1.10/Lupa-Update
   to: Prefs/
-- from: Lupa-1.1.9/Lupa-Update.info
+- from: Lupa-1.1.10/Lupa-Update.info
   to: Prefs/
 # the spanish catalog drawer has a latin1 name that does not survive extraction, so only german
-- from: Lupa-1.1.9/Catalogs/deutsch/lupa.catalog
+- from: Lupa-1.1.10/Catalogs/deutsch/lupa.catalog
   to: Locale/Catalogs/deutsch/
