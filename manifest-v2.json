@@ -4127,7 +4127,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "0EB4DC8A2F444E527A1F131F86523F5A",
+              "hash": "3D617FA268005B6B221834B99A096017",
               "path": null,
               "repo": null,
               "source": "web",
@@ -7182,7 +7182,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Iconlib.lha",
-              "hash": "1D356FCD290C4C2F288AB74573F19E4C",
+              "hash": "2ACAF33DA7AC8949D149A408EFCDFD69",
               "path": "util/libs/IconLib_46.4.lha",
               "repo": null,
               "source": "aminet",
@@ -7448,7 +7448,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Lupa.lha",
-              "hash": "07aaa1fac62382a78f8de25af22f4cc1",
+              "hash": "98C83929DDBBC66447432E4B058458B1",
               "path": "util/cdity/Lupa.lha",
               "repo": null,
               "source": "aminet",
@@ -7460,7 +7460,7 @@
             "group": "Commodities",
             "install": [
               {
-                "from": "Lupa-1.1.9/Lupa",
+                "from": "Lupa-1.1.10/Lupa",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7469,7 +7469,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Lupa.info",
+                "from": "Lupa-1.1.10/Lupa.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7478,7 +7478,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/LupaMac.dic",
+                "from": "Lupa-1.1.10/LupaMac.dic",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7487,7 +7487,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Lupa-Prefs",
+                "from": "Lupa-1.1.10/Lupa-Prefs",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7496,7 +7496,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Lupa-Prefs.info",
+                "from": "Lupa-1.1.10/Lupa-Prefs.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7505,7 +7505,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Lupa-Update",
+                "from": "Lupa-1.1.10/Lupa-Update",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7514,7 +7514,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Lupa-Update.info",
+                "from": "Lupa-1.1.10/Lupa-Update.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7523,7 +7523,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.9/Catalogs/deutsch/lupa.catalog",
+                "from": "Lupa-1.1.10/Catalogs/deutsch/lupa.catalog",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7541,7 +7541,7 @@
             "relocate": [],
             "requires": [],
             "scripts": [],
-            "upstream_version": "1.1.9",
+            "upstream_version": "1.1.10",
             "versions": [
               "3.1",
               "3.2",
@@ -12636,8 +12636,8 @@
             ]
           }
         },
-        "revision": 9,
-        "source_commit": "720678089158cd3d63c4e6238f16be98b0126738"
+        "revision": 10,
+        "source_commit": "3298b94f347c60c0860349dcdf2f2972b0521acf"
       }
     ],
     "hatcher": {
@@ -12682,12 +12682,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
       "version": "1.4.0"
     },
-    "revision": 1795202244,
+    "revision": 1795390663,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "TNa46xvA8sVudKzj97rpX9K4K9YYZqzPE83fF1ObUAPCm4kvyPGBMbgGDiKsCW9tCUzWIXvCpn0ZlEsoYr27Aw=="
+    "value": "dwNMTasQ5W3+gPQJvZ7wa6JRvZHTAgmjCk3E3ZOmWdzcd3RTmiToRPWVb/JDFDvGoBFmeAsoRy9SmHLmnLmNDg=="
   }
 }
