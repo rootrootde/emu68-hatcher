@@ -54,6 +54,8 @@ IF WARN
   Echo "Driver restore failed. RGB2RTG configuration restored; check both files before power cycling."
   Quit 20
 ENDIF
+C:rgb2rtg UNINSTALL SPLASH >NIL:
+C:rgb2rtg UNINSTALL OVERLAYS >NIL:
 Copy SYS:Emu68-Hatcher/RGB2RTG/Videocore.info DEVS:Monitors/Videocore.info CLONE
 IF WARN
   Echo "Baseline kernel/driver restored; monitor icon restore failed. Restore it manually."
