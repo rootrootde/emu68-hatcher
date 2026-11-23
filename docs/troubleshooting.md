@@ -49,12 +49,13 @@ rx S:MiamiNetwork.rexx CONFIG              ; MiamiDX settings
 rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
 ```
 
-### Clock is not set after boot (full Roadshow)
+### Clock is not set after boot
 
-With the full Roadshow archive, User-Startup syncs the clock after the network comes
-up with `rx S:NetworkConfig.rexx SYNCTIME`, as in earlier releases. Check that
-**Connect at boot** is on in Network Settings (it removes **S:Network-disabled**) and
-that the network connects at boot.
+Every connect from Network Settings, the Network menu or Connect at boot runs
+`rx S:NetworkConfig.rexx SYNCTIME` in the background; with the full Roadshow archive,
+User-Startup runs it after Network-Startup. It sets the clock from pool.ntp.org and
+saves it to the real-time clock. Check that **Connect at boot** is on in Network
+Settings (it removes **S:Network-disabled**) and that the network connects at boot.
 
 ### Browser reports a DNS error
 
