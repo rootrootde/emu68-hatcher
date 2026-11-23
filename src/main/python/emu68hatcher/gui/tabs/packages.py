@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QEvent, Qt, QTimer, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -44,8 +44,11 @@ class PackagesTab(QWidget):
         self._requests = software_defaults()
         self.dropped_packages: list[str] = []
         self._updating = False
+        self._pressed = False
+        self._rebuild_pending = False
         self.checkboxes: dict[str, QTreeWidgetItem] = {}
         self._key_to_packages: dict[str, list[str]] = {}
+        self._base_descriptions: dict[str, str] = {}
         layout = page_layout(self)
         actions = QHBoxLayout()
         for label, callback in (
@@ -69,6 +72,7 @@ class PackagesTab(QWidget):
             self._tree_style = QStyleFactory.create("Fusion")
             self.tree.setStyle(self._tree_style)
         self.tree.itemChanged.connect(self._on_item_changed)
+        self.tree.viewport().installEventFilter(self)
         layout.addWidget(self.tree, 1)
         self.catalog_notice = QLabel()
         self.catalog_notice.setWordWrap(True)
@@ -78,16 +82,39 @@ class PackagesTab(QWidget):
         self.status.setWordWrap(True)
         self.status.setProperty("tone", "muted")
         layout.addWidget(self.status)
-        self.refresh_packages()
+        self._refresh_packages()
 
     def refresh_packages(self):
+        """Rebuild the tree outside any in-flight mouse interaction."""
+        QTimer.singleShot(0, self._refresh_packages)
+
+    def eventFilter(self, watched, event):
+        if watched is self.tree.viewport():
+            if event.type() == QEvent.Type.MouseButtonPress:
+                self._pressed = True
+            elif event.type() == QEvent.Type.MouseButtonRelease:
+                self._pressed = False
+                # schedule from the event loop, not here: the filter runs
+                # before the view's own release handling
+                if self._rebuild_pending:
+                    self._rebuild_pending = False
+                    QTimer.singleShot(0, self._refresh_packages)
+        return super().eventFilter(watched, event)
+
+    def _refresh_packages(self):
+        if self._pressed:
+            # tree.clear() between press and release frees the row the view
+            # still holds as its pressed index, and the release then toggles a
+            # freed item (segfault). Postpone until the click ends.
+            self._rebuild_pending = True
+            return
         self._updating = True
         try:
-            self._refresh_packages()
+            self._rebuild_packages()
         finally:
             self._updating = False
 
-    def _refresh_packages(self):
+    def _rebuild_packages(self):
         expanded = {
             self.tree.topLevelItem(i).text(0): self.tree.topLevelItem(i).isExpanded()
             for i in range(self.tree.topLevelItemCount())
@@ -95,6 +122,7 @@ class PackagesTab(QWidget):
         self.tree.clear()
         self.checkboxes.clear()
         self._key_to_packages.clear()
+        self._base_descriptions.clear()
         packages = get_packages_for_version(self.kickstart_version, self.emu68_version)
         by_name = {p.name: p for p in packages}
         self.resolution = resolve_choices(
@@ -120,32 +148,16 @@ class PackagesTab(QWidget):
                 groups[label] = item
             return groups[label]
 
-        def add_row(key, label, category, description, names):
-            enabled = [name in selected for name in names]
-            reasons = set()
-            for name in names:
-                reasons.update(self.resolution.required_by.get(name, []))
-            reasons.difference_update(names)
-            auto = any(name in selected and not self._requests.get(name, False) for name in names)
-            forced = {
-                self.resolution.selection_reasons[n]
-                for n in names
-                if n in self.resolution.selection_reasons
-            }
-            if reasons:
-                consumers = ", ".join(by_name[n].friendly_name for n in sorted(reasons))
-                description += f" (Required by {consumers})"
-            elif forced:
-                description += f" (Required by {', '.join(sorted(forced))})"
-            elif auto:
-                description += " (Selected automatically)"
+        def add_row(key, label, category, base, names):
+            self._base_descriptions[key] = base
+            description, disabled = self._row_details(key, names, by_name, base)
             item = QTreeWidgetItem(group(category), [label, description])
             item.setToolTip(1, description)
             item.setData(0, Qt.ItemDataRole.UserRole, key)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            # mui alternatives stay clickable while an application needs mui
-            if (reasons or forced) and key not in {"mui38", "mui5"}:
+            if disabled:
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+            enabled = [name in selected for name in names]
             state = Qt.CheckState.Checked if all(enabled) else Qt.CheckState.Unchecked
             if any(enabled) and not all(enabled):
                 state = Qt.CheckState.PartiallyChecked
@@ -207,12 +219,87 @@ class PackagesTab(QWidget):
             self._requests[name] = enabled
         if enabled and key in {"mui38", "mui5"}:
             self._requests["mui5" if key == "mui38" else "mui38"] = False
-        # tree.clear() inside itemChanged frees the item Qt's setData is still using
+        # never rebuild (and so free the pressed item) inside itemChanged
         QTimer.singleShot(0, self._apply_requests)
 
     def _apply_requests(self):
-        self.refresh_packages()
+        self._update_states()
         self.selection_changed.emit()
+
+    def _row_details(self, key, names, by_name, description):
+        """Return the description with its dependency note, and whether the row is disabled."""
+        reasons = set()
+        for name in names:
+            reasons.update(self.resolution.required_by.get(name, []))
+        reasons.difference_update(names)
+        forced = {
+            self.resolution.selection_reasons[n]
+            for n in names
+            if n in self.resolution.selection_reasons
+        }
+        if reasons:
+            consumers = ", ".join(by_name[n].friendly_name for n in sorted(reasons))
+            description += f" (Required by {consumers})"
+        elif forced:
+            description += f" (Required by {', '.join(sorted(forced))})"
+        elif any(
+            name in self.resolution.selected and not self._requests.get(name, False)
+            for name in names
+        ):
+            description += " (Selected automatically)"
+        # mui alternatives stay clickable while an application needs mui
+        return description, bool((reasons or forced) and key not in {"mui38", "mui5"})
+
+    def _update_states(self):
+        """Refresh check states and descriptions in place.
+
+        Checkbox clicks never rebuild the tree: no item the view may still be
+        pressing is freed, so the release cannot edit a freed row."""
+        if not self._key_to_packages:
+            self.refresh_packages()
+            return
+        self._updating = True
+        try:
+            packages = get_packages_for_version(self.kickstart_version, self.emu68_version)
+            by_name = {p.name: p for p in packages}
+            self.resolution = resolve_choices(
+                self._requests,
+                self.kickstart_version,
+                self.emu68_version,
+                self.network_stack,
+                ags_enabled=self.ags_enabled,
+                rgb2rtg_enabled=self.rgb2rtg_enabled,
+            )
+            selected = self.resolution.selected
+            for key, names in self._key_to_packages.items():
+                item = self.checkboxes.get(key)
+                if item is None:
+                    continue
+                description, disabled = self._row_details(
+                    key, names, by_name, self._base_descriptions.get(key, "")
+                )
+                item.setText(1, description)
+                item.setToolTip(1, description)
+                if disabled:
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                else:
+                    item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEnabled)
+                enabled = [name in selected for name in names]
+                state = Qt.CheckState.Checked if all(enabled) else Qt.CheckState.Unchecked
+                if any(enabled) and not all(enabled):
+                    state = Qt.CheckState.PartiallyChecked
+                item.setCheckState(0, state)
+            self.status.setText(
+                f"{len(selected)} packages selected"
+                if not self.resolution.unsatisfiable
+                else "Missing requirements: "
+                + "; ".join(
+                    f"{token}: needed by {', '.join(names)}"
+                    for token, names in self.resolution.unsatisfiable.items()
+                )
+            )
+        finally:
+            self._updating = False
 
     def set_context(self, network_stack, *, ags_enabled=False, rgb2rtg_enabled=False):
         context = (network_stack, ags_enabled, rgb2rtg_enabled)
