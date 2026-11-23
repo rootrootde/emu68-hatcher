@@ -4,6 +4,7 @@ additem
 agraph
 ahi
 ahi6
+ahi_hdmi
 ahi_paula
 akdatatypes_gif
 akdatatypes_jfif

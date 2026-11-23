@@ -209,6 +209,8 @@ class PackagesTab(QWidget):
             self._requests[name] = enabled
         if enabled and key in _ALTERNATIVES:
             self._requests[_ALTERNATIVES[key]] = False
+        if enabled and key == "ahi_hdmi":  # the hdmi driver needs AHI 6
+            self._requests.update(ahi6=True, ahi=False)
         # tree.clear() inside itemChanged frees the item Qt's setData is still using
         QTimer.singleShot(0, self._apply_requests)
 
@@ -240,6 +242,7 @@ class PackagesTab(QWidget):
         self._requests["mui38"] = False
         self._requests["mui5"] = True
         self._requests["ahi6"] = False
+        self._requests["ahi_hdmi"] = False
         self.refresh_packages()
         self.selection_changed.emit()
 

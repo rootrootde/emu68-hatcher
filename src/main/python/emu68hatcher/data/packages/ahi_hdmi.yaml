@@ -1,0 +1,30 @@
+name: ahi_hdmi
+friendly_name: Emu68 HDMI Audio
+group: Drivers
+description: 'AHI driver for sound over HDMI (Raspberry Pi 4/CM4, HDMI0, 48 kHz stereo)'
+upstream_version: '4.18'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+emu68_versions:
+- 1.1.0-alpha.1
+- 1.1.0-beta.1
+mandatory: false
+requires:
+- ahi6
+download:
+  source: github
+  repo: arczi84/emu68-hdmi-audio
+  tag: '4.18'
+  filename: Emu68HDMI-AHI-4.18.lha
+  hash: 0B6C3B2D7F611041D6BAD7CA21933AFA
+install:
+- from: Emu68HDMI-AHI/Devs/AHI/emu68hdmi.audio
+  to: Devs/AHI/
+- from: Emu68HDMI-AHI/Devs/AudioModes/Emu68HDMI
+  to: Devs/AudioModes/
+- from: Emu68HDMI-AHI/HDMIDiag
+  to: C/
