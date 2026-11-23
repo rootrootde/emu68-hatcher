@@ -1,0 +1,22 @@
+name: z_library
+friendly_name: z.library
+group: Libraries
+description: 'zlib compression as a shared library'
+upstream_version: '2.1'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: aminet
+  path: util/libs/z_lib.m68k-amigaos.lha
+  hash: cd4439719b4b2ed1a15ecc211fe1d9ed
+  filename: z_lib.m68k-amigaos.lha
+install:
+- from: z_lib/Libs/z.library.020
+  to: Libs/
+  rename: z.library
+default: false

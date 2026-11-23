@@ -1,0 +1,38 @@
+name: xsysinfo
+friendly_name: xSysInfo
+group: Utilities
+description: 'system information, with a MUI window when MUI is installed'
+upstream_version: '0.12.0'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+requires:
+- identify
+download:
+  source: aminet
+  path: util/moni/xSysInfo.lha
+  hash: d7e0d7bf9d587440e4bc855e4370bfd4
+  filename: xSysInfo.lha
+install:
+- from: xSysInfo-0.12.0.info
+  to: Programs/
+  rename: xSysInfo.info
+- from: xSysInfo-0.12.0/xSysInfo
+  to: Programs/xSysInfo/
+- from: xSysInfo-0.12.0/xSysInfo.info
+  to: Programs/xSysInfo/
+- from: xSysInfo-0.12.0/readme.txt
+  to: Programs/xSysInfo/
+- from: xSysInfo-0.12.0/readme.txt.info
+  to: Programs/xSysInfo/
+- from: xSysInfo-0.12.0/Catalogs
+  to: Programs/xSysInfo/
+menu_entry:
+  title: xSysInfo
+  path: Programs/xSysInfo/xSysInfo
+  menu: System
+  wb_launch: true

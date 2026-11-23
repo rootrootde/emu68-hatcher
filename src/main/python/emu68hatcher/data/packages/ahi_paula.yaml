@@ -1,0 +1,22 @@
+name: ahi_paula
+friendly_name: AHI Paula driver
+group: System
+description: 'Paula driver from AHI 4.18, missing in the AHI 6.0 archive'
+upstream_version: '4.18'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: aminet
+  path: driver/audio/ahiusr_4.18.lha
+  hash: 52131E5F771927FF5D5AAAA64FD97ABC
+  filename: ahiusr_4.18.lha
+install:
+- from: AHI/User/Devs/AHI/paula.audio
+  to: Devs/AHI/
+- from: AHI/User/Devs/AudioModes/PAULA
+  to: Devs/AudioModes/

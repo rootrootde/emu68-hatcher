@@ -29,6 +29,8 @@ from emu68hatcher.gui.design import page_layout
 logger = logging.getLogger(__name__)
 
 _NETWORK_STACK_PACKAGES = {stack.value.lower() for stack in NetworkStack}
+# pairs of which only one can be installed: ticking one unticks the other
+_ALTERNATIVES = {"mui38": "mui5", "mui5": "mui38", "ahi": "ahi6", "ahi6": "ahi"}
 
 
 class PackagesTab(QWidget):
@@ -205,8 +207,8 @@ class PackagesTab(QWidget):
         enabled = item.checkState(0) == Qt.CheckState.Checked
         for name in self._key_to_packages[key]:
             self._requests[name] = enabled
-        if enabled and key in {"mui38", "mui5"}:
-            self._requests["mui5" if key == "mui38" else "mui38"] = False
+        if enabled and key in _ALTERNATIVES:
+            self._requests[_ALTERNATIVES[key]] = False
         # tree.clear() inside itemChanged frees the item Qt's setData is still using
         QTimer.singleShot(0, self._apply_requests)
 
@@ -237,6 +239,7 @@ class PackagesTab(QWidget):
                 self._requests[name] = True
         self._requests["mui38"] = False
         self._requests["mui5"] = True
+        self._requests["ahi6"] = False
         self.refresh_packages()
         self.selection_changed.emit()
 
@@ -282,6 +285,7 @@ class PackagesTab(QWidget):
             "Saved packages are no longer available: " + ", ".join(unknown) if unknown else ""
         )
         self._requests.update({p.name: p.enabled for p in packages if p.name in self._requests})
-        if self._requests.get("mui5"):
-            self._requests["mui38"] = False
+        for name in ("mui5", "ahi6"):
+            if self._requests.get(name):
+                self._requests[_ALTERNATIVES[name]] = False
         self.refresh_packages()

@@ -1,0 +1,25 @@
+name: sevenzip
+friendly_name: 7-Zip
+group: Archivers
+description: '7-Zip command line archiver (7zz), packs 7z/zip/tar and unpacks most formats'
+upstream_version: '26.06'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: aminet
+  path: util/arc/7zip.lha
+  hash: b75e321eead52100af6c9bde84cd04dd
+  filename: 7zip.lha
+install:
+# the 040 build also runs without an FPU
+- from: 7zip/7zz_040
+  to: C/
+  rename: 7zz
+- from: 7zip/7zSFX
+  to: C/
+default: false

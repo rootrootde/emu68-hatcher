@@ -1,0 +1,36 @@
+name: ahi6
+friendly_name: AHI 6.0
+group: Drivers
+description: 'AHI retargetable audio system 6.0 (68020+, alternative to 4.18)'
+upstream_version: '6.0'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+provides:
+- ahi
+conflicts:
+- ahi
+requires:
+- mui
+- ahi_paula
+download:
+  source: aminet
+  path: driver/audio/m68k-amigaos-ahiusr.lha
+  hash: ff295c2dac20680395bd686ffe23a017
+  filename: m68k-amigaos-ahiusr.lha
+install:
+- from: m68k-amigaos-ahi/User/Devs/ahi.device
+  to: Devs/
+- from: m68k-amigaos-ahi/User/Devs/AHI/filesave.audio
+  to: Devs/AHI/
+- from: m68k-amigaos-ahi/User/Devs/AudioModes/FILESAVE
+  to: Devs/AudioModes/
+- from: m68k-amigaos-ahi/User/Prefs/AHI
+  to: Prefs/
+- from: m68k-amigaos-ahi/User/Prefs/AHI.info
+  to: Prefs/
+  stack: 32000

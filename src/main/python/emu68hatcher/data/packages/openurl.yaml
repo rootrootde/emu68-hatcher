@@ -1,0 +1,30 @@
+name: openurl
+friendly_name: openurl.library
+group: Libraries
+description: 'opens URLs from applications in the configured browser'
+upstream_version: '7.18'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: github
+  repo: jens-maus/libopenurl
+  tag: '7.18'
+  hash: 1d2acf53d5b1bc29b11bd9a1fd6d65a1
+  filename: OpenURL-7.18.lha
+install:
+- from: OpenURL/Libs/AmigaOS3/openurl.library
+  to: Libs/
+- from: OpenURL/C/AmigaOS3/OpenURL
+  to: C/
+- from: OpenURL/Prefs/AmigaOS3/OpenURL
+  to: Prefs/
+- from: OpenURL/Prefs/AmigaOS3/OpenURL.info
+  to: Prefs/
+default: false
+requires:
+- mui

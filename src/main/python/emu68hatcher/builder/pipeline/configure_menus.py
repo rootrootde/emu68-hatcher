@@ -47,7 +47,7 @@ _HATCHER_PREFS_STACK = 65536
 # p96_modern: editor exists only in the user-supplied modern Picasso96 archive, not the aminet one.
 # wb_launch: Workbench mode keeps the icon stack and tooltypes for editors that need them.
 _PREFS_ENTRIES: tuple[dict, ...] = (
-    {"title": "AHI", "exe": "Prefs/AHI", "requires": ("ahi",), "wb_launch": True},
+    {"title": "AHI", "exe": "Prefs/AHI", "requires": ("ahi", "ahi6"), "wb_launch": True},
     {"title": "DefaultIcons", "exe": "Prefs/DefaultIcons"},
     {"title": "Font", "exe": "Prefs/Font"},
     {"title": "IControl", "exe": "Prefs/IControl"},

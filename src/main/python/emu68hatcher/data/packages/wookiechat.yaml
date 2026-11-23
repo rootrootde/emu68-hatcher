@@ -1,0 +1,75 @@
+name: wookiechat
+friendly_name: WookieChat
+group: Internet
+description: 'IRC client'
+upstream_version: '2.11'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+# the archive's MUI classes and codesets.library 6.6 are older than the catalog's
+requires:
+- mui
+- mcc_nlist
+- mcc_betterstring
+- codesets
+download:
+  source: aminet
+  path: comm/irc/WookieChat2.11_OS3.lha
+  hash: c05f7b24abfe028960030c82847b6e03
+  filename: WookieChat2.11_OS3.lha
+install:
+- from: WookieChat2.11_OS3_Installer.info
+  to: Programs/
+  rename: WookieChat.info
+# reads and writes its settings, logs and themes in PROGDIR:
+- from: 'WookieChat2.11_OS3_Installer/WookieChat_OS3'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/WookieChat_OS3.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/*.txt'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/*.txt.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/guru_logo2.png'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/wookiechat_logo.gif'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Logs.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Catalogs'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Catalogs.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Colours'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Colours.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/ConnectScripts'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/ConnectScripts.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Docs'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Docs.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Smilies'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/Smilies.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/sounds'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/sounds.info'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/ARexx_scripts'
+  to: Programs/WookieChat/
+- from: 'WookieChat2.11_OS3_Installer/ARexx_scripts.info'
+  to: Programs/WookieChat/
+menu_entry:
+  title: WookieChat
+  path: Programs/WookieChat/WookieChat_OS3
+  menu: Network
+  wb_launch: true

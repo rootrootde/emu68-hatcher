@@ -1,0 +1,26 @@
+name: xfdmaster
+friendly_name: XFD
+group: Archivers
+description: 'xfdmaster.library, decrunches packed programs and data files'
+upstream_version: '1.38'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+mandatory: false
+download:
+  source: aminet
+  path: util/pack/xfdmaster.lha
+  hash: df1c5c32051a0bbb2e7ffd8612d4fee1
+  filename: xfdmaster.lha
+install:
+- from: xfd_User/Libs/xfdmaster.library
+  to: Libs/
+# external decrunchers, read from LIBS:xfd
+- from: xfd_User/Libs/xfd
+  to: Libs/
+- from: xfd_User/C/*
+  to: C/
+default: false

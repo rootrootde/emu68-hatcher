@@ -1,0 +1,38 @@
+name: diskmaster
+friendly_name: DiskMaster 2
+group: Applications
+description: 'two-pane file manager'
+upstream_version: '2.5.30a'
+# the V37 build: 2.6 needs ReAction, which 3.1 lacks
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+download:
+  source: aminet
+  path: util/dir/DiskMasterV37.lha
+  hash: 17d2567ec5dc108199de5b3451c23948
+  filename: DiskMasterV37.lha
+install:
+- from: DiskMaster2.info
+  to: Programs/
+- from: DiskMaster2/DiskMaster2
+  to: Programs/DiskMaster2/
+- from: DiskMaster2/DiskMaster2.info
+  to: Programs/DiskMaster2/
+- from: DiskMaster2/DiskMaster2.guide
+  to: Programs/DiskMaster2/
+- from: DiskMaster2/DiskMaster2.guide.info
+  to: Programs/DiskMaster2/
+- from: DiskMaster2/Rexx
+  to: Programs/DiskMaster2/
+- from: DiskMaster2/Catalogs
+  to: Programs/DiskMaster2/
+menu_entry:
+  title: DiskMaster 2
+  path: Programs/DiskMaster2/DiskMaster2
+  menu: Apps
+  wb_launch: true

@@ -25,8 +25,9 @@ def resolve_choices(
     rgb2rtg_enabled: bool = False,
 ) -> Resolution:
     states = software_defaults() | choices
-    if choices.get("mui5") and not choices.get("mui38"):
-        states["mui38"] = False
+    for name, other in (("mui5", "mui38"), ("ahi6", "ahi")):
+        if choices.get(name) and not choices.get(other):
+            states[other] = False
     reasons = {}
     if ags_enabled:
         reasons["whdload"] = "AGS"

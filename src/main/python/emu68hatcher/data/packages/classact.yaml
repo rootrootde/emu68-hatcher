@@ -1,0 +1,25 @@
+name: classact
+friendly_name: ClassAct
+group: Libraries
+description: 'ClassAct 3.3 GUI classes for programs that need ReAction on 3.1'
+upstream_version: '3.3'
+versions:
+- '3.1'
+mandatory: false
+download:
+  source: aminet
+  path: dev/gui/classact33.lha
+  hash: 3d68dff51262ff782754c4592c4a2ea6
+  filename: classact33.lha
+install:
+- from: Classes/*.class
+  to: Classes/
+- from: Classes/gadgets
+  to: Classes/
+- from: Classes/images
+  to: Classes/
+- from: Prefs/ClassAct
+  to: Prefs/
+- from: Prefs/caprefs
+  to: Prefs/
+default: false

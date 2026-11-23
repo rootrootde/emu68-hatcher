@@ -1,0 +1,44 @@
+name: scout
+friendly_name: Scout
+group: Utilities
+description: 'system monitor for tasks, libraries and ports'
+upstream_version: '3.6'
+versions:
+- '3.1'
+- '3.2'
+- 3.2.2.1
+- 3.2.3
+- '3.9'
+default: false
+# the archive's NList classes and identify.library 37 are older than the catalog's
+requires:
+- mui
+- mcc_nlist
+- identify
+download:
+  source: aminet
+  path: util/moni/Scout_os3.lha
+  hash: e17b0d8e6f6aa1a4c0904ee56f206a7f
+  filename: Scout_os3.lha
+install:
+- from: Scout.info
+  to: Programs/
+- from: Scout/Scout.os3
+  to: Programs/Scout/
+  rename: Scout
+- from: Scout/Scout.os3.info
+  to: Programs/Scout/
+  rename: Scout.info
+- from: Scout/arexx
+  to: Programs/Scout/
+- from: Scout/arexx.info
+  to: Programs/Scout/
+- from: Scout/help/english/scout.guide
+  to: Programs/Scout/help/english/
+- from: Scout/help/deutsch/scout.guide
+  to: Programs/Scout/help/deutsch/
+menu_entry:
+  title: Scout
+  path: Programs/Scout/Scout
+  menu: System
+  wb_launch: true
