@@ -18,6 +18,7 @@ amigaamp
 amimail
 amispeedtest
 amissl
+amissl6
 asyncio_library
 boingbag_os39_bb1
 boingbag_os39_bb2
