@@ -14,13 +14,13 @@ download:
   path: Hatcher-Prefs.lha
   filename: Hatcher-Prefs.lha
 install:
-# the Network Settings icon and the Network menu name SYS:C/Hatcher-Prefs
+# the Network Settings icon and the System menu name SYS:C/Hatcher-Prefs
 - from: Hatcher-Prefs/Hatcher-Prefs
   to: C/
 - from: Hatcher-Prefs
   to: Emu68-Hatcher/Tools/
   recursive: true
-# the Network menu carries the launcher (configure_menus), so no menu_entry here
+# the System menu carries the launcher (configure_menus), so no menu_entry here
 default: true
 # MUI draws the window; the Shell entry Hatcher-Prefs CONNECT runs without it
 requires:

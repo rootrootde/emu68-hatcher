@@ -75,7 +75,7 @@ scripts:
   content: |
     ;BEGIN Roadshow
     ; Network-Startup not auto-executed - Roadshow demo timer starts when
-    ; bsdsocket.library opens. Use "Connect" from the Network menu instead.
+    ; bsdsocket.library opens. Use "Connect" in System > Network Settings instead.
     ;END Roadshow
 - name: Roadshow TCP/IP
   when_user_archive: true

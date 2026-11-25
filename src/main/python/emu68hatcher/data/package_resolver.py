@@ -6,9 +6,26 @@ import logging
 from dataclasses import dataclass, field
 
 from emu68hatcher.data.package_loader import get_packages_for_version
-from emu68hatcher.data.package_schema import Package, _group_rank
+from emu68hatcher.data.package_schema import Package
 
 logger = logging.getLogger(__name__)
+
+# install-order tie-break by group, independent of the Software tab order; others rank last
+_INSTALL_GROUP_ORDER = {
+    "System": 0,
+    "Drivers": 1,
+    "RTG": 2,
+    "Commodities": 3,
+    "Appearance": 4,
+    "Music": 5,
+    "Tools": 5,
+    "System Tools": 6,
+    "Fonts": 7,
+    "Internet": 8,
+    "Network": 9,
+    "Games": 10,
+    "Locale": 11,
+}
 
 
 @dataclass
@@ -202,7 +219,7 @@ def _topological_order(
                 deps[r].add(prov)  # r depends on prov -> prov first
 
     def rank(n: str) -> tuple[int, str]:
-        return (_group_rank(by_name[n]), n)
+        return (_INSTALL_GROUP_ORDER.get(by_name[n].group, len(_INSTALL_GROUP_ORDER)), n)
 
     indeg = {n: len(deps[n]) for n in selected}
     ready = sorted((n for n in selected if indeg[n] == 0), key=rank)

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 # the wrapper's EmuControl settings disturb the RGB2RTG picture, so RGB2RTG builds start with
-# the plain WHDLoad in C:; S:WHDLoadWrapper-Switch (Games menu) swaps the two at any time
+# the plain WHDLoad in C:; S:WHDLoadWrapper-Switch (Apps > Games) swaps the two at any time
 def configure_whdload_wrapper(workflow: BuildWorkflow, boot_staging: Path, all_packages) -> None:
     if "whdloadwrapper" not in all_packages or not workflow.config.rgb2rtg.enabled:
         return
