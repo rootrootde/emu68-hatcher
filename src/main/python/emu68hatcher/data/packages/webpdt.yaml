@@ -2,7 +2,7 @@ name: webpdt
 friendly_name: WebP datatype
 group: Datatypes
 description: 'WebP image datatype'
-upstream_version: '45.1'
+upstream_version: '45.2'
 versions:
 - '3.1'
 - '3.2'
@@ -13,7 +13,7 @@ mandatory: false
 download:
   source: aminet
   path: util/dtype/webpdt.m68k-amigaos.lha
-  hash: aa0636ecf1cb5fe717f5aeb154dc56d7
+  hash: 3e3a401c094ca6d624c2dea55deb043f
   filename: webpdt.m68k-amigaos.lha
 install:
 - from: webpdt/Classes/DataTypes/webp.datatype
