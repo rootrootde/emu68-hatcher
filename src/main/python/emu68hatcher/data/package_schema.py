@@ -92,7 +92,7 @@ class MenuEntry(CatalogModel):
 
     title: str  # label shown in the Workbench menu
     path: str  # executable path relative to SYS:, e.g. "Programs/IBrowse/IBrowse"
-    menu: str = "Apps"  # Workbench menu title
+    menu: str = "Apps"  # Workbench menu title, "Menu" or "Menu/Submenu"
     wb_launch: bool = False  # launch in Workbench mode instead of from the CLI
     selected_icons: bool = False  # pass selected Workbench icons to the launcher
 
@@ -206,18 +206,21 @@ class Bundle(CatalogModel):
 
 # groups for organizing packages in UI
 PACKAGE_GROUPS = [
-    "System",
-    "Drivers",
-    "RTG",
+    "Internet",
+    "Music",
+    "Games",
+    "Tools",
+    "System Tools",
+    "Archivers",
     "Commodities",
     "Appearance",
-    "Applications",
-    "Utilities",
-    "Fonts",
-    "Internet",
+    "Drivers",
+    "RTG",
     "Network",
-    "Development",
-    "Games",
+    "Fonts",
+    "Datatypes",
+    "Libraries",
+    "System",
     "Locale",
 ]
 

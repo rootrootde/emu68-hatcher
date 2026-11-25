@@ -1,7 +1,7 @@
 name: hippoplayerupdate
 friendly_name: HippoPlayer
 bundle: hippoplayer
-group: Applications
+group: Music
 description: 'hippoplayer update'
 versions:
 - '3.1'

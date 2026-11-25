@@ -1,6 +1,6 @@
 name: vinced
 friendly_name: ViNCEd
-group: Utilities
+group: System Tools
 description: 'console handler'
 versions:
 - '3.1'

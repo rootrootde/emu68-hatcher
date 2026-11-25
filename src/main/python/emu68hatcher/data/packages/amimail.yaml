@@ -39,5 +39,5 @@ install:
 menu_entry:
   title: AmiMAIL
   path: Programs/AmiMAIL/AmiMAIL
-  menu: Network
+  menu: Apps/Internet
   wb_launch: true

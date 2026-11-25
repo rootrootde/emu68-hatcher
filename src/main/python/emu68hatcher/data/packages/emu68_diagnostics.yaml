@@ -1,6 +1,6 @@
 name: emu68_diagnostics
 friendly_name: Emu68 diagnostics
-group: Utilities
+group: System Tools
 description: Emu68 diagnostics
 versions:
 - '3.1'

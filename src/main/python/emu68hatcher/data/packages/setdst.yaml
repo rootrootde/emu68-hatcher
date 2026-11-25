@@ -1,6 +1,6 @@
 name: setdst
 friendly_name: SetDST
-group: Utilities
+group: System Tools
 description: 'Adjust the system clock for daylight saving time'
 versions:
 - '3.1'

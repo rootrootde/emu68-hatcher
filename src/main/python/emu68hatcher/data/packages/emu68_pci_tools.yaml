@@ -1,6 +1,6 @@
 name: emu68_pci_tools
 friendly_name: PCI and driver diagnostics
-group: Utilities
+group: System Tools
 description: PCI and driver diagnostics
 versions:
 - '3.1'

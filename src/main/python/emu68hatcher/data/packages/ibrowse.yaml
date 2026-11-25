@@ -70,7 +70,7 @@ install:
 menu_entry:
   title: IBrowse
   path: Programs/IBrowse/IBrowse
-  menu: Network
+  menu: Apps/Internet
 requires:
 - mui
 - amissl6

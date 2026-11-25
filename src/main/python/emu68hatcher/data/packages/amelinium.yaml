@@ -28,7 +28,7 @@ install:
 menu_entries:
 - title: Amelinium
   path: Programs/Amelinium/Amelinium_040
-  menu: Network
+  menu: Apps/Internet
 - title: Amelinium JS
   path: Programs/Amelinium/Amelinium_040_JS
-  menu: Network
+  menu: Apps/Internet

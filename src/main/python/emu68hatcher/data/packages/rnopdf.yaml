@@ -1,6 +1,6 @@
 name: rnopdf
 friendly_name: RNOPDF
-group: Applications
+group: Tools
 description: 'PDF viewer, needs RTG'
 upstream_version: '1.6'
 versions:
@@ -33,5 +33,5 @@ install:
 menu_entry:
   title: RNOPDF
   path: Programs/RNOPDF/RNOPDF
-  menu: Apps
+  menu: Apps/Tools
   wb_launch: true

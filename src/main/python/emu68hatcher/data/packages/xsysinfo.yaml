@@ -1,6 +1,6 @@
 name: xsysinfo
 friendly_name: xSysInfo
-group: Utilities
+group: System Tools
 description: 'system information, with a MUI window when MUI is installed'
 upstream_version: '0.12.0'
 versions:

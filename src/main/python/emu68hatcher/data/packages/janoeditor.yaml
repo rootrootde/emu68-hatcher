@@ -1,6 +1,6 @@
 name: janoeditor
 friendly_name: JanoEditor
-group: Applications
+group: Tools
 description: 'text editor'
 versions:
 - '3.1'

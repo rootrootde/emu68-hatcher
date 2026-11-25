@@ -19,7 +19,7 @@ Configurations saved before 1.3.0 are loaded with the import pending; check **AG
 
 ## On the Amiga
 
-Start AGS through **WHDLoad:AGS**, or from the **Games** menu when ToolsDaemon is installed; the menu also starts iGame. **S:User-Startup** sets the assigns AGS needs (**AGS:**, **Scripts:**, **AGSOS:**, **WHD_Games:**, **WHD_Demos:**, plus **Emulators:**, **Premium:** and **ST-00:** for the optional volumes), so no script depends on fixed device numbers.
+Start AGS through **WHDLoad:AGS**, or from **Apps → Games** in the menu when ToolsDaemon is installed; the menu also starts iGame. **S:User-Startup** sets the assigns AGS needs (**AGS:**, **Scripts:**, **AGSOS:**, **WHD_Games:**, **WHD_Demos:**, plus **Emulators:**, **Premium:** and **ST-00:** for the optional volumes), so no script depends on fixed device numbers.
 
 AGS runs in its portable mode and hides its boot and disk options. On a PiStorm it never runs the emulator commands; in an emulator it defaults the hardware setting to Amiberry. Nothing is written to **ENVARC:**, so a card tested in an emulator still boots as real hardware.
 

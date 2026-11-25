@@ -1,6 +1,6 @@
 name: amigaamp
 friendly_name: AmigaAMP
-group: Applications
+group: Music
 description: 'MP3 and audio player'
 # no 3.1: AmigaAMP-Prefs needs ReAction window.class V41+ (absent on 3.1) and the recursive
 # copy drags it in with no per-file exclude
@@ -27,4 +27,4 @@ install:
 menu_entry:
   title: AmigaAMP
   path: Programs/AmigaAMP3/AmigaAMP
-  menu: Apps
+  menu: Apps/Music

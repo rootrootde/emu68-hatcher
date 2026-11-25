@@ -1,7 +1,7 @@
 name: hippoplayer
 friendly_name: HippoPlayer
 bundle: hippoplayer
-group: Applications
+group: Music
 description: 'MOD and other tracker module player'
 versions:
 - '3.1'
@@ -31,4 +31,4 @@ install:
 menu_entry:
   title: HippoPlayer
   path: Programs/HippoPlayer/HiP
-  menu: Apps
+  menu: Apps/Music

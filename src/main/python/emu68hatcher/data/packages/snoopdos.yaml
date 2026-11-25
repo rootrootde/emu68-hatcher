@@ -1,6 +1,6 @@
 name: snoopdos
 friendly_name: SnoopDOS
-group: Applications
+group: System Tools
 description: 'system call viewer'
 versions:
 - '3.1'

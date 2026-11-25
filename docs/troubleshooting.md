@@ -51,7 +51,7 @@ rx S:MiamiNetwork.rexx ONLINE GENET        ; or ONLINE WIFIPI, OFFLINE
 
 ### Clock is not set after boot
 
-Every connect from Network Settings, the Network menu or Connect at boot runs
+Every connect from Network Settings (in the **System** menu) or Connect at boot runs
 `rx S:NetworkConfig.rexx SYNCTIME` in the background; with the full Roadshow archive,
 User-Startup runs it after Network-Startup. It sets the clock from pool.ntp.org and
 saves it to the real-time clock. Check that **Connect at boot** is on in Network

@@ -40,5 +40,5 @@ scripts:
 menu_entry:
   title: Telser Config
   path: Programs/Telser/bin/tsconfig
-  menu: Network
+  menu: System
   wb_launch: true

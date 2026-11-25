@@ -1,6 +1,6 @@
 name: installer
 friendly_name: Installer
-group: Utilities
+group: System Tools
 description: 'commodore installer utility'
 versions:
 - '3.1'

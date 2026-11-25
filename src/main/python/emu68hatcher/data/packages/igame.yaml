@@ -43,5 +43,5 @@ install:
 menu_entry:
   title: iGame
   path: Programs/iGame/iGame
-  menu: Apps
+  menu: Apps/Games
   wb_launch: true

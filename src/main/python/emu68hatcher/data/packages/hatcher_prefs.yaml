@@ -1,6 +1,6 @@
 name: hatcher_prefs
 friendly_name: Hatcher Prefs
-group: Utilities
+group: System Tools
 description: 'network settings window: connect, disconnect, WiFi password, addresses'
 versions:
 - '3.1'

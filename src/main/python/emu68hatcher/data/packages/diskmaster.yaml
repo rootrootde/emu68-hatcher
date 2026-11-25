@@ -1,6 +1,6 @@
 name: diskmaster
 friendly_name: DiskMaster 2
-group: Applications
+group: Tools
 description: 'two-pane file manager'
 upstream_version: '2.5.30a'
 # the V37 build: 2.6 needs ReAction, which 3.1 lacks
@@ -34,5 +34,5 @@ install:
 menu_entry:
   title: DiskMaster 2
   path: Programs/DiskMaster2/DiskMaster2
-  menu: Apps
+  menu: Apps/Tools
   wb_launch: true

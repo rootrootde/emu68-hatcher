@@ -1,6 +1,6 @@
 name: screentext
 friendly_name: Screentext
-group: Utilities
+group: System Tools
 description: 'print text onto screen'
 versions:
 - '3.1'

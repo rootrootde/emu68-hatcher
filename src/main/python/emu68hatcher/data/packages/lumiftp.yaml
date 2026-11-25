@@ -40,5 +40,5 @@ install:
 menu_entry:
   title: LumiFTP
   path: Programs/LumiFTP/LumiFTP
-  menu: Network
+  menu: Apps/Internet
   wb_launch: true

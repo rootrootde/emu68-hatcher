@@ -80,5 +80,5 @@ scripts:
 menu_entry:
   title: Term
   path: Programs/Term/term
-  menu: Network
+  menu: Apps/Internet
   wb_launch: true

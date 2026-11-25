@@ -65,6 +65,9 @@ class CatalogData(BaseModel):
                 *([package.menu_entry] if package.menu_entry else []),
             ]:
                 menu.model_dump_json().encode("iso-8859-1")
+                parts = menu.menu.split("/")
+                if len(parts) > 2 or not all(parts):
+                    raise ValueError(f"{key}: menu must be Menu or Menu/Submenu: {menu.menu}")
             download = package.download
             if download:
                 if download.filename:

@@ -19,11 +19,16 @@ _GROUP_ORDER = [
     "RTG",
     "Network",
     "Internet",
+    "Music",
+    "Games",
+    "Tools",
+    "System Tools",
+    "Archivers",
     "Commodities",
     "Appearance",
-    "Applications",
-    "Utilities",
     "Fonts",
+    "Datatypes",
+    "Libraries",
     "Locale",
 ]
 _ALL_VERSIONS = {v.value for v in KickstartVersion}

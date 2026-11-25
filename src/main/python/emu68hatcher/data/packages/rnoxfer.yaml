@@ -43,5 +43,5 @@ install:
 menu_entry:
   title: RNOXfer
   path: Programs/RNOXfer/RNOXfer
-  menu: Network
+  menu: Apps/Internet
   wb_launch: true

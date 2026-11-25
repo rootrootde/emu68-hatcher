@@ -22,7 +22,7 @@ image_datatypes:
 
 hippoplayer:
   display_name: HippoPlayer
-  group: Applications
+  group: Music
   description: "MOD and other tracker module player"
   default: true
 

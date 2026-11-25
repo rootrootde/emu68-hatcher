@@ -1,6 +1,6 @@
 name: newmeter
 friendly_name: NewMeter
-group: Utilities
+group: System Tools
 description: 'system monitor window, configured by its icon tooltypes'
 upstream_version: '1.466'
 versions:

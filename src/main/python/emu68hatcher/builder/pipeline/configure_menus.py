@@ -38,7 +38,7 @@ class _MenuLauncher:
 
 
 # Hatcher-Prefs serves every stack: one window to connect, disconnect and edit
-# the settings, so the Network menu has one entry
+# the settings, so System has a single Network Settings entry
 _HATCHER_PREFS = "SYS:C/Hatcher-Prefs"
 _HATCHER_PREFS_STACK = 65536
 
@@ -113,9 +113,7 @@ def _collect_app_entries(all_packages: list[str]) -> list[_MenuLauncher]:
 def _network_entries(network_stack: NetworkStack | None) -> list[_MenuLauncher]:
     if network_stack is None:
         return []
-    return [
-        _MenuLauncher("Network", "Network Settings", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)
-    ]
+    return [_MenuLauncher("System", "Network Settings", _HATCHER_PREFS, stack=_HATCHER_PREFS_STACK)]
 
 
 def _prefs_entries(all_packages: list[str], p96_modern: bool) -> list[_MenuLauncher]:
@@ -149,6 +147,20 @@ def _append_launcher(lines: list[str], entry: _MenuLauncher, keyword: str = "ITE
         lines.append(f"{_MENU_INDENT}(CLI) {entry.stack} {entry.command}{selected}")
 
 
+def _append_menu(lines: list[str], entries: list[_MenuLauncher]) -> None:
+    """Write a top menu's submenus, then its plain items."""
+    submenus: dict[str, list[_MenuLauncher]] = {}
+    for entry in entries:
+        submenus.setdefault(entry.menu.partition("/")[2], []).append(entry)
+    plain = submenus.pop("", [])
+    for submenu in sorted(submenus, key=str.lower):
+        lines.append(f"{_MENU_INDENT}ITEM {submenu}")
+        for entry in submenus[submenu]:
+            _append_launcher(lines, entry, keyword="SUB")
+    for entry in plain:
+        _append_launcher(lines, entry)
+
+
 def _build_toolsdaemon_menu(
     network_stack: NetworkStack | None,
     all_packages: list[str],
@@ -158,58 +170,48 @@ def _build_toolsdaemon_menu(
     ags: bool = False,
 ) -> list[str]:
     """Build the complete ToolsDaemon.menu file."""
-    network_actions = _network_entries(network_stack)
-    package_entries = _collect_app_entries(all_packages)
     package_menus: dict[str, list[_MenuLauncher]] = {}
-    for entry in sorted(package_entries, key=lambda item: (item.menu.lower(), item.title.lower())):
-        package_menus.setdefault(entry.menu, []).append(entry)
+    for entry in sorted(
+        _collect_app_entries(all_packages), key=lambda item: (item.menu.lower(), item.title.lower())
+    ):
+        package_menus.setdefault(entry.menu.partition("/")[0], []).append(entry)
 
     lines: list[str] = []
     package_menus.pop("Tools", None)
 
-    network_apps = package_menus.pop("Network", [])
-    if network_actions or network_apps:
-        lines.append("TITLE Network")
-        for entry in network_actions:
-            _append_launcher(lines, entry)
-        if network_actions and network_apps:
-            lines.append(f"{_MENU_INDENT}ITEMBAR")
-        for entry in network_apps:
-            _append_launcher(lines, entry)
-
-    apps = package_menus.pop("Apps", [])
-    if apps:
-        lines.append("TITLE Apps")
-        for entry in apps:
-            _append_launcher(lines, entry)
-
-    games = package_menus.pop("Games", [])
-    wrapper = "whdloadwrapper" in all_packages
-    if ags or games or wrapper:
-        lines.append("TITLE Games")
+    games_first: list[_MenuLauncher] = []
     if ags:
         # AGS_Drive: comes from S:User-Startup. WBRun opens the AGS project through its
         # IconX icon. iGame is a CLI start on purpose: started from Workbench, the shell
         # it spawns for WHDLoad has no console, and the WHDLoad wrapper chain hangs in it.
         # iGame finds its lists and prefs through PROGDIR:, so no cd is needed. Without
         # Run, ToolsDaemon's CLI start never brings iGame up.
-        _append_launcher(lines, _MenuLauncher("Games", "AGS", "C:WBRun AGS_Drive:AGS"))
-        _append_launcher(
-            lines,
-            _MenuLauncher("Games", "iGame", "Run >NIL: AGS_Drive:IGame/iGame", stack=65536),
-        )
-    for entry in games:
-        _append_launcher(lines, entry)
-    if wrapper:
-        _append_launcher(
-            lines,
-            _MenuLauncher("Games", "WHDLoad wrapper on/off", "C:Execute S:WHDLoadWrapper-Switch"),
-        )
+        games_first = [
+            _MenuLauncher("Apps/Games", "AGS", "C:WBRun AGS_Drive:AGS"),
+            _MenuLauncher(
+                "Apps/Games", "iGame (AGS)", "Run >NIL: AGS_Drive:IGame/iGame", stack=65536
+            ),
+        ]
+    games_last: list[_MenuLauncher] = []
+    if "whdloadwrapper" in all_packages:
+        games_last = [
+            _MenuLauncher(
+                "Apps/Games", "WHDLoad wrapper on/off", "C:Execute S:WHDLoadWrapper-Switch"
+            )
+        ]
+    apps = games_first + package_menus.pop("Apps", []) + games_last
+    if apps:
+        lines.append("TITLE Apps")
+        _append_menu(lines, apps)
 
-    system_apps = package_menus.pop("System", [])
     lines.append("TITLE System")
-    for entry in system_apps:
+    network_actions = _network_entries(network_stack)
+    for entry in network_actions:
         _append_launcher(lines, entry)
+    if network_actions:
+        lines.append(f"{_MENU_INDENT}ITEMBAR")
+    system_apps = package_menus.pop("System", [])
+    _append_menu(lines, system_apps)
     if system_apps:
         lines.append(f"{_MENU_INDENT}ITEMBAR")
 
@@ -243,8 +245,7 @@ def _build_toolsdaemon_menu(
 
     for menu in sorted(package_menus, key=str.lower):
         lines.append(f"TITLE {menu}")
-        for entry in package_menus[menu]:
-            _append_launcher(lines, entry)
+        _append_menu(lines, package_menus[menu])
 
     lines.append("END")
     return lines

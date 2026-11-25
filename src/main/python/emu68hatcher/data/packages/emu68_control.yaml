@@ -1,6 +1,6 @@
 name: emu68_control
 friendly_name: EmuControl
-group: Utilities
+group: System Tools
 description: Monitor Emu68 performance and adjust JIT settings
 versions:
 - '3.1'

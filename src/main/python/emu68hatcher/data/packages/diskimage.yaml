@@ -1,6 +1,6 @@
 name: diskimage
 friendly_name: DiskImage
-group: Utilities
+group: Tools
 description: 'mounts CD and disk images (iso, cue/bin, nrg, mds, adf, hdf, ...)'
 upstream_version: '52.35'
 # no 3.1: no L:CDFileSystem and no ReAction for DiskImageGUI

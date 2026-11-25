@@ -71,5 +71,5 @@ install:
 menu_entry:
   title: WookieChat
   path: Programs/WookieChat/WookieChat_OS3
-  menu: Network
+  menu: Apps/Internet
   wb_launch: true

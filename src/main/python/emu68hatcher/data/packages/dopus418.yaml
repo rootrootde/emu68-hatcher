@@ -1,6 +1,6 @@
 name: dopus418
 friendly_name: DirectoryOpus
-group: Applications
+group: Tools
 description: 'file manager'
 versions:
 - '3.1'
@@ -44,4 +44,4 @@ install:
 menu_entry:
   title: Directory Opus
   path: Programs/DOpus/DirectoryOpus
-  menu: Apps
+  menu: Apps/Tools

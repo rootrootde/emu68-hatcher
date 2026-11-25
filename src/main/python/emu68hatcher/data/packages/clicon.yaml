@@ -1,6 +1,6 @@
 name: clicon
 friendly_name: CLICon
-group: Utilities
+group: System Tools
 description: 'Launch shell programs and scripts from Workbench icons'
 versions:
 - '3.1'

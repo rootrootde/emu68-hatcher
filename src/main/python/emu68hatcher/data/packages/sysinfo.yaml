@@ -1,6 +1,6 @@
 name: sysinfo
 friendly_name: SysInfo
-group: Applications
+group: System Tools
 description: 'benchmarking program'
 upstream_version: '4.4'
 versions:

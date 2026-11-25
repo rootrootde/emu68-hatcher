@@ -1,6 +1,6 @@
 name: scout
 friendly_name: Scout
-group: Utilities
+group: System Tools
 description: 'system monitor for tasks, libraries and ports'
 upstream_version: '3.6'
 versions:

@@ -1,6 +1,6 @@
 name: pfs_additional_tools
 friendly_name: PFS - Additional Tools
-group: Utilities
+group: System Tools
 description: 'PFS3 maintenance tools: pfsdoctor and setfnsize'
 versions:
 - '3.1'

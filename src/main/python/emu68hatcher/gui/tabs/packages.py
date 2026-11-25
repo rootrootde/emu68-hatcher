@@ -23,6 +23,7 @@ from emu68hatcher.data.package_loader import (
     get_packages_for_version,
     load_all_packages,
 )
+from emu68hatcher.data.package_schema import PACKAGE_GROUPS
 from emu68hatcher.data.package_selection import resolve_choices, software_defaults
 from emu68hatcher.gui.design import page_layout
 
@@ -155,14 +156,17 @@ class PackagesTab(QWidget):
             self.checkboxes[key] = item
             self._key_to_packages[key] = names
 
+        rows = []
         for bundle in get_bundles_for_version(self.kickstart_version, self.emu68_version):
             members = get_bundle_members(bundle.id, self.kickstart_version, self.emu68_version)
-            add_row(
-                "bundle:" + bundle.id,
-                bundle.display_name,
-                bundle.group,
-                bundle.description or "",
-                [p.name for p in members],
+            rows.append(
+                (
+                    "bundle:" + bundle.id,
+                    bundle.display_name,
+                    bundle.group,
+                    bundle.description or "",
+                    [p.name for p in members],
+                )
             )
         for pkg in packages:
             if pkg.mandatory or pkg.bundle or pkg.name in _NETWORK_STACK_PACKAGES:
@@ -173,7 +177,15 @@ class PackagesTab(QWidget):
                 continue
             else:
                 category = pkg.group
-            add_row(pkg.name, pkg.friendly_name, category, pkg.description, [pkg.name])
+            rows.append((pkg.name, pkg.friendly_name, category, pkg.description, [pkg.name]))
+        # stable sort: groups in PACKAGE_GROUPS order, bundles before packages within a group
+        for row in sorted(
+            rows,
+            key=lambda row: (
+                PACKAGE_GROUPS.index(row[2]) if row[2] in PACKAGE_GROUPS else len(PACKAGE_GROUPS)
+            ),
+        ):
+            add_row(*row)
 
         shown = {name for names in self._key_to_packages.values() for name in names}
         for name in sorted(selected - shown):

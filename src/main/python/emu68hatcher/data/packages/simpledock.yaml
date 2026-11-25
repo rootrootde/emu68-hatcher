@@ -1,6 +1,6 @@
 name: simpledock
 friendly_name: SimpleDock
-group: Utilities
+group: Tools
 description: 'macOS-style Workbench dock'
 upstream_version: '1.2'
 # needs 3.1.4 or later, the plain 3.1 install is too old
@@ -22,5 +22,5 @@ install:
 menu_entry:
   title: SimpleDock
   path: Programs/SimpleDock/SimpleDock
-  menu: System
+  menu: Apps/Tools
   wb_launch: true
