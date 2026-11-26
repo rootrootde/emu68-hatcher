@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -25,6 +25,7 @@ from emu68hatcher.data.icon_sets import (
     get_icon_sets_for_version,
 )
 from emu68hatcher.gui.design import page_layout
+from emu68hatcher.gui.widgets import set_combo_item_enabled
 from emu68hatcher.gui.widgets.asset_scan_panel import AssetScanPanel
 from emu68hatcher.gui.work_areas import scroll_page
 
@@ -199,12 +200,11 @@ class KickstartTab(QWidget):
             available = required_adf is None or required_adf in self._recognized_adfs
             label = name if available else f"{name} (ADF not found)"
             self.icon_set_combo.addItem(label, name)
-            item = self.icon_set_combo.model().item(i)
-            item.setEnabled(available)
+            set_combo_item_enabled(self.icon_set_combo, i, available)
             description = icon_set["description"]
             if not available:
                 description += f"\nRequires a recognized {format_adf_name(required_adf)} ADF."
-            item.setToolTip(description)
+            self.icon_set_combo.setItemData(i, description, Qt.ItemDataRole.ToolTipRole)
             if available and first_available is None:
                 first_available = i
             if available and icon_set["default"]:
