@@ -2,7 +2,7 @@ name: aatext
 friendly_name: AAText
 group: Appearance
 description: 'antialiased TrueType text on RTG screens (editor: Prefs/AATextPrefs)'
-upstream_version: '0.46'
+upstream_version: '0.48'
 default: false
 versions:
 - '3.2'
@@ -17,8 +17,8 @@ requires:
 download:
   source: github
   repo: Sdursun/AAText
-  tag: v0.46
-  hash: 140ABE387801647C21C8CA953C927755
+  tag: v0.48
+  hash: E841C2C9C9CDDB1E712E634B00BC3EFA
   filename: AAText.lha
 install:
 - from: AAText/AAText

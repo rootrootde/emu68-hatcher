@@ -12,9 +12,9 @@ mandatory: true
 download:
   source: github
   repo: pulchart/fat95
-  tag: v20261115
-  hash: E60DB5171B1C0CFFFA6766236CCE63E4
-  filename: fat95.v20261115.lha
+  tag: v20261127
+  hash: 511AAFA2C47A880E23CBC3040A7A8F9E
+  filename: fat95.v20261127.lha
 install:
 # 68020+ cpu tier (Emu68 is 040-class); the handler is now split by cpu
 - from: fat95/l/68020/fat95
