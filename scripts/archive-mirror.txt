@@ -1,5 +1,6 @@
 # packages whose pinned download archive may be copied to the archive mirror
 # (scripts/mirror-package-archives.py); remove a name to keep it off the mirror
+aatext
 additem
 ahi
 ahi6
@@ -19,6 +20,9 @@ amispeedtest
 amissl
 amissl6
 asyncio_library
+avalanche
+birdie
+birdie_prefs
 boingbag_os39_bb1
 boingbag_os39_bb2
 ce
@@ -27,10 +31,12 @@ classact
 clicon
 codesets
 dctelnet
+diskimage
 diskmaster
 dopus418
 emu68_driver_stack
 emu68_tools
+expat_library
 fat95
 filesysbox
 fonts_amiga_retro
@@ -43,6 +49,7 @@ fonts_roboto
 fonts_terminus
 fonts_topazpro
 fonts_vera
+fullpalette
 genet_device_legacy
 guigfx
 hid2ami
@@ -65,6 +72,7 @@ mcc_popph
 mcc_texteditor
 mcc_thebar
 mcc_toolbar
+mcp
 miamidx
 miamidx_mui
 mpega_library
@@ -101,12 +109,16 @@ sysinfo
 telser
 telser_keyfile
 term
+titlebar_image
+titleshadow
 toolsdaemon
 toolsdaemon_patch
 trasfondo
 ttflib
 unzip
 vinced
+visualprefs
+visualprefs_files
 wbrun
 webpdt
 whdload
@@ -115,6 +127,7 @@ winzoom
 wookiechat
 workbench_library
 xadmaster
+xadmaster_key
 xfdmaster
 xpk
 xsysinfo
