@@ -3481,11 +3481,11 @@
             "download": {
               "check_latest_release": true,
               "filename": "AAText.lha",
-              "hash": "140ABE387801647C21C8CA953C927755",
+              "hash": "E841C2C9C9CDDB1E712E634B00BC3EFA",
               "path": null,
               "repo": "Sdursun/AAText",
               "source": "github",
-              "tag": "v0.46",
+              "tag": "v0.48",
               "url": null
             },
             "emu68_versions": null,
@@ -3568,7 +3568,7 @@
                 "when_user_archive": null
               }
             ],
-            "upstream_version": "0.46",
+            "upstream_version": "0.48",
             "versions": [
               "3.2",
               "3.2.2.1",
@@ -4491,7 +4491,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "4C20A157101FACAC62EAC55A6E27ABCB",
+              "hash": "D9E5F244880C70AEBCBE7C9329F7A657",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4590,7 +4590,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "AmiFire.lha",
-              "hash": "13a9d0205d5990a89da80d1590bf23b0",
+              "hash": "4C8A6B6DA8A3A3B521358AEAC006CDD7",
               "path": "comm/www/AmiFire.lha",
               "repo": null,
               "source": "aminet",
@@ -4628,7 +4628,7 @@
               "amissl"
             ],
             "scripts": [],
-            "upstream_version": "0.9.390",
+            "upstream_version": "0.9.436",
             "versions": [
               "3.1",
               "3.2",
@@ -5490,12 +5490,12 @@
             "description": "compactflash PCMCIA driver",
             "download": {
               "check_latest_release": true,
-              "filename": "cfd.v20261115.lha",
-              "hash": "13F9480E0E6D8258D7A02BE2D405B439",
+              "filename": "cfd.v20261127.lha",
+              "hash": "4E24E241EBA4A12CA3EC27DBF4F8BA54",
               "path": null,
               "repo": "pulchart/cfd",
               "source": "github",
-              "tag": "v20261115",
+              "tag": "v20261127",
               "url": null
             },
             "emu68_versions": null,
@@ -7207,12 +7207,12 @@
             "description": "FAT12/16/32 filesystem handler",
             "download": {
               "check_latest_release": true,
-              "filename": "fat95.v20261115.lha",
-              "hash": "E60DB5171B1C0CFFFA6766236CCE63E4",
+              "filename": "fat95.v20261127.lha",
+              "hash": "511AAFA2C47A880E23CBC3040A7A8F9E",
               "path": null,
               "repo": "pulchart/fat95",
               "source": "github",
-              "tag": "v20261115",
+              "tag": "v20261127",
               "url": null
             },
             "emu68_versions": null,
@@ -8634,7 +8634,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "IdentifyUsr.lha",
-              "hash": "F8BD9FEB9FA595BEA979755224D08C5C",
+              "hash": "F2969203C69AFE8377B29E3567A3A664",
               "path": "util/libs/IdentifyUsr.lha",
               "repo": null,
               "source": "aminet",
@@ -16644,8 +16644,8 @@
             ]
           }
         },
-        "revision": 1,
-        "source_commit": "9c574b26b9459f95d600dc1057dc3a0b3269ef36"
+        "revision": 2,
+        "source_commit": "faa98d463f633f2054895a6b3cba52f093837865"
       }
     ],
     "hatcher": {
@@ -16690,12 +16690,12 @@
       "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.5.0",
       "version": "1.5.0"
     },
-    "revision": 1795804067,
+    "revision": 1795806363,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "pWnJgln4f8NqkCaLUfrhxsBBiHWkQ97UVoIKHGZzMoyWJOUv0JDYPnmd6f9yb0vptKrcFsJb/zvS1yrTya9GDQ=="
+    "value": "G7q3X+svfy+0mwaals7iLN7KcWLFOfWmpDlh68bOTiz0tQC0Aljr8eWr5jCKd3vshP5D3DNSzRkJ4KsWDhlvAQ=="
   }
 }
