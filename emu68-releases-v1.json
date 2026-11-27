@@ -110,13 +110,13 @@
       }
     ],
     "repository": "michalsc/Emu68",
-    "revision": 1795390663,
+    "revision": 1795804067,
     "schema_version": 1,
-    "source_commit": "3298b94f347c60c0860349dcdf2f2972b0521acf"
+    "source_commit": "9c574b26b9459f95d600dc1057dc3a0b3269ef36"
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "62rHLX543Vcx7yQiaPaF21bMISVLY7MCUwxaeCcVyRIC9Y0ghvLhUjXRUvrfO5EgEeb5ur5DjZIFm/0jqxc9BA=="
+    "value": "aly7u0OC7/JAjEHIkAaeMuI2JBXjtOavmX2K2RUAlFNubdqjogUBXzeX6NwV7BZ5j2yldgTEkg1oPMkvtySoDQ=="
   }
 }

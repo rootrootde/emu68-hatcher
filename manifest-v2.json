@@ -3435,7 +3435,7 @@
             "default": true,
             "description": "MOD and other tracker module player",
             "display_name": "HippoPlayer",
-            "group": "Applications",
+            "group": "Music",
             "id": "hippoplayer"
           },
           "image_datatypes": {
@@ -3467,11 +3467,156 @@
             "id": "whdload"
           }
         },
-        "catalog_schema_version": 1004000,
-        "id": "hatcher-1-4-0",
+        "catalog_schema_version": 1005000,
+        "id": "hatcher-1-5-0",
         "max_hatcher_version_exclusive": null,
-        "min_hatcher_version": "1.4.0",
+        "min_hatcher_version": "1.5.0",
         "packages": {
+          "aatext": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "antialiased TrueType text on RTG screens (editor: Prefs/AATextPrefs)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "AAText.lha",
+              "hash": "140ABE387801647C21C8CA953C927755",
+              "path": null,
+              "repo": "Sdursun/AAText",
+              "source": "github",
+              "tag": "v0.46",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AAText",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "AAText/AAText",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "AAText/AATextManager",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "System/",
+                "xor": null
+              },
+              {
+                "from": "AAText/AATextManager.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "System/",
+                "xor": null
+              },
+              {
+                "from": "AAText/Libs/freetype2.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "AAText/AATextPrefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "AAText/AATextPrefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "aatext",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "aatext_config",
+              "fonts_dejavu"
+            ],
+            "scripts": [
+              {
+                "after": "^(?:C:)?IPrefs(?:\\s|$)",
+                "before": null,
+                "content": "Run >NIL: C:AAText\n",
+                "name": "AAText",
+                "target": "S/Startup-Sequence",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "0.46",
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3"
+            ]
+          },
+          "aatext_config": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "default AAText.prefs: real character widths",
+            "download": {
+              "check_latest_release": true,
+              "filename": null,
+              "hash": null,
+              "path": null,
+              "repo": null,
+              "source": "local",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AAText Config",
+            "group": "System",
+            "install": [
+              {
+                "from": "System/Prefs/Env-Archive/AAText.prefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "aatext_config",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": []
+          },
           "additem": {
             "archive_package": null,
             "bundle": null,
@@ -3623,6 +3768,225 @@
             "requires": [
               "mui"
             ],
+            "scripts": [],
+            "upstream_version": "4.18",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "ahi6": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [
+              "ahi"
+            ],
+            "default": false,
+            "description": "AHI retargetable audio system 6.0 (68020+, alternative to 4.18)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "m68k-amigaos-ahiusr.lha",
+              "hash": "ff295c2dac20680395bd686ffe23a017",
+              "path": "driver/audio/m68k-amigaos-ahiusr.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AHI 6.0",
+            "group": "Drivers",
+            "install": [
+              {
+                "from": "m68k-amigaos-ahi/User/Devs/ahi.device",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/",
+                "xor": null
+              },
+              {
+                "from": "m68k-amigaos-ahi/User/Devs/AHI/filesave.audio",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AHI/",
+                "xor": null
+              },
+              {
+                "from": "m68k-amigaos-ahi/User/Devs/AudioModes/FILESAVE",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AudioModes/",
+                "xor": null
+              },
+              {
+                "from": "m68k-amigaos-ahi/User/Prefs/AHI",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "m68k-amigaos-ahi/User/Prefs/AHI.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": 32000,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "ahi6",
+            "provides": [
+              "ahi"
+            ],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui",
+              "ahi_paula"
+            ],
+            "scripts": [],
+            "upstream_version": "6.0",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "ahi_hdmi": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "AHI driver for sound over HDMI (Raspberry Pi 4/CM4, HDMI0, 48 kHz stereo)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "Emu68HDMI-AHI-4.18.lha",
+              "hash": "0B6C3B2D7F611041D6BAD7CA21933AFA",
+              "path": null,
+              "repo": "arczi84/emu68-hdmi-audio",
+              "source": "github",
+              "tag": "4.18",
+              "url": null
+            },
+            "emu68_versions": [
+              "1.1.0-alpha.1",
+              "1.1.0-beta.1"
+            ],
+            "friendly_name": "Emu68 HDMI Audio",
+            "group": "Drivers",
+            "install": [
+              {
+                "from": "Emu68HDMI-AHI/Devs/AHI/emu68hdmi.audio",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AHI/",
+                "xor": null
+              },
+              {
+                "from": "Emu68HDMI-AHI/Devs/AudioModes/Emu68HDMI",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AudioModes/",
+                "xor": null
+              },
+              {
+                "from": "Emu68HDMI-AHI/HDMIDiag",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "ahi_hdmi",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "ahi6"
+            ],
+            "scripts": [],
+            "upstream_version": "4.18",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "ahi_paula": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "Paula driver from AHI 4.18, missing in the AHI 6.0 archive",
+            "download": {
+              "check_latest_release": true,
+              "filename": "ahiusr_4.18.lha",
+              "hash": "52131E5F771927FF5D5AAAA64FD97ABC",
+              "path": "driver/audio/ahiusr_4.18.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AHI Paula driver",
+            "group": "System",
+            "install": [
+              {
+                "from": "AHI/User/Devs/AHI/paula.audio",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AHI/",
+                "xor": null
+              },
+              {
+                "from": "AHI/User/Devs/AudioModes/PAULA",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/AudioModes/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "ahi_paula",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
             "scripts": [],
             "upstream_version": "4.18",
             "versions": [
@@ -4127,7 +4491,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Amelinium.lha",
-              "hash": "3D617FA268005B6B221834B99A096017",
+              "hash": "4C20A157101FACAC62EAC55A6E27ABCB",
               "path": null,
               "repo": null,
               "source": "web",
@@ -4187,14 +4551,14 @@
             "mandatory": false,
             "menu_entries": [
               {
-                "menu": "Network",
+                "menu": "Apps/Internet",
                 "path": "Programs/Amelinium/Amelinium_040",
                 "selected_icons": false,
                 "title": "Amelinium",
                 "wb_launch": false
               },
               {
-                "menu": "Network",
+                "menu": "Apps/Internet",
                 "path": "Programs/Amelinium/Amelinium_040_JS",
                 "selected_icons": false,
                 "title": "Amelinium JS",
@@ -4209,6 +4573,62 @@
             "requires": [],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "amifire": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "web browser",
+            "download": {
+              "check_latest_release": true,
+              "filename": "AmiFire.lha",
+              "hash": "13a9d0205d5990a89da80d1590bf23b0",
+              "path": "comm/www/AmiFire.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AmiFire",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "AmiFire/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiFire/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/AmiFire/AmiFire",
+              "selected_icons": false,
+              "title": "AmiFire",
+              "wb_launch": true
+            },
+            "name": "amifire",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "amissl"
+            ],
+            "scripts": [],
+            "upstream_version": "0.9.390",
             "versions": [
               "3.1",
               "3.2",
@@ -4235,7 +4655,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "AmigaAMP",
-            "group": "Applications",
+            "group": "Music",
             "install": [
               {
                 "from": "AmigaAMP3.info",
@@ -4259,7 +4679,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Apps",
+              "menu": "Apps/Music",
               "path": "Programs/AmigaAMP3/AmigaAMP",
               "selected_icons": false,
               "title": "AmigaAMP",
@@ -4280,6 +4700,123 @@
               "3.2.2.1",
               "3.2.3",
               "3.9"
+            ]
+          },
+          "amimail": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "email client",
+            "download": {
+              "check_latest_release": true,
+              "filename": "AmiMAIL.lha",
+              "hash": "1660c97dd01f3f4ee080af18a29ef5d9",
+              "path": "comm/mail/AmiMAIL.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "AmiMAIL",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "AmiMAIL Free/Setup/AmiMAIL",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/Setup/AmiMAIL_Mason.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "AmiMAIL.info",
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/AmiMAIL_EN.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/AmiMAIL_EN.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/AmiMAIL_DE.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/AmiMAIL_DE.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/AmiMAIL/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/Setup/Locale/Catalogs/deutsch/AmiMAIL.catalog",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/deutsch/",
+                "xor": null
+              },
+              {
+                "from": "AmiMAIL Free/Setup/Notifications/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Presets/Notifications/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/AmiMAIL/AmiMAIL",
+              "selected_icons": false,
+              "title": "AmiMAIL",
+              "wb_launch": true
+            },
+            "name": "amimail",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "amissl"
+            ],
+            "scripts": [],
+            "upstream_version": "2.3.1",
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3"
             ]
           },
           "amispeedtest": {
@@ -4315,7 +4852,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Network",
+              "menu": "Apps/Internet",
               "path": "Programs/AmiSpeedTest/AmiSpeedTest",
               "selected_icons": false,
               "title": "AmiSpeedTest",
@@ -4439,6 +4976,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN AmiSSL\nIf Exists SYS:Programs/AmiSSL\n  C:Assign AmiSSL: SYS:Programs/AmiSSL\n  If Exists AmiSSL:Libs\n    C:Assign LIBS: AmiSSL:Libs ADD\n  EndIf\n  C:Path AmiSSL: ADD\nEndIf\n;END AmiSSL\n",
                 "name": "AmiSSL",
                 "target": "S/User-Startup",
@@ -4569,6 +5108,263 @@
               "3.2.3",
               "3.9"
             ]
+          },
+          "avalanche": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "archive browser and extractor GUI for xadmaster",
+            "download": {
+              "check_latest_release": true,
+              "filename": "avalanche.lha",
+              "hash": "24eb2a9d44402a91165c601ba4749abf",
+              "path": "util/arc/avalanche.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Avalanche",
+            "group": "Archivers",
+            "install": [
+              {
+                "from": "Avalanche.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "Avalanche/Avalanche",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Avalanche/",
+                "xor": null
+              },
+              {
+                "from": "Avalanche/Avalanche.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Avalanche/",
+                "xor": null
+              },
+              {
+                "from": "Avalanche/Avalanche.guide*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Avalanche/",
+                "xor": null
+              },
+              {
+                "from": "Avalanche/misc/def_avalanche.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/Sys/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Tools",
+              "path": "Programs/Avalanche/Avalanche",
+              "selected_icons": false,
+              "title": "Avalanche",
+              "wb_launch": false
+            },
+            "name": "avalanche",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "xadmaster"
+            ],
+            "scripts": [],
+            "upstream_version": "4.1",
+            "versions": [
+              "3.2.2.1",
+              "3.2.3"
+            ]
+          },
+          "birdie": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "patterned window title bars; with VisualPrefs turn off its border optimisation",
+            "download": {
+              "check_latest_release": true,
+              "filename": "birdie2000.lha",
+              "hash": "55f7e8359ab86b6b5060175ead02141d",
+              "path": "util/wb/birdie2000.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Birdie",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "Birdie",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "Patterns/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Presets/Birdie/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "birdie",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "akdatatypes_jfif",
+              "birdie_config"
+            ],
+            "scripts": [
+              {
+                "after": null,
+                "before": null,
+                "content": "Run >NIL: C:Birdie ? <ENV:Birdie.prefs\n",
+                "name": "Birdie",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "2000",
+            "versions": []
+          },
+          "birdie_config": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "default Birdie.prefs: the first sample pattern",
+            "download": {
+              "check_latest_release": true,
+              "filename": null,
+              "hash": null,
+              "path": null,
+              "repo": null,
+              "source": "local",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Birdie Config",
+            "group": "System",
+            "install": [
+              {
+                "from": "System/Prefs/Env-Archive/Birdie.prefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "birdie_config",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": []
+          },
+          "birdie_prefs": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "MUI editor for the Birdie settings (editor: Prefs/BirdiePrefs)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "bprefs.lha",
+              "hash": "73a83ba5ac9cbfdad9a4b081ca49e81d",
+              "path": "util/misc/bprefs.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Birdie Prefs",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "Birdie Prefs",
+                "patch": [],
+                "recursive": false,
+                "rename": "BirdiePrefs",
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Birdie Prefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "BirdiePrefs.info",
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "bprefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "birdie_prefs",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "birdie",
+              "mui"
+            ],
+            "scripts": [],
+            "upstream_version": "1.31",
+            "versions": []
           },
           "boingbag_os39_bb1": {
             "archive_package": null,
@@ -4772,6 +5568,86 @@
               "3.9"
             ]
           },
+          "classact": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "ClassAct 3.3 GUI classes for programs that need ReAction on 3.1",
+            "download": {
+              "check_latest_release": true,
+              "filename": "classact33.lha",
+              "hash": "3d68dff51262ff782754c4592c4a2ea6",
+              "path": "dev/gui/classact33.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "ClassAct",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "Classes/*.class",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/",
+                "xor": null
+              },
+              {
+                "from": "Classes/gadgets",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/",
+                "xor": null
+              },
+              {
+                "from": "Classes/images",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/",
+                "xor": null
+              },
+              {
+                "from": "Prefs/ClassAct",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Prefs/caprefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "classact",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "3.3",
+            "versions": [
+              "3.1"
+            ]
+          },
           "clicktofront": {
             "archive_package": null,
             "bundle": null,
@@ -4824,7 +5700,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "CLICon",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "CLICon/CLICon",
@@ -4897,12 +5773,12 @@
             "description": "character set conversion library",
             "download": {
               "check_latest_release": true,
-              "filename": "codesets-68000.lha",
-              "hash": "6B120E1B89FF2F80F5136E050A0A0DA0",
-              "path": "util/libs/codesets-68000.lha",
-              "repo": null,
-              "source": "aminet",
-              "tag": null,
+              "filename": "codesets-6.22.lha",
+              "hash": "1AF0E390B57BED21D79A2ADE93022DCE",
+              "path": null,
+              "repo": "jens-maus/libcodesets",
+              "source": "github",
+              "tag": "6.22",
               "url": null
             },
             "emu68_versions": null,
@@ -4910,7 +5786,16 @@
             "group": "System",
             "install": [
               {
-                "from": "codesets.library",
+                "from": "codesets/Libs/AmigaOS3/codesets.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "codesets/Charsets",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -4975,6 +5860,398 @@
               "3.9"
             ]
           },
+          "dctelnet": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "telnet client",
+            "download": {
+              "check_latest_release": true,
+              "filename": "DCTelnet-v1.10.lha",
+              "hash": "490362339e12f4609592e70c1d0244c0",
+              "path": null,
+              "repo": "bruno-frederic/dctelnet",
+              "source": "github",
+              "tag": "v1.10",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "DCTelnet",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "DCTelnet/DCTelnet.020",
+                "patch": [],
+                "recursive": false,
+                "rename": "DCTelnet",
+                "stack": null,
+                "to": "Programs/DCTelnet/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/DCTelnet.020.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "DCTelnet.info",
+                "stack": null,
+                "to": "Programs/DCTelnet/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/DCTelnet.Book",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DCTelnet/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/DCTelnet.Book.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DCTelnet/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Docs/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DCTelnet/Docs/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/SCIcons/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DCTelnet/SCIcons/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/WBIcons/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DCTelnet/WBIcons/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Devs/ibmcon.device",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Libs/xprftp.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Libs/xprzmodem.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Libs/xemvt340.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "DCTelnet/Fonts/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/DCTelnet/DCTelnet",
+              "selected_icons": false,
+              "title": "DCTelnet",
+              "wb_launch": true
+            },
+            "name": "dctelnet",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "reqtools"
+            ],
+            "scripts": [],
+            "upstream_version": "1.10",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "diskimage": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "mounts CD and disk images (iso, cue/bin, nrg, mds, adf, hdf, ...)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "diskimage.m68k-aos.tbz2",
+              "hash": "931929548f5515be1d321c9b23c76db9",
+              "path": "disk/misc/diskimage.m68k-aos.tar.bz2",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "DiskImage",
+            "group": "Tools",
+            "install": [
+              {
+                "from": "diskimage_device/Devs/diskimage.device",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/Devs/DiskImage",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/Devs/DOSDrivers/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/DOSDrivers/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/C/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/Libs/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/Classes/Images/png.image",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/Images/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/ENVARC/DiskImage",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/DiskImageGUI*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskImage/",
+                "xor": null
+              },
+              {
+                "from": "diskimage_device/diskimage.guide*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskImage/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Tools",
+              "path": "Programs/DiskImage/DiskImageGUI",
+              "selected_icons": false,
+              "title": "DiskImage",
+              "wb_launch": false
+            },
+            "name": "diskimage",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "expat_library",
+              "screennotify",
+              "titlebar_image"
+            ],
+            "scripts": [],
+            "upstream_version": "52.35",
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "diskmaster": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "two-pane file manager",
+            "download": {
+              "check_latest_release": true,
+              "filename": "DiskMasterV37.lha",
+              "hash": "17d2567ec5dc108199de5b3451c23948",
+              "path": "util/dir/DiskMasterV37.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "DiskMaster 2",
+            "group": "Tools",
+            "install": [
+              {
+                "from": "DiskMaster2.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/DiskMaster2",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/DiskMaster2.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/DiskMaster2.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/DiskMaster2.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/Rexx",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              },
+              {
+                "from": "DiskMaster2/Catalogs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/DiskMaster2/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Tools",
+              "path": "Programs/DiskMaster2/DiskMaster2",
+              "selected_icons": false,
+              "title": "DiskMaster 2",
+              "wb_launch": true
+            },
+            "name": "diskmaster",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "2.5.30a",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "dopus418": {
             "archive_package": null,
             "bundle": null,
@@ -4993,7 +6270,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "DirectoryOpus",
-            "group": "Applications",
+            "group": "Tools",
             "install": [
               {
                 "from": "DOpus.info",
@@ -5107,7 +6384,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Apps",
+              "menu": "Apps/Tools",
               "path": "Programs/DOpus/DirectoryOpus",
               "selected_icons": false,
               "title": "Directory Opus",
@@ -5166,7 +6443,7 @@
             "download": null,
             "emu68_versions": null,
             "friendly_name": "EmuControl",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "EmuControl/EmuControl",
@@ -5271,7 +6548,7 @@
             "download": null,
             "emu68_versions": null,
             "friendly_name": "Emu68 diagnostics",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "Emu68EDID/Emu68EDID",
@@ -5531,7 +6808,7 @@
               "1.1.0-beta.1"
             ],
             "friendly_name": "PCI and driver diagnostics",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "LIBS/openpci.library",
@@ -5869,6 +7146,53 @@
             "upstream_version": null,
             "versions": [
               "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "expat_library": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "XML parser library",
+            "download": {
+              "check_latest_release": true,
+              "filename": "expat.lha",
+              "hash": "9d572a0168ddd308a424bb094f861b68",
+              "path": "util/libs/expat.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "expat.library",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "expat/Libs/expat.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "expat_library",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
               "3.2",
               "3.2.2.1",
               "3.2.3",
@@ -6474,6 +7798,75 @@
             "upstream_version": "1.10",
             "versions": []
           },
+          "fullpalette": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "edit and lock all 256 Workbench colours (editor: Prefs/FullPalette)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "FullPalette22.lha",
+              "hash": "9fc101d57e7dbad91ec480da951b342e",
+              "path": "util/wb/FullPalette22.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "FullPalette",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "FullPalette/FPPrefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "FullPalette/FullPalette",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "FullPalette/FullPalette.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "fullpalette",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [
+              {
+                "after": "^(?:C:)?IPrefs(?:\\s|$)",
+                "before": null,
+                "content": "FPPrefs\n",
+                "name": "FullPalette",
+                "target": "S/Startup-Sequence",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "40.22",
+            "versions": []
+          },
           "genet_config": {
             "archive_package": null,
             "bundle": null,
@@ -6642,7 +8035,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "Hatcher Prefs",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "Hatcher-Prefs/Hatcher-Prefs",
@@ -6729,6 +8122,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN HID2AMI\nIf $System EQ \"PiStorm\"\n  If Exists C:HID2AmiDriver\n    Run <>NIL: C:HID2AmiDriver\n  EndIf\nEndIf\n;END HID2AMI\n",
                 "name": "HID2AMI Mouse Wheel",
                 "target": "S/User-Startup",
@@ -6762,7 +8157,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "HippoPlayer",
-            "group": "Applications",
+            "group": "Music",
             "install": [
               {
                 "from": "HippoPlayer/HiP",
@@ -6822,7 +8217,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Apps",
+              "menu": "Apps/Music",
               "path": "Programs/HippoPlayer/HiP",
               "selected_icons": false,
               "title": "HippoPlayer",
@@ -6861,7 +8256,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "HippoPlayer",
-            "group": "Applications",
+            "group": "Music",
             "install": [
               {
                 "from": "HiP",
@@ -7149,7 +8544,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Network",
+              "menu": "Apps/Internet",
               "path": "Programs/IBrowse/IBrowse",
               "selected_icons": false,
               "title": "IBrowse",
@@ -7287,6 +8682,136 @@
               "3.9"
             ]
           },
+          "igame": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "WHDLoad game launcher",
+            "download": {
+              "check_latest_release": true,
+              "filename": "iGame.lha",
+              "hash": "65b2e3a667c4e43639869e8e13ed0833",
+              "path": "util/misc/iGame.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "iGame",
+            "group": "Games",
+            "install": [
+              {
+                "from": "iGame-v2.6.1.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "iGame.info",
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/iGame",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/iGame.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/iGame.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/iGame.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/genres",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/igame.iff",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/logo.iff",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              },
+              {
+                "from": "iGame-v2.6.1/catalogs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/iGame/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Games",
+              "path": "Programs/iGame/iGame",
+              "selected_icons": false,
+              "title": "iGame",
+              "wb_launch": true
+            },
+            "name": "igame",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui",
+              "mcc_nlist",
+              "mcc_texteditor"
+            ],
+            "scripts": [],
+            "upstream_version": "2.6.1",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "installer": {
             "archive_package": null,
             "bundle": null,
@@ -7305,7 +8830,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "Installer",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "Installer43_3/Installer",
@@ -7353,7 +8878,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "JanoEditor",
-            "group": "Applications",
+            "group": "Tools",
             "install": [
               {
                 "from": "Jano_v*/Jano*",
@@ -7439,6 +8964,120 @@
               "3.9"
             ]
           },
+          "lumiftp": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "FTP client",
+            "download": {
+              "check_latest_release": true,
+              "filename": "LumiFTP.lha",
+              "hash": "2b215c8541ed06b1d7b164dc2578638f",
+              "path": "comm/tcp/LumiFTP.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "LumiFTP",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "LumiFTP/LumiFTP",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/LumiFTP/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/LumiFTP.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/LumiFTP/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/Readme",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/LumiFTP/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/Readme.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/LumiFTP/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/Help/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/LumiFTP/Help/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/Catalogs/Deutsch/LumiFTP.catalog",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/Deutsch/",
+                "xor": null
+              },
+              {
+                "from": "LumiFTP/Catalogs/English/LumiFTP.catalog",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/English/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/LumiFTP/LumiFTP",
+              "selected_icons": false,
+              "title": "LumiFTP",
+              "wb_launch": true
+            },
+            "name": "lumiftp",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui",
+              "mcc_nlist",
+              "mcc_betterstring",
+              "amissl",
+              "codesets"
+            ],
+            "scripts": [],
+            "upstream_version": "1.3",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "lupa": {
             "archive_package": null,
             "bundle": null,
@@ -7448,7 +9087,7 @@
             "download": {
               "check_latest_release": true,
               "filename": "Lupa.lha",
-              "hash": "98C83929DDBBC66447432E4B058458B1",
+              "hash": "5074F91590AA59B49AB7AC7879269506",
               "path": "util/cdity/Lupa.lha",
               "repo": null,
               "source": "aminet",
@@ -7460,7 +9099,7 @@
             "group": "Commodities",
             "install": [
               {
-                "from": "Lupa-1.1.10/Lupa",
+                "from": "Lupa-1.1.11/Lupa",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7469,7 +9108,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Lupa.info",
+                "from": "Lupa-1.1.11/Lupa.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7478,7 +9117,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/LupaMac.dic",
+                "from": "Lupa-1.1.11/LupaMac.dic",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7487,7 +9126,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Lupa-Prefs",
+                "from": "Lupa-1.1.11/Lupa-Prefs",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7496,7 +9135,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Lupa-Prefs.info",
+                "from": "Lupa-1.1.11/Lupa-Prefs.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7505,7 +9144,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Lupa-Update",
+                "from": "Lupa-1.1.11/Lupa-Update",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7514,7 +9153,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Lupa-Update.info",
+                "from": "Lupa-1.1.11/Lupa-Update.info",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7523,7 +9162,7 @@
                 "xor": null
               },
               {
-                "from": "Lupa-1.1.10/Catalogs/deutsch/lupa.catalog",
+                "from": "Lupa-1.1.11/Catalogs/deutsch/lupa.catalog",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -7541,7 +9180,7 @@
             "relocate": [],
             "requires": [],
             "scripts": [],
-            "upstream_version": "1.1.10",
+            "upstream_version": "1.1.11",
             "versions": [
               "3.1",
               "3.2",
@@ -7781,6 +9420,8 @@
             ],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN lwip-amiga\nIf NOT EXISTS S:Network-disabled\n  If EXISTS C:Hatcher-Prefs\n    Run >NIL: C:Hatcher-Prefs BOOT\n  EndIf\nEndIf\n;END lwip-amiga\n",
                 "name": "lwip-amiga TCP/IP",
                 "target": "S/User-Startup",
@@ -7993,12 +9634,12 @@
             "description": "MUI BetterString class (+HotkeyString)",
             "download": {
               "check_latest_release": true,
-              "filename": "MCC_BetterString_68k.lha",
-              "hash": "B3BA21A971C23D108DF239FF6461AABE",
-              "path": "dev/mui/MCC_BetterString_68k.lha",
-              "repo": null,
-              "source": "aminet",
-              "tag": null,
+              "filename": "MCC_BetterString-11.36.lha",
+              "hash": "CCC46B2DCA707C3424253EE00E0E4397",
+              "path": null,
+              "repo": "amiga-mui/betterstring",
+              "source": "github",
+              "tag": "11.36",
               "url": null
             },
             "emu68_versions": null,
@@ -8006,25 +9647,7 @@
             "group": "Libraries",
             "install": [
               {
-                "from": "BetterString.mcc",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/MUI/Libs/mui/",
-                "xor": null
-              },
-              {
-                "from": "BetterString.mcp",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/MUI/Libs/mui/",
-                "xor": null
-              },
-              {
-                "from": "HotkeyString.mcc",
+                "from": "MCC_BetterString/Libs/MUI/AmigaOS3/*",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -8161,12 +9784,12 @@
             "description": "MUI TextEditor class",
             "download": {
               "check_latest_release": true,
-              "filename": "MCC_TextEditor_68k.lha",
-              "hash": "68C0FA74C26491E7344548357E6143D6",
-              "path": "dev/mui/MCC_TextEditor_68k.lha",
-              "repo": null,
-              "source": "aminet",
-              "tag": null,
+              "filename": "MCC_TextEditor-15.56.lha",
+              "hash": "799BCA79939D4BF7AFF49B3A6EC928CB",
+              "path": null,
+              "repo": "amiga-mui/texteditor",
+              "source": "github",
+              "tag": "15.56",
               "url": null
             },
             "emu68_versions": null,
@@ -8174,16 +9797,7 @@
             "group": "Libraries",
             "install": [
               {
-                "from": "TextEditor.mcc",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Programs/MUI/Libs/mui/",
-                "xor": null
-              },
-              {
-                "from": "TextEditor.mcp",
+                "from": "MCC_TextEditor/Libs/MUI/AmigaOS3/*",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -8196,6 +9810,83 @@
             "menu_entries": [],
             "menu_entry": null,
             "name": "mcc_texteditor",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui"
+            ],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "mcc_thebar": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": true,
+            "description": "MUI TheBar toolbar classes",
+            "download": {
+              "check_latest_release": true,
+              "filename": "MCC_TheBar-26.22.lha",
+              "hash": "3999B3CADC59721522BC341772984918",
+              "path": null,
+              "repo": "amiga-mui/thebar",
+              "source": "github",
+              "tag": "26.22",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "MCC TheBar",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "MCC_TheBar/Libs/MUI/AmigaOS3/TheBar.mcc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/MUI/Libs/mui/",
+                "xor": null
+              },
+              {
+                "from": "MCC_TheBar/Libs/MUI/AmigaOS3/TheBar.mcp",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/MUI/Libs/mui/",
+                "xor": null
+              },
+              {
+                "from": "MCC_TheBar/Libs/MUI/AmigaOS3/TheBarVirt.mcc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/MUI/Libs/mui/",
+                "xor": null
+              },
+              {
+                "from": "MCC_TheBar/Libs/MUI/AmigaOS3/TheButton.mcc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/MUI/Libs/mui/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "mcc_thebar",
             "provides": [],
             "purchase_url": null,
             "relocate": [],
@@ -8271,6 +9962,131 @@
               "3.9"
             ]
           },
+          "mcp": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "Master Control Program: pointer, window and system patches, most off by default (editor: Prefs/MCPPrefs)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "mcp1_48.lha",
+              "hash": "1767681723fec8070977b7bc495789c6",
+              "path": null,
+              "repo": null,
+              "source": "web",
+              "tag": null,
+              "url": "http://mcp.a1k.org/files/mcp1_48.lha"
+            },
+            "emu68_versions": null,
+            "friendly_name": "MCP",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "MCP1.48/mcp020",
+                "patch": [],
+                "recursive": false,
+                "rename": "MCP",
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/MCPPrefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/MCPPrefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/Libs/mcpgfx.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/Libs/mcpsupport2.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/EnvArc/MCP2",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Env-Archive/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/S/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "S/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/Guides/MCP_eng.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": "MCP.guide",
+                "stack": null,
+                "to": "S/",
+                "xor": null
+              },
+              {
+                "from": "MCP1.48/Locale/deutsch/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/deutsch/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "mcp",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "reqtools"
+            ],
+            "scripts": [
+              {
+                "after": "^(?:C:)?Assign\\s+(?:>NIL:\\s+)?ENV:\\s",
+                "before": null,
+                "content": "C:MCP\n",
+                "name": "MCP",
+                "target": "S/Startup-Sequence",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.48",
+            "versions": []
+          },
           "miamidx": {
             "archive_package": null,
             "bundle": null,
@@ -8294,21 +10110,12 @@
             "group": "Network",
             "install": [
               {
-                "from": "MiamiDx10_Install/main/Libs/plain.MiamiPanel",
+                "from": "MiamiDx10_Install/main/Libs",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
                 "stack": null,
-                "to": "Programs/Miami/Libs/",
-                "xor": null
-              },
-              {
-                "from": "MiamiDx10_Install/main/Libs/*.library",
-                "patch": [],
-                "recursive": false,
-                "rename": null,
-                "stack": null,
-                "to": "Libs/",
+                "to": "Programs/Miami/",
                 "xor": null
               },
               {
@@ -8346,6 +10153,8 @@
             ],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": "Assign Miami: SYS:Programs/Miami\n",
                 "name": "MiamiDX",
                 "target": "S/User-Startup",
@@ -8497,9 +10306,9 @@
             "description": "MPEG audio decoder library (MP3 playback)",
             "download": {
               "check_latest_release": true,
-              "filename": "mpega_library.lha",
-              "hash": "A4704A87E8A810978AAE55193631C7DB",
-              "path": "util/libs/mpega_library.lha",
+              "filename": "mpega_library_3.lha",
+              "hash": "4f2b6a793a622a7c8ca627507f398b98",
+              "path": "util/libs/mpega_library_3.lha",
               "repo": null,
               "source": "aminet",
               "tag": null,
@@ -8510,7 +10319,7 @@
             "group": "System",
             "install": [
               {
-                "from": "mpega_library/libs/mpega020.library",
+                "from": "mpega_library_3/mpega.library-hifi",
                 "patch": [],
                 "recursive": false,
                 "rename": "mpega.library",
@@ -8528,7 +10337,7 @@
             "relocate": [],
             "requires": [],
             "scripts": [],
-            "upstream_version": null,
+            "upstream_version": "3.1",
             "versions": [
               "3.1",
               "3.2",
@@ -8797,6 +10606,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN MUI\nif exists SYS:Programs/MUI\n   C:assign MUI: SYS:Programs/MUI\n   if exists MUI:Libs\n      C:assign add LIBS: MUI:Libs\n   endif\n   if exists MUI:Locale\n      C:assign add LOCALE: MUI:Locale\n   endif\n   C:version >nil: exec.library 39\n   if not warn\n      if exists MUI:Docs\n         if exists HELP:dummy ; do not remove\n         endif                ; this entry!\n         C:assign add HELP: MUI:Docs\n      endif\n   endif\nendif\n;END MUI\n",
                 "name": "MUI 3.8",
                 "target": "S/User-Startup",
@@ -8865,6 +10676,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN MUI\nif exists SYS:Programs/MUI\n   C:assign MUI: SYS:Programs/MUI\n   if exists MUI:Libs\n      C:assign add LIBS: MUI:Libs\n   endif\n   if exists MUI:Locale\n      C:assign add LOCALE: MUI:Locale\n   endif\n   C:version >nil: exec.library 39\n   if not warn\n      if exists MUI:Docs\n         if exists HELP:dummy ; do not remove\n         endif                ; this entry!\n         C:assign add HELP: MUI:Docs\n      endif\n   endif\nendif\n;END MUI\n",
                 "name": "MUI 5.0",
                 "target": "S/User-Startup",
@@ -8943,6 +10756,286 @@
             ],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "newmeter": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "system monitor window, configured by its icon tooltypes",
+            "download": {
+              "check_latest_release": true,
+              "filename": "newmeter.lha",
+              "hash": "F033C963ABAAD36FB825FE05839C72B1",
+              "path": null,
+              "repo": null,
+              "source": "web",
+              "tag": null,
+              "url": "https://thomas-rapp.hier-im-netz.de/downloads/newmeter.lha"
+            },
+            "emu68_versions": null,
+            "friendly_name": "NewMeter",
+            "group": "System Tools",
+            "install": [
+              {
+                "from": "NewMeter/NewMeter",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/NewMeter/",
+                "xor": null
+              },
+              {
+                "from": "NewMeter/NewMeter.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/NewMeter/",
+                "xor": null
+              },
+              {
+                "from": "NewMeter/Tooltypes",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/NewMeter/",
+                "xor": null
+              },
+              {
+                "from": "NewMeter/Tooltypes.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/NewMeter/",
+                "xor": null
+              },
+              {
+                "from": "NewMeter/catalogs/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Locale/Catalogs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "System",
+              "path": "Programs/NewMeter/NewMeter",
+              "selected_icons": false,
+              "title": "NewMeter",
+              "wb_launch": true
+            },
+            "name": "newmeter",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "1.466",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "ogles2": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "OpenGL ES 2.0 on the Pi 4/CM4 GPU (Emu68, 32-bit RTG screen)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "ogles2-1.3.3.lha",
+              "hash": "2a3767be400654bb155d52c9f3e46b9e",
+              "path": null,
+              "repo": "ladislawv/ogles2",
+              "source": "github",
+              "tag": "v1.3.3",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "ogles2.library",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "ogles2/Libs/ogles2.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/Libs/v3dglslc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/C/OGLES2Log",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/Examples",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/OGLES2/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/ReadMe",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/OGLES2/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/LICENSE",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/OGLES2/",
+                "xor": null
+              },
+              {
+                "from": "ogles2/licences",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/OGLES2/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "ogles2",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "picasso96"
+            ],
+            "scripts": [
+              {
+                "after": null,
+                "before": null,
+                "content": "If NOT EXISTS SYS:OGLES2Cache\n  MakeDir SYS:OGLES2Cache\nEndIf\nAssign OGLES2Cache: SYS:OGLES2Cache\n",
+                "name": "ogles2",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.3.3",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "openurl": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "opens URLs from applications in the configured browser",
+            "download": {
+              "check_latest_release": true,
+              "filename": "OpenURL-7.18.lha",
+              "hash": "1d2acf53d5b1bc29b11bd9a1fd6d65a1",
+              "path": null,
+              "repo": "jens-maus/libopenurl",
+              "source": "github",
+              "tag": "7.18",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "openurl.library",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "OpenURL/Libs/AmigaOS3/openurl.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "OpenURL/C/AmigaOS3/OpenURL",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "OpenURL/Prefs/AmigaOS3/OpenURL",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "OpenURL/Prefs/AmigaOS3/OpenURL.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "openurl",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui"
+            ],
+            "scripts": [],
+            "upstream_version": "7.18",
             "versions": [
               "3.1",
               "3.2",
@@ -9451,7 +11544,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "PFS - Additional Tools",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "PFS3/tools/setfnsize",
@@ -9674,6 +11767,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN Picasso96\nIf Exists SYS:Programs/Picasso96\n  C:Assign Picasso96: SYS:Programs/Picasso96\nEndIf\n;END Picasso96\n",
                 "name": "Picasso96 RTG",
                 "target": "S/User-Startup",
@@ -9706,7 +11801,7 @@
               "url": null
             },
             "emu68_versions": null,
-            "friendly_name": "Picasso96",
+            "friendly_name": "Picasso96 Disable Amiga Blitter",
             "group": "RTG",
             "install": [
               {
@@ -9729,6 +11824,110 @@
             "requires": [],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "pistorm3d": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "hardware MiniGL on the Pi 4/CM4 GPU (needs BGRA32 as the only 32-bit modes)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "PiStorm3D.lha",
+              "hash": "870d04e8033f0b84fb63597bc35a7d2c",
+              "path": "util/libs/PiStorm3D.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "PiStorm3D",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "PiStorm3D/bin/minigl.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D/demos",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/PiStorm3D/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D/tools",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/PiStorm3D/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D/Readme.md",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/PiStorm3D/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D/FAQ",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/PiStorm3D/",
+                "xor": null
+              },
+              {
+                "from": "PiStorm3D/licences",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/PiStorm3D/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "pistorm3d",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "picasso96"
+            ],
+            "scripts": [],
+            "upstream_version": "30.0",
             "versions": [
               "3.1",
               "3.2",
@@ -9847,6 +12046,8 @@
             ],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": "If Exists ENVARC:PsdStackloader\n  ENVARC:PsdStackloader\nEndIf\n",
                 "name": "Poseidon USB",
                 "target": "S/User-Startup",
@@ -10211,6 +12412,91 @@
               "3.9"
             ]
           },
+          "rnopdf": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "PDF viewer, needs RTG",
+            "download": {
+              "check_latest_release": true,
+              "filename": "RNOPDF_OS3.lha",
+              "hash": "973ea65a251586ff177249eab1f020ae",
+              "path": "gfx/show/RNOPDF_OS3.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "RNOPDF",
+            "group": "Tools",
+            "install": [
+              {
+                "from": "RNOPDF_OS3/RNOPDF_68k.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "RNOPDF.info",
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "RNOPDF_OS3/RNOPDF_68k/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/RNOPDF/",
+                "xor": null
+              },
+              {
+                "from": "RNOPDF_OS3/ReadMe.txt",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/RNOPDF/",
+                "xor": null
+              },
+              {
+                "from": "RNOPDF_OS3/ReadMe.txt.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/RNOPDF/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Tools",
+              "path": "Programs/RNOPDF/RNOPDF",
+              "selected_icons": false,
+              "title": "RNOPDF",
+              "wb_launch": true
+            },
+            "name": "rnopdf",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "codesets",
+              "reqtools",
+              "openurl"
+            ],
+            "scripts": [],
+            "upstream_version": "1.6",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "rnoxfer": {
             "archive_package": null,
             "bundle": null,
@@ -10307,7 +12593,7 @@
             "mandatory": false,
             "menu_entries": [],
             "menu_entry": {
-              "menu": "Network",
+              "menu": "Apps/Internet",
               "path": "Programs/RNOXfer/RNOXfer",
               "selected_icons": false,
               "title": "RNOXfer",
@@ -10554,12 +12840,16 @@
             ],
             "scripts": [
               {
-                "content": ";BEGIN Roadshow\n; Network-Startup not auto-executed - Roadshow demo timer starts when\n; bsdsocket.library opens. Use \"Connect\" from the Network menu instead.\n;END Roadshow\n",
+                "after": null,
+                "before": null,
+                "content": ";BEGIN Roadshow\n; Network-Startup not auto-executed - Roadshow demo timer starts when\n; bsdsocket.library opens. Use \"Connect\" in System > Network Settings instead.\n;END Roadshow\n",
                 "name": "Roadshow TCP/IP",
                 "target": "S/User-Startup",
                 "when_user_archive": false
               },
               {
+                "after": null,
+                "before": null,
                 "content": ";BEGIN Roadshow\nIf NOT EXISTS S:Network-disabled\n  If EXISTS S:Network-Startup\n    Execute S:Network-Startup\n    Run >NIL: SYS:Rexxc/rx S:NetworkConfig.rexx SYNCTIME\n  EndIf\nEndIf\n;END Roadshow\n",
                 "name": "Roadshow TCP/IP",
                 "target": "S/User-Startup",
@@ -10728,6 +13018,118 @@
               "3.9"
             ]
           },
+          "scout": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "system monitor for tasks, libraries and ports",
+            "download": {
+              "check_latest_release": true,
+              "filename": "Scout_os3.lha",
+              "hash": "e17b0d8e6f6aa1a4c0904ee56f206a7f",
+              "path": "util/moni/Scout_os3.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Scout",
+            "group": "System Tools",
+            "install": [
+              {
+                "from": "Scout.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "Scout/Scout.os3",
+                "patch": [],
+                "recursive": false,
+                "rename": "Scout",
+                "stack": null,
+                "to": "Programs/Scout/",
+                "xor": null
+              },
+              {
+                "from": "Scout/Scout.os3.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "Scout.info",
+                "stack": null,
+                "to": "Programs/Scout/",
+                "xor": null
+              },
+              {
+                "from": "Scout/arexx",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Scout/",
+                "xor": null
+              },
+              {
+                "from": "Scout/arexx.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Scout/",
+                "xor": null
+              },
+              {
+                "from": "Scout/help/english/scout.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Scout/help/english/",
+                "xor": null
+              },
+              {
+                "from": "Scout/help/deutsch/scout.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Scout/help/deutsch/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "System",
+              "path": "Programs/Scout/Scout",
+              "selected_icons": false,
+              "title": "Scout",
+              "wb_launch": true
+            },
+            "name": "scout",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui",
+              "mcc_nlist",
+              "identify"
+            ],
+            "scripts": [],
+            "upstream_version": "3.6",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "screennotify": {
             "archive_package": null,
             "bundle": null,
@@ -10842,7 +13244,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "Screentext",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "ScreenText",
@@ -10947,7 +13349,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "SetDST",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "SetDST-*/C/*",
@@ -10978,6 +13380,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": "If Exists C:SetDST\n  C:SetDST NOASK NOREQ QUIET >NIL:\nEndIf\n",
                 "name": "SetDST",
                 "target": "S/User-Startup",
@@ -11035,6 +13439,116 @@
             "upstream_version": null,
             "versions": [
               "3.1"
+            ]
+          },
+          "sevenzip": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "7-Zip command line archiver (7zz), packs 7z/zip/tar and unpacks most formats",
+            "download": {
+              "check_latest_release": true,
+              "filename": "7zip.lha",
+              "hash": "b75e321eead52100af6c9bde84cd04dd",
+              "path": "util/arc/7zip.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "7-Zip",
+            "group": "Archivers",
+            "install": [
+              {
+                "from": "7zip/7zz_040",
+                "patch": [],
+                "recursive": false,
+                "rename": "7zz",
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "7zip/7zSFX",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "sevenzip",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "26.06",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "simpledock": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "macOS-style Workbench dock",
+            "download": {
+              "check_latest_release": true,
+              "filename": "SimpleDock.lha",
+              "hash": "88d1b1cec91216c45d4b474d39ec5591",
+              "path": "util/wb/SimpleDock.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "SimpleDock",
+            "group": "Tools",
+            "install": [
+              {
+                "from": "SimpleDock/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/SimpleDock/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Tools",
+              "path": "Programs/SimpleDock/SimpleDock",
+              "selected_icons": false,
+              "title": "SimpleDock",
+              "wb_launch": true
+            },
+            "name": "simpledock",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "1.2",
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
             ]
           },
           "smb0_device": {
@@ -11154,7 +13668,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "SnoopDOS",
-            "group": "Applications",
+            "group": "System Tools",
             "install": [
               {
                 "from": "*",
@@ -11278,6 +13792,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": "If Exists C:StackAttack\n  C:StackAttack AUTO >NIL:\nEndIf\n",
                 "name": "StackAttack",
                 "target": "S/User-Startup",
@@ -11311,7 +13827,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "SysInfo",
-            "group": "Applications",
+            "group": "System Tools",
             "install": [
               {
                 "from": "SysInfo.info",
@@ -11355,6 +13871,570 @@
               "3.2.3",
               "3.9"
             ]
+          },
+          "telser": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "serial device over telnet (telser.device) for terminal programs",
+            "download": {
+              "check_latest_release": true,
+              "filename": "telser140.lha",
+              "hash": "82c5be34544118b54c6b04f88961ff98",
+              "path": "comm/tcp/telser140.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Telser",
+            "group": "Network",
+            "install": [
+              {
+                "from": "telser/bin/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Telser/bin/",
+                "xor": null
+              },
+              {
+                "from": "telser/db/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Telser/db/",
+                "xor": null
+              },
+              {
+                "from": "telser/doc/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Telser/doc/",
+                "xor": null
+              },
+              {
+                "from": "telser/serv/telserd_amitcp",
+                "patch": [],
+                "recursive": false,
+                "rename": "telserd",
+                "stack": null,
+                "to": "Programs/Telser/serv/",
+                "xor": null
+              },
+              {
+                "from": "telser/devs/telser.device_amitcp",
+                "patch": [],
+                "recursive": false,
+                "rename": "telser.device",
+                "stack": null,
+                "to": "Devs/",
+                "xor": null
+              },
+              {
+                "from": "telser/libs/rawin.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "System",
+              "path": "Programs/Telser/bin/tsconfig",
+              "selected_icons": false,
+              "title": "Telser Config",
+              "wb_launch": true
+            },
+            "name": "telser",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "telser_keyfile"
+            ],
+            "scripts": [
+              {
+                "after": null,
+                "before": null,
+                "content": "Assign AmiTCP: SYS:Programs/Telser ADD\n",
+                "name": "telser",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.40",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "telser_keyfile": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "free registration key for telser.device",
+            "download": {
+              "check_latest_release": true,
+              "filename": "Telser_Keyfile.lha",
+              "hash": "eb2c4507c9e5fae6cdcb21456cb513fd",
+              "path": "comm/tcp/Telser_Keyfile.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Telser Keyfile",
+            "group": "System",
+            "install": [
+              {
+                "from": "telser.key",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "S/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "telser_keyfile",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "term": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "terminal program with the aBSiNTHE BBS preset (telser.device)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "absintheterm.lha",
+              "hash": "b5eb75b49bdb8b49efa9ecbfedaed758",
+              "path": null,
+              "repo": null,
+              "source": "web",
+              "tag": null,
+              "url": "https://github.com/rootrootde/emu68-hatcher-archives/releases/download/archives/b5eb75b49bdb8b49efa9ecbfedaed758-absintheterm.lha"
+            },
+            "emu68_versions": null,
+            "friendly_name": "Term",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "Term_4.8/term",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/gtlayout.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/term.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/term.doc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/termRexx.doc",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/term-4.8.txt",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/term-4.8.txt.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "aBSiNTHE_TERM_INSTRUCTIONS.txt",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Config/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/Config/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Catalogs/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/Catalogs/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Documentation/AmigaGuide/term.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Documentation/AmigaGuide/term.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Documentation/AmigaGuide/termRexx.guide",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Documentation/AmigaGuide/termRexx.guide.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Libs/*.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/GFX",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/GFX.font",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/IBM",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/IBM.font",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/TBM",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/TBM.font",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/Topaz+1200",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Fonts/Topaz+1200.font",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Fonts/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Extras/Rexx",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/Extras/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Extras/Sound",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/Extras/",
+                "xor": null
+              },
+              {
+                "from": "Term_4.8/Extras/Translation",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Term/Extras/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/Term/term",
+              "selected_icons": false,
+              "title": "Term",
+              "wb_launch": true
+            },
+            "name": "term",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "telser"
+            ],
+            "scripts": [
+              {
+                "after": null,
+                "before": null,
+                "content": "Assign TERM: SYS:Programs/Term\n",
+                "name": "term",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "4.8",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "titlebar_image": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "titlebar gadget images for ReAction programs",
+            "download": {
+              "check_latest_release": true,
+              "filename": "titlebar_ic.lha",
+              "hash": "96740aa12efb02678486d3676aca2450",
+              "path": "dev/gui/titlebar_ic.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "titlebar.image",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "titlebar_ic/Classes/Images/titlebar.image",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/Images/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "titlebar_image",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "titleshadow": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "shadowed or outlined window titles (editor: Prefs/TitleShadowPrefs)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "titleshadow.lha",
+              "hash": "c59cf13a5a9df89b2060ff274b244484",
+              "path": "util/boot/titleshadow.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "TitleShadow",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "TitleShadow/TitleShadow",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "TitleShadow/TitleShadowPrefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "TitleShadow/Icons/Uros Lepota/TitleShadowPrefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "titleshadow",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [
+              {
+                "after": null,
+                "before": "^;VisualPrefs - Added by Emu68 Hatcher - BEGIN|^(?:C:)?IPrefs(?:\\s|$)",
+                "content": "Run <>NIL: C:TitleShadow\n",
+                "name": "TitleShadow",
+                "target": "S/Startup-Sequence",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.0B",
+            "versions": []
           },
           "toolsdaemon": {
             "archive_package": null,
@@ -11483,6 +14563,231 @@
               "3.9"
             ]
           },
+          "trasfondo": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "resource monitor drawn on the Workbench backdrop",
+            "download": {
+              "check_latest_release": false,
+              "filename": "trasfondo-2.8.7.lha",
+              "hash": "1685844DD2117ED0344A089C1C35A7FA",
+              "path": null,
+              "repo": "FreeMEM/trasfondo",
+              "source": "github",
+              "tag": "v2.8.7",
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "Trasfondo",
+            "group": "System Tools",
+            "install": [
+              {
+                "from": "Trasfondo/Trasfondo",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/Trasfondo.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoBarra",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoBarra.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoPanel",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoAviso",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoRapido",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoDock",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoDock.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoVentanas",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoVentanas.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/LEEME",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/LEEME.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/LICENSE",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/Catalogs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoPrefs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/TrasfondoPrefs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/Avisa",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "Trasfondo/Arranque",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/Trasfondo/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "System",
+              "path": "Programs/Trasfondo/Trasfondo",
+              "selected_icons": false,
+              "title": "Trasfondo",
+              "wb_launch": false
+            },
+            "name": "trasfondo",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [
+              {
+                "after": null,
+                "before": null,
+                "content": "Echo >ENV:Trasfondo.cajon \"SYS:Programs/Trasfondo\"\n",
+                "name": "trasfondo",
+                "target": "S/User-Startup",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "2.8.7",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "ttflib": {
             "archive_package": null,
             "bundle": null,
@@ -11542,9 +14847,9 @@
             "description": "ZIP extractor",
             "download": {
               "check_latest_release": true,
-              "filename": "Unzip552.lha",
-              "hash": "A657AA4A7E323D504FBB0B7443292EE6",
-              "path": "util/arc/UnZIP552.lha",
+              "filename": "UnZip-6.0.lha",
+              "hash": "9c36c7e4f236451f838955e0e81a8c14",
+              "path": "util/arc/UnZip-6.0.lha",
               "repo": null,
               "source": "aminet",
               "tag": null,
@@ -11555,7 +14860,7 @@
             "group": "Archivers",
             "install": [
               {
-                "from": "UnZIP*/UnZip",
+                "from": "UnZip/020/UnZip",
                 "patch": [],
                 "recursive": false,
                 "rename": null,
@@ -11573,7 +14878,7 @@
             "relocate": [],
             "requires": [],
             "scripts": [],
-            "upstream_version": null,
+            "upstream_version": "6.0-31.2",
             "versions": [
               "3.1",
               "3.2",
@@ -11600,7 +14905,7 @@
             },
             "emu68_versions": null,
             "friendly_name": "ViNCEd",
-            "group": "Utilities",
+            "group": "System Tools",
             "install": [
               {
                 "from": "ViNCEd/LIBS/vnc.library",
@@ -11799,6 +15104,8 @@
             "requires": [],
             "scripts": [
               {
+                "after": null,
+                "before": null,
                 "content": "Assign >NIL: Guides: LOCALE:Help\nSetEnv VNCGuide.path \"LOCALE:Help/ViNCEd.guide\"\nC:TrueMultiAssigns\nC:StringSnip >NIL: INSTALL\nC:SetVNC Quiet Mount Override as CON:\n",
                 "name": "ViNCEd",
                 "target": "S/User-Startup",
@@ -11813,6 +15120,137 @@
               "3.2.3",
               "3.9"
             ]
+          },
+          "visualprefs": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "configurable look of window borders, gadgets and frames (editor: Prefs/GUI)",
+            "download": {
+              "check_latest_release": true,
+              "filename": "VP-QuickFix.lha",
+              "hash": "273962f80fc49a8667dbd61c14c5bd30",
+              "path": "util/wb/VP-QuickFix.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "VisualPrefs",
+            "group": "Appearance",
+            "install": [
+              {
+                "from": "VP-QuickFix/VisualPrefs_040",
+                "patch": [],
+                "recursive": false,
+                "rename": "VisualPrefs",
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              },
+              {
+                "from": "VP-QuickFix/GUI_040",
+                "patch": [],
+                "recursive": false,
+                "rename": "GUI",
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "visualprefs",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "visualprefs_files"
+            ],
+            "scripts": [
+              {
+                "after": null,
+                "before": "^(?:C:)?IPrefs(?:\\s|$)",
+                "content": "Run >NIL: C:VisualPrefs\n",
+                "name": "VisualPrefs",
+                "target": "S/Startup-Sequence",
+                "when_user_archive": null
+              }
+            ],
+            "upstream_version": "1.5n",
+            "versions": []
+          },
+          "visualprefs_files": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "prefs icon, select.gadget and sample preset for VisualPrefs",
+            "download": {
+              "check_latest_release": true,
+              "filename": "VisualPrefs.lha",
+              "hash": "dcc4f6949c6465114301c9eab907d872",
+              "path": "util/wb/VisualPrefs.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "VisualPrefs support files",
+            "group": "System",
+            "install": [
+              {
+                "from": "VisualPrefs/GlowIcons/GUI.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/",
+                "xor": null
+              },
+              {
+                "from": "VisualPrefs/InstallFiles/select.gadget",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/Gadgets/",
+                "xor": null
+              },
+              {
+                "from": "VisualPrefs/Prefs/Presets/GUISample.pre",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Presets/",
+                "xor": null
+              },
+              {
+                "from": "VisualPrefs/Prefs/Bitmaps/Sample-8c",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Prefs/Presets/VisualPrefs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "visualprefs_files",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "1.5k",
+            "versions": []
           },
           "wbrun": {
             "archive_package": null,
@@ -11863,6 +15301,63 @@
             "requires": [],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "webpdt": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "WebP image datatype",
+            "download": {
+              "check_latest_release": true,
+              "filename": "webpdt.m68k-amigaos.lha",
+              "hash": "3e3a401c094ca6d624c2dea55deb043f",
+              "path": "util/dtype/webpdt.m68k-amigaos.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "WebP datatype",
+            "group": "Datatypes",
+            "install": [
+              {
+                "from": "webpdt/Classes/DataTypes/webp.datatype",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Classes/DataTypes/",
+                "xor": null
+              },
+              {
+                "from": "webpdt/Devs/DataTypes/WebP",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Devs/DataTypes/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "webpdt",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "45.2",
             "versions": [
               "3.1",
               "3.2",
@@ -12382,6 +15877,254 @@
               "3.9"
             ]
           },
+          "wookiechat": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "IRC client",
+            "download": {
+              "check_latest_release": true,
+              "filename": "WookieChat2.11_OS3.lha",
+              "hash": "c05f7b24abfe028960030c82847b6e03",
+              "path": "comm/irc/WookieChat2.11_OS3.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "WookieChat",
+            "group": "Internet",
+            "install": [
+              {
+                "from": "WookieChat2.11_OS3_Installer.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "WookieChat.info",
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/WookieChat_OS3",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/WookieChat_OS3.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/*.txt",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/*.txt.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/guru_logo2.png",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/wookiechat_logo.gif",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Logs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Catalogs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Catalogs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Colours",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Colours.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/ConnectScripts",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/ConnectScripts.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Docs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Docs.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Smilies",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/Smilies.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/sounds",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/sounds.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/ARexx_scripts",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              },
+              {
+                "from": "WookieChat2.11_OS3_Installer/ARexx_scripts.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/WookieChat/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "Apps/Internet",
+              "path": "Programs/WookieChat/WookieChat_OS3",
+              "selected_icons": false,
+              "title": "WookieChat",
+              "wb_launch": true
+            },
+            "name": "wookiechat",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "mui",
+              "mcc_nlist",
+              "mcc_betterstring",
+              "codesets"
+            ],
+            "scripts": [],
+            "upstream_version": "2.11",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
           "workbench_library": {
             "archive_package": null,
             "bundle": null,
@@ -12528,9 +16271,125 @@
             "provides": [],
             "purchase_url": null,
             "relocate": [],
+            "requires": [
+              "xadmaster_key"
+            ],
+            "scripts": [],
+            "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "xadmaster_key": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "free xadmaster keyfile, stops the shareware requester",
+            "download": {
+              "check_latest_release": true,
+              "filename": "xadmaster-key.lha",
+              "hash": "dcf85245d75dc1b1f17c4e5ae9163403",
+              "path": "util/arc/xadmaster-key.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "XADMaster Keyfile",
+            "group": "System",
+            "install": [
+              {
+                "from": "xadmaster.key",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "S/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "xadmaster_key",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
             "requires": [],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "xfdmaster": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "xfdmaster.library, decrunches packed programs and data files",
+            "download": {
+              "check_latest_release": true,
+              "filename": "xfdmaster.lha",
+              "hash": "df1c5c32051a0bbb2e7ffd8612d4fee1",
+              "path": "util/pack/xfdmaster.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "XFD",
+            "group": "Archivers",
+            "install": [
+              {
+                "from": "xfd_User/Libs/xfdmaster.library",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "xfd_User/Libs/xfd",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              },
+              {
+                "from": "xfd_User/C/*",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "C/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "xfdmaster",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "1.38",
             "versions": [
               "3.1",
               "3.2",
@@ -12579,6 +16438,155 @@
             "requires": [],
             "scripts": [],
             "upstream_version": null,
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "xsysinfo": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "system information, with a MUI window when MUI is installed",
+            "download": {
+              "check_latest_release": true,
+              "filename": "xSysInfo.lha",
+              "hash": "d7e0d7bf9d587440e4bc855e4370bfd4",
+              "path": "util/moni/xSysInfo.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "xSysInfo",
+            "group": "System Tools",
+            "install": [
+              {
+                "from": "xSysInfo-0.12.0.info",
+                "patch": [],
+                "recursive": false,
+                "rename": "xSysInfo.info",
+                "stack": null,
+                "to": "Programs/",
+                "xor": null
+              },
+              {
+                "from": "xSysInfo-0.12.0/xSysInfo",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/xSysInfo/",
+                "xor": null
+              },
+              {
+                "from": "xSysInfo-0.12.0/xSysInfo.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/xSysInfo/",
+                "xor": null
+              },
+              {
+                "from": "xSysInfo-0.12.0/readme.txt",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/xSysInfo/",
+                "xor": null
+              },
+              {
+                "from": "xSysInfo-0.12.0/readme.txt.info",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/xSysInfo/",
+                "xor": null
+              },
+              {
+                "from": "xSysInfo-0.12.0/Catalogs",
+                "patch": [],
+                "recursive": false,
+                "rename": null,
+                "stack": null,
+                "to": "Programs/xSysInfo/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": {
+              "menu": "System",
+              "path": "Programs/xSysInfo/xSysInfo",
+              "selected_icons": false,
+              "title": "xSysInfo",
+              "wb_launch": true
+            },
+            "name": "xsysinfo",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [
+              "identify"
+            ],
+            "scripts": [],
+            "upstream_version": "0.12.0",
+            "versions": [
+              "3.1",
+              "3.2",
+              "3.2.2.1",
+              "3.2.3",
+              "3.9"
+            ]
+          },
+          "z_library": {
+            "archive_package": null,
+            "bundle": null,
+            "conflicts": [],
+            "default": false,
+            "description": "zlib compression as a shared library",
+            "download": {
+              "check_latest_release": true,
+              "filename": "z_lib.m68k-amigaos.lha",
+              "hash": "cd4439719b4b2ed1a15ecc211fe1d9ed",
+              "path": "util/libs/z_lib.m68k-amigaos.lha",
+              "repo": null,
+              "source": "aminet",
+              "tag": null,
+              "url": null
+            },
+            "emu68_versions": null,
+            "friendly_name": "z.library",
+            "group": "Libraries",
+            "install": [
+              {
+                "from": "z_lib/Libs/z.library.020",
+                "patch": [],
+                "recursive": false,
+                "rename": "z.library",
+                "stack": null,
+                "to": "Libs/",
+                "xor": null
+              }
+            ],
+            "mandatory": false,
+            "menu_entries": [],
+            "menu_entry": null,
+            "name": "z_library",
+            "provides": [],
+            "purchase_url": null,
+            "relocate": [],
+            "requires": [],
+            "scripts": [],
+            "upstream_version": "2.1",
             "versions": [
               "3.1",
               "3.2",
@@ -12636,58 +16644,58 @@
             ]
           }
         },
-        "revision": 10,
-        "source_commit": "3298b94f347c60c0860349dcdf2f2972b0521acf"
+        "revision": 1,
+        "source_commit": "9c574b26b9459f95d600dc1057dc3a0b3269ef36"
       }
     ],
     "hatcher": {
       "artifacts": {
         "linux-arm64": {
-          "filename": "emu68hatcher-1.4.0-linux-arm64.deb",
-          "sha256": "690582c1b08aa42863bf802a84da933871f0c696a162c24a8093d7649c1b3b16",
-          "size": 69862772,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-linux-arm64.deb"
+          "filename": "emu68hatcher-1.5.0-linux-arm64.deb",
+          "sha256": "2b36c15e9ceaf726bb9544d76ba1b5278fe5dc505fc3d7329608642a10c66816",
+          "size": 69931296,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-linux-arm64.deb"
         },
         "linux-x64": {
-          "filename": "emu68hatcher-1.4.0-linux-x64.deb",
-          "sha256": "16949c41fdbb2f8bbb1ab821c97f9abc9d3a9b996104c7beed55c276879568e1",
-          "size": 73846216,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-linux-x64.deb"
+          "filename": "emu68hatcher-1.5.0-linux-x64.deb",
+          "sha256": "19d76f147c9b01458c0f59b82f291e3b7f350ab61d8796f77a6e8e98dd47c525",
+          "size": 73886780,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-linux-x64.deb"
         },
         "macos-arm64": {
-          "filename": "emu68hatcher-1.4.0-macos-arm64.dmg",
-          "sha256": "ba7439a3cd8128bbcbe1bc96dba2cf80ac49296d6ce4c43a4590eedfab28990d",
-          "size": 35188586,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-macos-arm64.dmg"
+          "filename": "emu68hatcher-1.5.0-macos-arm64.dmg",
+          "sha256": "ba7dcc68fba64042c76e648f6e993b809871909a98793bc3aed33a65a75d7128",
+          "size": 35237937,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-macos-arm64.dmg"
         },
         "macos-x64": {
-          "filename": "emu68hatcher-1.4.0-macos-x64.dmg",
-          "sha256": "009c9cb6607c20e74ebd8a9d14eb937bf0ebe536e8a62ea17806c6ca36f25f7e",
-          "size": 37187996,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-macos-x64.dmg"
+          "filename": "emu68hatcher-1.5.0-macos-x64.dmg",
+          "sha256": "006917c2170980c37acd97df5ca58eeb2aa0e774f565474524fb1172f6748b25",
+          "size": 37228125,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-macos-x64.dmg"
         },
         "windows-arm64": {
-          "filename": "emu68hatcher-1.4.0-windows-arm64.exe",
-          "sha256": "6701768c22561aaa329f9f372b3e933e606be169d8caa0ace4310816de9cc8e8",
-          "size": 39326927,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-windows-arm64.exe"
+          "filename": "emu68hatcher-1.5.0-windows-arm64.exe",
+          "sha256": "e9f061266ee8ea3d7d4ab43ee52374c0c9677c943114127a8dbc0f67ddce1637",
+          "size": 39371908,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-windows-arm64.exe"
         },
         "windows-x64": {
-          "filename": "emu68hatcher-1.4.0-windows-x64.exe",
-          "sha256": "21e077d0aaf8f594d721bb58608f39608bc6893c1f03edb0923fae9bae5d0b11",
-          "size": 50167516,
-          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.4.0/emu68hatcher-1.4.0-windows-x64.exe"
+          "filename": "emu68hatcher-1.5.0-windows-x64.exe",
+          "sha256": "fab555a7a0b119a1fd8e9b9dccf0b84fc9a51048995d4bbe28631ad40432bc32",
+          "size": 50146036,
+          "url": "https://github.com/rootrootde/emu68-hatcher/releases/download/v1.5.0/emu68hatcher-1.5.0-windows-x64.exe"
         }
       },
-      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.4.0",
-      "version": "1.4.0"
+      "release_url": "https://github.com/rootrootde/emu68-hatcher/releases/tag/v1.5.0",
+      "version": "1.5.0"
     },
-    "revision": 1795390663,
+    "revision": 1795804067,
     "schema_version": 2
   },
   "signature": {
     "algorithm": "ed25519",
     "key_id": "updates-2026",
-    "value": "dwNMTasQ5W3+gPQJvZ7wa6JRvZHTAgmjCk3E3ZOmWdzcd3RTmiToRPWVb/JDFDvGoBFmeAsoRy9SmHLmnLmNDg=="
+    "value": "pWnJgln4f8NqkCaLUfrhxsBBiHWkQ97UVoIKHGZzMoyWJOUv0JDYPnmd6f9yb0vptKrcFsJb/zvS1yrTya9GDQ=="
   }
 }
